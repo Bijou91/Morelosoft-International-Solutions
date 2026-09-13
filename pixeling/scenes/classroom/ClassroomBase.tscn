@@ -1,0 +1,90 @@
+[gd_scene load_steps=2 format=3 uid="uid://clsbaseuaz01"]
+
+[ext_resource type="Script" path="res://scenes/classroom/ClassroomBase.gd" id="1_cbase"]
+
+[node name="ClassroomBase" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cbase")
+
+[node name="BgColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0705882, 0.109804, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 10.0
+offset_right = -12.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="TopHUD" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="BtnBack" type="Button" parent="VBox/TopHUD"]
+layout_mode = 2
+text = "Volver al Lobby"
+
+[node name="Spacer" type="Control" parent="VBox/TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="VBox/TopHUD"]
+layout_mode = 2
+text = "Aula Universitaria"
+
+[node name="Blackboard" type="PanelContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="VBox/Blackboard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="VBox/Blackboard/Margin"]
+layout_mode = 2
+
+[node name="HeaderBoard" type="Label" parent="VBox/Blackboard/Margin/VBox"]
+layout_mode = 2
+text = "Pizarron del Aula:"
+
+[node name="LabelTip" type="Label" parent="VBox/Blackboard/Margin/VBox"]
+layout_mode = 2
+text = "Bienvenido a la clase. Selecciona un desafío para comenzar."
+autowrap_mode = 2
+
+[node name="MinigamesSection" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="SectionTitle" type="Label" parent="VBox/MinigamesSection"]
+layout_mode = 2
+text = "Desafios y Minijuegos Disponibles:"
+
+[node name="Scroll" type="ScrollContainer" parent="VBox/MinigamesSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MinigamesList" type="VBoxContainer" parent="VBox/MinigamesSection/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8

@@ -1,0 +1,344 @@
+## RoboFlow.gd - Minijuego de Control de Flujos
+## Minijuego educativo de programación secuencial de un autómata
+## Cumple estrictamente con el Diagrama de Secuencia y Casos de Uso (TSP A26 / ISO/IEC 29110)
+## Responsable: Carlos Manuel Aguirre Norato (Líder Técnico)
+extends MiniGameBase
+
+# Configuración de mapa según dificultad
+var grid_cols: int = 5
+var grid_rows: int = 6
+var max_instructions: int = 9
+var max_lives: int = 3
+var current_lives: int = 3
+var start_pos := Vector2i(2, 0)
+var current_pos := Vector2i(2, 0)
+var current_dir: String = "S" # N, E, S, O
+var goal_pos := Vector2i(2, 5)
+var obstacles: Array[Vector2i] = []
+
+var instructions: Array[String] = []
+var is_running: bool = false
+var attempts: int = 0
+
+# Referencias a Nodos
+@onready var status_label: Label = $VBox/StatusBanner/Label
+@onready var board_grid: GridContainer = $VBox/BoardPanel/GridBoard
+@onready var pipeline_container: HBoxContainer = $VBox/PipelineSection/Scroll/PipelineSlots
+@onready var btn_fwd: Button = $VBox/Palette/BtnFwd
+@onready var btn_left: Button = $VBox/Palette/BtnLeft
+@onready var btn_right: Button = $VBox/Palette/BtnRight
+@onready var btn_del: Button = $VBox/Controls/BtnDel
+@onready var btn_clear: Button = $VBox/Controls/BtnClear
+@onready var btn_run: Button = $VBox/Controls/BtnRun
+@onready var btn_back: Button = $TopHUD/BtnBack
+@onready var lives_label: Label = $TopHUD/LivesLabel
+
+# Selector de Dificultad
+@onready var btn_diff_facil: Button = $VBox/DifficultySelector/BtnDiffFacil
+@onready var btn_diff_normal: Button = $VBox/DifficultySelector/BtnDiffNormal
+@onready var btn_diff_ing: Button = $VBox/DifficultySelector/BtnDiffIng
+
+func _ready() -> void:
+	super._ready()
+	minigame_id = "roboflow"
+	minigame_title = "RoboFlow: Control de Flujos"
+	subject_name = "Introducción a la Programación"
+
+	# Conectar botones de comandos y control
+	btn_fwd.pressed.connect(func(): add_instruction("FORWARD"))
+	btn_left.pressed.connect(func(): add_instruction("TURN_LEFT"))
+	btn_right.pressed.connect(func(): add_instruction("TURN_RIGHT"))
+	btn_del.pressed.connect(remove_last_instruction)
+	btn_clear.pressed.connect(reiniciar_nivel)
+	btn_run.pressed.connect(run_program)
+	btn_back.pressed.connect(_on_back_pressed)
+
+	# Conectar selector de dificultad
+	btn_diff_facil.pressed.connect(func(): setup_level("FACIL"))
+	btn_diff_normal.pressed.connect(func(): setup_level("NORMAL"))
+	btn_diff_ing.pressed.connect(func(): setup_level("INGENIERO"))
+
+	setup_level(current_difficulty)
+
+func setup_level(diff: String) -> void:
+	current_difficulty = diff
+	match diff:
+		"FACIL":
+			grid_cols = 4
+			grid_rows = 5
+			max_instructions = 6
+			max_lives = 5
+			current_lives = 5
+			start_pos = Vector2i(1, 0)
+			goal_pos = Vector2i(1, 4)
+			obstacles = [Vector2i(0, 1), Vector2i(2, 2), Vector2i(3, 3)]
+		"NORMAL":
+			grid_cols = 5
+			grid_rows = 6
+			max_instructions = 9
+			max_lives = 3
+			current_lives = 3
+			start_pos = Vector2i(2, 0)
+			goal_pos = Vector2i(2, 5)
+			obstacles = [Vector2i(2, 2), Vector2i(1, 4), Vector2i(3, 4), Vector2i(0, 2), Vector2i(4, 2)]
+		"INGENIERO":
+			grid_cols = 6
+			grid_rows = 6
+			max_instructions = 10
+			max_lives = 1
+			current_lives = 1
+			start_pos = Vector2i(0, 0)
+			goal_pos = Vector2i(5, 5)
+			obstacles = [Vector2i(1, 0), Vector2i(1, 1), Vector2i(3, 2), Vector2i(3, 3), Vector2i(4, 3)]
+
+	instructions.clear()
+	reset_robot()
+	build_board_ui()
+	update_pipeline_ui()
+	update_lives_display()
+	btn_run.disabled = false
+	
+	# Notificar inicio formal del minijuego al EventBus global
+	EventBus.minigame_started.emit(minigame_id, current_difficulty)
+	set_status("Dificultad %s iniciada (%d vidas). Diseña tu algoritmo." % [current_difficulty, current_lives])
+
+func update_lives_display() -> void:
+	if lives_label:
+		lives_label.text = "Vidas: %d / %d" % [current_lives, max_lives]
+
+func reset_robot() -> void:
+	current_pos = start_pos
+	current_dir = "S"
+
+func build_board_ui() -> void:
+	for child in board_grid.get_children():
+		child.queue_free()
+
+	board_grid.columns = grid_cols
+
+	for y in range(grid_rows):
+		for x in range(grid_cols):
+			var cell := PanelContainer.new()
+			cell.custom_minimum_size = Vector2(48, 44)
+			var lbl := Label.new()
+			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			lbl.name = "CellLabel"
+
+			var pos := Vector2i(x, y)
+			if pos in obstacles:
+				lbl.text = "[#]"
+				cell.modulate = Color(0.8, 0.3, 0.3)
+			elif pos == goal_pos:
+				lbl.text = "[META]"
+				cell.modulate = Color(0.3, 0.9, 0.4)
+			else:
+				lbl.text = "·"
+
+			cell.add_child(lbl)
+			cell.set_meta("grid_pos", pos)
+			board_grid.add_child(cell)
+
+	update_robot_display()
+
+func update_robot_display() -> void:
+	var arrows := { "N": "[Norte]", "E": "[Este]", "S": "[Sur]", "O": "[Oeste]" }
+	for cell in board_grid.get_children():
+		var pos: Vector2i = cell.get_meta("grid_pos", Vector2i(-1, -1))
+		var lbl: Label = cell.get_node("CellLabel")
+		if pos == current_pos:
+			lbl.text = "ROBOT " + arrows.get(current_dir, "[Sur]")
+			cell.modulate = Color(0.2, 0.8, 1.0)
+		elif pos in obstacles:
+			lbl.text = "[#]"
+			cell.modulate = Color(0.8, 0.3, 0.3)
+		elif pos == goal_pos:
+			lbl.text = "[META]"
+			cell.modulate = Color(0.3, 0.9, 0.4)
+		else:
+			lbl.text = "·"
+			cell.modulate = Color(1, 1, 1, 0.8)
+
+func add_instruction(cmd: String) -> void:
+	if is_running or current_lives <= 0:
+		return
+	if instructions.size() >= max_instructions:
+		AudioManager.play_error()
+		set_status("Límite de %d instrucciones alcanzado" % max_instructions)
+		return
+
+	AudioManager.play_click()
+	instructions.append(cmd)
+	update_pipeline_ui()
+
+func remove_last_instruction() -> void:
+	if is_running or instructions.is_empty() or current_lives <= 0:
+		return
+	AudioManager.play_click()
+	instructions.pop_back()
+	update_pipeline_ui()
+
+func reiniciar_nivel() -> void:
+	if is_running:
+		return
+	AudioManager.play_click()
+	instructions.clear()
+	current_lives = max_lives
+	reset_robot()
+	update_robot_display()
+	update_pipeline_ui()
+	update_lives_display()
+	btn_run.disabled = false
+	set_status("Nivel reiniciado. Vidas restauradas a %d." % max_lives)
+
+func clear_instructions() -> void:
+	reiniciar_nivel()
+
+func update_pipeline_ui() -> void:
+	for child in pipeline_container.get_children():
+		child.queue_free()
+
+	var labels := { "FORWARD": "^ AVAN", "TURN_LEFT": "↰ IZQ", "TURN_RIGHT": "↱ DER" }
+	for i in range(max_instructions):
+		var slot := PanelContainer.new()
+		slot.custom_minimum_size = Vector2(50, 42)
+		var lbl := Label.new()
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+		if i < instructions.size():
+			lbl.text = "%d
+%s" % [i + 1, labels.get(instructions[i], "CMD")]
+			slot.modulate = Color(0.3, 0.9, 1.0)
+		else:
+			lbl.text = "%d
+-" % (i + 1)
+			slot.modulate = Color(0.4, 0.4, 0.5)
+
+		slot.add_child(lbl)
+		pipeline_container.add_child(slot)
+
+func deduct_life(reason: String) -> void:
+	current_lives = maxi(0, current_lives - 1)
+	update_lives_display()
+	AudioManager.play_error()
+	EventBus.life_lost.emit(current_lives)
+
+	if current_lives <= 0:
+		handle_game_over(reason)
+	else:
+		set_status("FALLO: %s (-1 vida. Restantes: %d). Corrige el flujo y reintenta." % [reason, current_lives])
+		reset_robot()
+		update_robot_display()
+
+func handle_game_over(reason: String) -> void:
+	is_running = false
+	AudioManager.play_game_over()
+	EventBus.game_over.emit(minigame_id)
+	set_status("GAME OVER: %s. Sin vidas restantes. Pulsa REINICIAR o Volver." % reason)
+	btn_run.disabled = true
+
+func run_program() -> void:
+	if is_running:
+		return
+	if current_lives <= 0:
+		AudioManager.play_error()
+		set_status("No tienes vidas disponibles. Pulsa REINICIAR para restaurar vidas.")
+		return
+	if instructions.is_empty():
+		AudioManager.play_error()
+		set_status("¡El pipeline está vacío! Agrega instrucciones")
+		return
+
+	is_running = true
+	attempts += 1
+	reset_robot()
+	update_robot_display()
+	set_status("Compilando y ejecutando flujo...")
+
+	var dirs := ["N", "E", "S", "O"]
+	var deltas := {
+		"N": Vector2i(0, -1),
+		"E": Vector2i(1, 0),
+		"S": Vector2i(0, 1),
+		"O": Vector2i(-1, 0)
+	}
+
+	for i in range(instructions.size()):
+		if not is_running:
+			break
+
+		var cmd: String = instructions[i]
+		if cmd == "FORWARD":
+			var delta: Vector2i = deltas.get(current_dir, Vector2i.ZERO)
+			var next_pos: Vector2i = current_pos + delta
+
+			# Comprobar límites del tablero
+			if next_pos.x < 0 or next_pos.x >= grid_cols or next_pos.y < 0 or next_pos.y >= grid_rows:
+				is_running = false
+				deduct_life("Robot fuera de los límites del tablero")
+				return
+
+			# Comprobar obstáculos
+			if next_pos in obstacles:
+				is_running = false
+				deduct_life("Colisión contra obstáculo")
+				return
+
+			current_pos = next_pos
+			AudioManager.play_step()
+		elif cmd == "TURN_LEFT":
+			var idx: int = dirs.find(current_dir)
+			current_dir = dirs[(idx + 3) % 4]
+			AudioManager.play_rotate()
+		elif cmd == "TURN_RIGHT":
+			var idx: int = dirs.find(current_dir)
+			current_dir = dirs[(idx + 1) % 4]
+			AudioManager.play_rotate()
+
+		update_robot_display()
+		await get_tree().create_timer(0.45).timeout
+
+		# Comprobar si llegó a la meta
+		if current_pos == goal_pos:
+			handle_victory()
+			return
+
+	is_running = false
+	if current_pos != goal_pos:
+		deduct_life("Fin de instrucciones sin alcanzar la meta")
+
+func handle_victory() -> void:
+	is_running = false
+	AudioManager.play_success()
+
+	var stars: int = 1
+	if instructions.size() <= (max_instructions - 2) and current_lives == max_lives:
+		stars = 3
+	elif instructions.size() <= max_instructions:
+		stars = 2
+
+	var base_score: int = 250
+	match current_difficulty:
+		"FACIL": base_score = 100
+		"NORMAL": base_score = 250
+		"INGENIERO": base_score = 500
+
+	var lives_bonus: int = current_lives * 40
+	var final_score: int = maxi(50, base_score * stars + lives_bonus - (attempts - 1) * 20)
+	set_status("Nivel completado con éxito (%d estrellas, %d vidas, %d puntos)" % [stars, current_lives, final_score])
+
+	await get_tree().create_timer(1.8).timeout
+	finish_game(true, final_score, stars, "Flujo completado exitosamente")
+	_on_back_pressed()
+
+func set_status(msg: String) -> void:
+	if status_label:
+		status_label.text = msg
+
+func _on_back_pressed() -> void:
+	AudioManager.play_click()
+	if ResourceLoader.exists("res://scenes/classroom/AulaProgramacion.tscn"):
+		get_tree().change_scene_to_file("res://scenes/classroom/AulaProgramacion.tscn")
+	else:
+		get_tree().change_scene_to_file("res://scenes/campus/Lobby.tscn")

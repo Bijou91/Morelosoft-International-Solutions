@@ -1,0 +1,162 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6u7k9roboflow"]
+
+[ext_resource type="Script" path="res://scenes/minigames/programacion/roboflow/RoboFlow.gd" id="1_rf01"]
+
+[node name="RoboFlow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rf01")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0705882, 0.109804, 1)
+
+[node name="TopHUD" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 42.0
+grow_horizontal = 2
+
+[node name="BtnBack" type="Button" parent="TopHUD"]
+layout_mode = 2
+text = "Volver"
+
+[node name="Spacer" type="Control" parent="TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="TopHUD"]
+layout_mode = 2
+text = "RoboFlow • Control de Flujos"
+
+[node name="Spacer2" type="Control" parent="TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LivesLabel" type="Label" parent="TopHUD"]
+layout_mode = 2
+text = "Vidas: 3 / 3"
+
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 50.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="DifficultySelector" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LabelDiff" type="Label" parent="VBox/DifficultySelector"]
+layout_mode = 2
+text = "Dificultad:"
+
+[node name="BtnDiffFacil" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fácil"
+
+[node name="BtnDiffNormal" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Normal"
+
+[node name="BtnDiffIng" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ingeniero"
+
+[node name="StatusBanner" type="PanelContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBox/StatusBanner"]
+layout_mode = 2
+text = "Estado del programa"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BoardPanel" type="CenterContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 270)
+layout_mode = 2
+
+[node name="GridBoard" type="GridContainer" parent="VBox/BoardPanel"]
+layout_mode = 2
+theme_override_constants/h_separation = 3
+theme_override_constants/v_separation = 3
+columns = 5
+
+[node name="PipelineSection" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBox/PipelineSection"]
+layout_mode = 2
+text = "LÍNEA DE EJECUCIÓN:"
+
+[node name="Scroll" type="ScrollContainer" parent="VBox/PipelineSection"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+vertical_scroll_mode = 0
+
+[node name="PipelineSlots" type="HBoxContainer" parent="VBox/PipelineSection/Scroll"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Palette" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnFwd" type="Button" parent="VBox/Palette"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "AVANZAR"
+
+[node name="BtnLeft" type="Button" parent="VBox/Palette"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↰ GIRAR IZQ"
+
+[node name="BtnRight" type="Button" parent="VBox/Palette"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↱ GIRAR DER"
+
+[node name="Controls" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnDel" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = " Borrar"
+
+[node name="BtnClear" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "REINICIAR"
+
+[node name="BtnRun" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "EJECUTAR"

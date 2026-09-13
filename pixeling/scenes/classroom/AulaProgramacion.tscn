@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://aulaprog101uaz"]
+
+[ext_resource type="PackedScene" uid="uid://clsbaseuaz01" path="res://scenes/classroom/ClassroomBase.tscn" id="1_cbase"]
+
+[node name="AulaProgramacion" instance=ExtResource("1_cbase")]
+classroom_name = "Aula 101: Intro a Programación"
+subject_code = "PROG-01"
+teacher_name = "Ing. Roberto Valdez (Docente UAZ)"
+teacher_tip = "En programación estructurada, cada comando cuenta. Traza mentalmente la ruta del robot antes de compilar y ejecutar."
+minigames_list = [{
+"id": "roboflow",
+"name": "RoboFlow (Control de Flujos)",
+"scene": "res://scenes/minigames/programacion/roboflow/RoboFlow.tscn"
+}]

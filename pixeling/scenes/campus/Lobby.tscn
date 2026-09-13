@@ -1,0 +1,111 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0xlobbyuaz01"]
+
+[ext_resource type="Script" path="res://scenes/campus/Lobby.gd" id="1_lob01"]
+
+[node name="Lobby" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lob01")
+
+[node name="BgColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0588235, 0.0666667, 0.101961, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 10.0
+offset_right = -12.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="TopHUD" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="UserBadge" type="PanelContainer" parent="VBox/TopHUD"]
+layout_mode = 2
+
+[node name="LabelUser" type="Label" parent="VBox/TopHUD/UserBadge"]
+layout_mode = 2
+text = "Novato_UAZ"
+
+[node name="Spacer" type="Control" parent="VBox/TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PointsBadge" type="PanelContainer" parent="VBox/TopHUD"]
+layout_mode = 2
+
+[node name="LabelPoints" type="Label" parent="VBox/TopHUD/PointsBadge"]
+layout_mode = 2
+text = "Puntos: 0"
+
+[node name="Banner" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="CampusSub" type="Label" parent="VBox/Banner"]
+layout_mode = 2
+text = "CAMPUS VIRTUAL UAZ"
+horizontal_alignment = 1
+
+[node name="CampusTitle" type="Label" parent="VBox/Banner"]
+layout_mode = 2
+text = "EDIFICIO ING. SOFTWARE"
+horizontal_alignment = 1
+
+[node name="VisualNovelSection" type="PanelContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+
+[node name="PanelNPC" type="VBoxContainer" parent="VBox/VisualNovelSection"]
+layout_mode = 2
+alignment = 1
+
+[node name="DialogueBubble" type="Label" parent="VBox/VisualNovelSection/PanelNPC"]
+layout_mode = 2
+text = "¡Bienvenido novato! Selecciona un salón para comenzar."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnTalkNPC" type="Button" parent="VBox/VisualNovelSection/PanelNPC"]
+layout_mode = 2
+text = "Hablar con la comunidad"
+
+[node name="DoorsContainer" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="BtnAulaProg" type="Button" parent="VBox/DoorsContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "Aula 101: Introduccion a la Programacion"
+
+[node name="BtnAulaSoft" type="Button" parent="VBox/DoorsContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "Aula 102: Fundamentos de Ing. de Software"
+
+[node name="BtnAulaLogic" type="Button" parent="VBox/DoorsContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "Aula 103: Logica Computacional y Algoritmos"
+
+[node name="BtnAulaLinux" type="Button" parent="VBox/DoorsContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "Aula 104: Sistemas Operativos y Linux"

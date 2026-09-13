@@ -1,0 +1,21 @@
+# Godot Engine 4.x
+.godot/
+*.translation
+.import/
+export_presets.cfg
+*.apk
+*.aab
+*.exe
+*.zip
+
+# Mono / .NET (if applicable)
+.mono/
+data_*/
+mono_crash.*.json
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+*.log
