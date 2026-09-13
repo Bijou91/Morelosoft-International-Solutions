@@ -1,3 +1,10 @@
+# Documentación excluida del repositorio de código
+Morelosoft International Solutions-20260908T224219Z-1-001/
+*.docx
+*.pdf
+*.puml
+*.png
+
 # Godot Engine 4.x
 .godot/
 *.translation
