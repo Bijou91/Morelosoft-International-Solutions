@@ -12,9 +12,9 @@ const OPTIONS_BY_DIFF: Dictionary = {
 	"INGENIERO": 5
 }
 const LIVES_BY_DIFF: Dictionary = {
-	"FACIL": 5,
-	"NORMAL": 3,
-	"INGENIERO": 1
+	"FACIL": 10,
+	"NORMAL": 5,
+	"INGENIERO": 3
 }
 const SCORE_BASE: Dictionary = {
 	"FACIL": 50,
