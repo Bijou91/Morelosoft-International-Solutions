@@ -38,12 +38,12 @@ var selected_diff: String = "NORMAL"
 @onready var board_grid: GridContainer = $ScreenGame/Margin/VBox/BoardPanel/GridBoard
 @onready var pipeline_container: HBoxContainer = $ScreenGame/Margin/VBox/PipelineSection/Scroll/PipelineSlots
 @onready var pipeline_title: Label = $ScreenGame/Margin/VBox/PipelineSection/Label
-@onready var btn_fwd: Button = $ScreenGame/Margin/VBox/Palette/BtnFwd
-@onready var btn_left: Button = $ScreenGame/Margin/VBox/Palette/BtnLeft
-@onready var btn_right: Button = $ScreenGame/Margin/VBox/Palette/BtnRight
-@onready var btn_del: Button = $ScreenGame/Margin/VBox/Controls/BtnDel
-@onready var btn_clear: Button = $ScreenGame/Margin/VBox/Controls/BtnClear
-@onready var btn_run: Button = $ScreenGame/Margin/VBox/Controls/BtnRun
+@onready var btn_fwd: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnFwd
+@onready var btn_left: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnLeft
+@onready var btn_right: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnRight
+@onready var btn_del: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnDel
+@onready var btn_clear: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnClear
+@onready var btn_run: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnRun
 @onready var btn_back: Button = $ScreenGame/Margin/VBox/TopHUD/BtnBack
 @onready var lives_label: Label = $ScreenGame/Margin/VBox/TopHUD/LivesLabel
 
@@ -154,7 +154,7 @@ func setup_level(diff: String) -> void:
 	btn_run.disabled = false
 	attempts = 0
 	is_running = false
-	pipeline_title.text = "LÍNEA DE EJECUCIÓN (Límite: %d):" % max_instructions
+	pipeline_title.text = "RUTINA (Máx: %d):" % max_instructions
 	
 	if EventBus.has_signal("minigame_started"):
 		EventBus.minigame_started.emit(minigame_id, current_difficulty)
@@ -264,7 +264,7 @@ func update_pipeline_ui() -> void:
 	
 	for i in range(instructions.size()):
 		var slot := PanelContainer.new()
-		slot.custom_minimum_size = Vector2(45, 45)
+		slot.custom_minimum_size = Vector2(40, 40)
 		var lbl := Label.new()
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

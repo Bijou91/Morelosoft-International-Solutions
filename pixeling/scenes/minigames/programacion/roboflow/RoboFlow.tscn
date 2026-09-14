@@ -167,49 +167,47 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 6
 
-[node name="Palette" type="HBoxContainer" parent="ScreenGame/Margin/VBox"]
+[node name="ActionGrid" type="GridContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 8
+columns = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
 
-[node name="BtnFwd" type="Button" parent="ScreenGame/Margin/VBox/Palette"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnFwd" type="Button" parent="ScreenGame/Margin/VBox/ActionGrid"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "AVANZAR"
 
-[node name="BtnLeft" type="Button" parent="ScreenGame/Margin/VBox/Palette"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnDel" type="Button" parent="ScreenGame/Margin/VBox/ActionGrid"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "GIRAR IZQ"
+text = "BORRAR"
 
-[node name="BtnRight" type="Button" parent="ScreenGame/Margin/VBox/Palette"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnLeft" type="Button" parent="ScreenGame/Margin/VBox/ActionGrid"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "GIRAR DER"
+text = "GIRO IZQ"
 
-[node name="Controls" type="HBoxContainer" parent="ScreenGame/Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="BtnDel" type="Button" parent="ScreenGame/Margin/VBox/Controls"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnRight" type="Button" parent="ScreenGame/Margin/VBox/ActionGrid"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Borrar Último"
+text = "GIRO DER"
 
-[node name="BtnClear" type="Button" parent="ScreenGame/Margin/VBox/Controls"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnClear" type="Button" parent="ScreenGame/Margin/VBox/ActionGrid"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "REINICIAR"
 
-[node name="BtnRun" type="Button" parent="ScreenGame/Margin/VBox/Controls"]
-custom_minimum_size = Vector2(0, 45)
+[node name="BtnRun" type="Button" parent="ScreenGame/Margin/VBox/ActionGrid"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "EJECUTAR FLUJO"
+text = "EJECUTAR"
 
 [node name="ScreenVictory" type="Control" parent="."]
 visible = false
