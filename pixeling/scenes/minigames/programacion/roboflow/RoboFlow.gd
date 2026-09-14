@@ -7,7 +7,7 @@ extends MiniGameBase
 # Configuración de mapa según dificultad
 var grid_cols: int = 5
 var grid_rows: int = 6
-var max_instructions: int = 9
+var max_instructions: int = 15
 var max_lives: int = 3
 var current_lives: int = 3
 var start_pos := Vector2i(2, 0)
@@ -34,17 +34,18 @@ var selected_diff: String = "NORMAL"
 @onready var btn_iniciar = $ScreenStart/VBox/BtnIniciar
 
 # Nodos - Pantalla de Juego
-@onready var status_label: Label = $ScreenGame/VBox/StatusBanner/Label
-@onready var board_grid: GridContainer = $ScreenGame/VBox/BoardPanel/GridBoard
-@onready var pipeline_container: HBoxContainer = $ScreenGame/VBox/PipelineSection/Scroll/PipelineSlots
-@onready var btn_fwd: Button = $ScreenGame/VBox/Palette/BtnFwd
-@onready var btn_left: Button = $ScreenGame/VBox/Palette/BtnLeft
-@onready var btn_right: Button = $ScreenGame/VBox/Palette/BtnRight
-@onready var btn_del: Button = $ScreenGame/VBox/Controls/BtnDel
-@onready var btn_clear: Button = $ScreenGame/VBox/Controls/BtnClear
-@onready var btn_run: Button = $ScreenGame/VBox/Controls/BtnRun
-@onready var btn_back: Button = $ScreenGame/TopHUD/BtnBack
-@onready var lives_label: Label = $ScreenGame/TopHUD/LivesLabel
+@onready var status_label: Label = $ScreenGame/Margin/VBox/StatusBanner/Label
+@onready var board_grid: GridContainer = $ScreenGame/Margin/VBox/BoardPanel/GridBoard
+@onready var pipeline_container: HBoxContainer = $ScreenGame/Margin/VBox/PipelineSection/Scroll/PipelineSlots
+@onready var pipeline_title: Label = $ScreenGame/Margin/VBox/PipelineSection/Label
+@onready var btn_fwd: Button = $ScreenGame/Margin/VBox/Palette/BtnFwd
+@onready var btn_left: Button = $ScreenGame/Margin/VBox/Palette/BtnLeft
+@onready var btn_right: Button = $ScreenGame/Margin/VBox/Palette/BtnRight
+@onready var btn_del: Button = $ScreenGame/Margin/VBox/Controls/BtnDel
+@onready var btn_clear: Button = $ScreenGame/Margin/VBox/Controls/BtnClear
+@onready var btn_run: Button = $ScreenGame/Margin/VBox/Controls/BtnRun
+@onready var btn_back: Button = $ScreenGame/Margin/VBox/TopHUD/BtnBack
+@onready var lives_label: Label = $ScreenGame/Margin/VBox/TopHUD/LivesLabel
 
 # Nodos - Pantallas de Fin
 @onready var lbl_victory_stats = $ScreenVictory/VBox/LblStats
@@ -111,22 +112,20 @@ func setup_level(diff: String) -> void:
 		"FACIL":
 			grid_cols = 5
 			grid_rows = 5
-			max_instructions = 8
+			max_instructions = 15
 			max_lives = 3
 			current_lives = 3
 			start_pos = Vector2i(0, 0)
 			goal_pos = Vector2i(4, 4)
-			# Bloque central para forzar rodear por arriba o por abajo
 			obstacles = [Vector2i(1, 1), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(3, 3)]
 		"NORMAL":
 			grid_cols = 6
 			grid_rows = 6
-			max_instructions = 12
+			max_instructions = 25
 			max_lives = 3
 			current_lives = 3
 			start_pos = Vector2i(0, 0)
 			goal_pos = Vector2i(5, 5)
-			# Laberinto en forma de 'S'
 			obstacles = [
 				Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3),
 				Vector2i(3, 2), Vector2i(3, 3), Vector2i(3, 4), Vector2i(3, 5),
@@ -135,12 +134,11 @@ func setup_level(diff: String) -> void:
 		"INGENIERO":
 			grid_cols = 7
 			grid_rows = 7
-			max_instructions = 16
+			max_instructions = 45
 			max_lives = 1
 			current_lives = 1
 			start_pos = Vector2i(0, 0)
 			goal_pos = Vector2i(6, 6)
-			# Múltiples rutas estrechas con trampas
 			obstacles = [
 				Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2), Vector2i(4, 0),
 				Vector2i(4, 1), Vector2i(4, 2), Vector2i(4, 3), Vector2i(2, 4),
@@ -156,12 +154,12 @@ func setup_level(diff: String) -> void:
 	btn_run.disabled = false
 	attempts = 0
 	is_running = false
+	pipeline_title.text = "LÍNEA DE EJECUCIÓN (Límite: %d):" % max_instructions
 	
-	# Notificar inicio formal del minijuego al EventBus global
 	if EventBus.has_signal("minigame_started"):
 		EventBus.minigame_started.emit(minigame_id, current_difficulty)
 		
-	set_status("Dificultad %s iniciada (%d vidas). Diseña tu algoritmo." % [current_difficulty, current_lives])
+	set_status("Dificultad %s iniciada. Construye tu algoritmo." % current_difficulty)
 
 func update_lives_display() -> void:
 	if lives_label:
@@ -180,7 +178,9 @@ func build_board_ui() -> void:
 	for y in range(grid_rows):
 		for x in range(grid_cols):
 			var cell := PanelContainer.new()
-			cell.custom_minimum_size = Vector2(48, 44)
+			cell.custom_minimum_size = Vector2(40, 40)
+			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			
 			var lbl := Label.new()
 			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -188,10 +188,10 @@ func build_board_ui() -> void:
 
 			var pos := Vector2i(x, y)
 			if pos in obstacles:
-				lbl.text = "[#]"
+				lbl.text = "[X]"
 				cell.modulate = Color(0.8, 0.3, 0.3)
 			elif pos == goal_pos:
-				lbl.text = "[META]"
+				lbl.text = "META"
 				cell.modulate = Color(0.3, 0.9, 0.4)
 			else:
 				lbl.text = "·"
@@ -203,18 +203,18 @@ func build_board_ui() -> void:
 	update_robot_display()
 
 func update_robot_display() -> void:
-	var arrows := { "N": "[Norte]", "E": "[Este]", "S": "[Sur]", "O": "[Oeste]" }
+	var arrows := { "N": "^", "E": ">", "S": "v", "O": "<" }
 	for cell in board_grid.get_children():
 		var pos: Vector2i = cell.get_meta("grid_pos", Vector2i(-1, -1))
 		var lbl: Label = cell.get_node("CellLabel")
 		if pos == current_pos:
-			lbl.text = "ROBOT " + arrows.get(current_dir, "[Sur]")
+			lbl.text = "R" + arrows.get(current_dir, "v")
 			cell.modulate = Color(0.2, 0.8, 1.0)
 		elif pos in obstacles:
-			lbl.text = "[#]"
+			lbl.text = "[X]"
 			cell.modulate = Color(0.8, 0.3, 0.3)
 		elif pos == goal_pos:
-			lbl.text = "[META]"
+			lbl.text = "META"
 			cell.modulate = Color(0.3, 0.9, 0.4)
 		else:
 			lbl.text = "·"
@@ -226,7 +226,7 @@ func add_instruction(cmd: String) -> void:
 	if instructions.size() >= max_instructions:
 		if AudioManager.has_method("play_error"):
 			AudioManager.play_error()
-		set_status("Límite de %d instrucciones alcanzado" % max_instructions)
+		set_status("Límite de %d instrucciones alcanzado." % max_instructions)
 		return
 
 	if AudioManager.has_method("play_click"):
@@ -260,23 +260,24 @@ func update_pipeline_ui() -> void:
 	for child in pipeline_container.get_children():
 		child.queue_free()
 
-	var labels := { "FORWARD": "^ AVAN", "TURN_LEFT": "↰ IZQ", "TURN_RIGHT": "↱ DER" }
-	for i in range(max_instructions):
+	var labels := { "FORWARD": "AVAN", "TURN_LEFT": "IZQ", "TURN_RIGHT": "DER" }
+	
+	for i in range(instructions.size()):
 		var slot := PanelContainer.new()
-		slot.custom_minimum_size = Vector2(50, 42)
+		slot.custom_minimum_size = Vector2(45, 45)
 		var lbl := Label.new()
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-
-		if i < instructions.size():
-			lbl.text = "%d\n%s" % [i + 1, labels.get(instructions[i], "CMD")]
-			slot.modulate = Color(0.3, 0.9, 1.0)
-		else:
-			lbl.text = "%d\n-" % (i + 1)
-			slot.modulate = Color(0.4, 0.4, 0.5)
-
+		lbl.text = "%d\n%s" % [i + 1, labels.get(instructions[i], "")]
+		slot.modulate = Color(0.3, 0.9, 1.0)
 		slot.add_child(lbl)
 		pipeline_container.add_child(slot)
+		
+	# Mover el scroll al final
+	await get_tree().process_frame
+	var scroll = pipeline_container.get_parent() as ScrollContainer
+	if scroll:
+		scroll.scroll_horizontal = int(scroll.get_h_scroll_bar().max_value)
 
 func deduct_life(reason: String) -> void:
 	current_lives = maxi(0, current_lives - 1)
@@ -314,7 +315,7 @@ func run_program() -> void:
 	if instructions.is_empty():
 		if AudioManager.has_method("play_error"):
 			AudioManager.play_error()
-		set_status("¡El pipeline está vacío! Agrega instrucciones")
+		set_status("¡El flujo está vacío! Agrega instrucciones.")
 		return
 
 	is_running = true
@@ -367,7 +368,7 @@ func run_program() -> void:
 				AudioManager.play_rotate()
 
 		update_robot_display()
-		await get_tree().create_timer(0.45).timeout
+		await get_tree().create_timer(0.40).timeout
 
 		if current_pos == goal_pos:
 			handle_victory()
@@ -383,7 +384,13 @@ func handle_victory() -> void:
 		AudioManager.play_success()
 
 	var stars: int = 1
-	if instructions.size() <= (max_instructions - 2) and current_lives == max_lives:
+	var perfect_steps = 0
+	match current_difficulty:
+		"FACIL": perfect_steps = 10
+		"NORMAL": perfect_steps = 18
+		"INGENIERO": perfect_steps = 28
+		
+	if instructions.size() <= perfect_steps and current_lives == max_lives:
 		stars = 3
 	elif instructions.size() <= max_instructions:
 		stars = 2
@@ -400,7 +407,6 @@ func handle_victory() -> void:
 	
 	lbl_victory_stats.text = "Pasos Tomados: %d\nPuntuación Final: %d\nEstrellas: %d\nVidas Restantes: %d" % [steps_taken, final_score, stars, current_lives]
 	
-	# Finish game registra el resultado y emite EventBus.points_updated a traves de StateManager
 	finish_game(true, final_score, stars, "Flujo completado exitosamente")
 	_show_screen(screen_victory)
 

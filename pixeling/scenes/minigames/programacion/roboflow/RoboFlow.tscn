@@ -18,7 +18,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0627451, 0.0705882, 0.109804, 1)
+color = Color(0.08, 0.09, 0.13, 1.0)
 
 [node name="ScreenStart" type="Control" parent="."]
 layout_mode = 1
@@ -58,16 +58,19 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="BtnDiffFacil" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Fácil"
 
 [node name="BtnDiffNormal" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Normal"
 
 [node name="BtnDiffIng" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Ingeniero"
@@ -86,122 +89,127 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TopHUD" type="HBoxContainer" parent="ScreenGame"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = 42.0
-grow_horizontal = 2
-
-[node name="BtnBack" type="Button" parent="ScreenGame/TopHUD"]
-layout_mode = 2
-text = "Volver"
-
-[node name="Spacer" type="Control" parent="ScreenGame/TopHUD"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Title" type="Label" parent="ScreenGame/TopHUD"]
-layout_mode = 2
-text = "RoboFlow • Control de Flujos"
-
-[node name="Spacer2" type="Control" parent="ScreenGame/TopHUD"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="LivesLabel" type="Label" parent="ScreenGame/TopHUD"]
-layout_mode = 2
-text = "Vidas: 3 / 3"
-
-[node name="VBox" type="VBoxContainer" parent="ScreenGame"]
+[node name="Margin" type="MarginContainer" parent="ScreenGame"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 50.0
-offset_right = -12.0
-offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 8
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
-[node name="StatusBanner" type="PanelContainer" parent="ScreenGame/VBox"]
-custom_minimum_size = Vector2(0, 36)
+[node name="VBox" type="VBoxContainer" parent="ScreenGame/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TopHUD" type="HBoxContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ScreenGame/VBox/StatusBanner"]
+[node name="BtnBack" type="Button" parent="ScreenGame/Margin/VBox/TopHUD"]
+custom_minimum_size = Vector2(100, 32)
+layout_mode = 2
+text = "Volver"
+
+[node name="Spacer" type="Control" parent="ScreenGame/Margin/VBox/TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="ScreenGame/Margin/VBox/TopHUD"]
+layout_mode = 2
+text = "RoboFlow • Control de Flujos"
+
+[node name="Spacer2" type="Control" parent="ScreenGame/Margin/VBox/TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LivesLabel" type="Label" parent="ScreenGame/Margin/VBox/TopHUD"]
+layout_mode = 2
+text = "Vidas: 3 / 3"
+
+[node name="StatusBanner" type="PanelContainer" parent="ScreenGame/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScreenGame/Margin/VBox/StatusBanner"]
 layout_mode = 2
 text = "Estado del programa"
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 2
 
-[node name="BoardPanel" type="CenterContainer" parent="ScreenGame/VBox"]
-custom_minimum_size = Vector2(0, 270)
+[node name="BoardPanel" type="CenterContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 
-[node name="GridBoard" type="GridContainer" parent="ScreenGame/VBox/BoardPanel"]
+[node name="GridBoard" type="GridContainer" parent="ScreenGame/Margin/VBox/BoardPanel"]
 layout_mode = 2
-theme_override_constants/h_separation = 3
-theme_override_constants/v_separation = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
 columns = 5
 
-[node name="PipelineSection" type="VBoxContainer" parent="ScreenGame/VBox"]
+[node name="PipelineSection" type="VBoxContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ScreenGame/VBox/PipelineSection"]
+[node name="Label" type="Label" parent="ScreenGame/Margin/VBox/PipelineSection"]
 layout_mode = 2
-text = "LÍNEA DE EJECUCIÓN:"
+text = "LÍNEA DE EJECUCIÓN (Límite: --):"
 
-[node name="Scroll" type="ScrollContainer" parent="ScreenGame/VBox/PipelineSection"]
-custom_minimum_size = Vector2(0, 50)
+[node name="Scroll" type="ScrollContainer" parent="ScreenGame/Margin/VBox/PipelineSection"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 vertical_scroll_mode = 0
 
-[node name="PipelineSlots" type="HBoxContainer" parent="ScreenGame/VBox/PipelineSection/Scroll"]
+[node name="PipelineSlots" type="HBoxContainer" parent="ScreenGame/Margin/VBox/PipelineSection/Scroll"]
 layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="Palette" type="HBoxContainer" parent="ScreenGame/VBox"]
-layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 6
 
-[node name="BtnFwd" type="Button" parent="ScreenGame/VBox/Palette"]
+[node name="Palette" type="HBoxContainer" parent="ScreenGame/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnFwd" type="Button" parent="ScreenGame/Margin/VBox/Palette"]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "AVANZAR"
 
-[node name="BtnLeft" type="Button" parent="ScreenGame/VBox/Palette"]
+[node name="BtnLeft" type="Button" parent="ScreenGame/Margin/VBox/Palette"]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "↰ GIRAR IZQ"
+text = "GIRAR IZQ"
 
-[node name="BtnRight" type="Button" parent="ScreenGame/VBox/Palette"]
+[node name="BtnRight" type="Button" parent="ScreenGame/Margin/VBox/Palette"]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "↱ GIRAR DER"
+text = "GIRAR DER"
 
-[node name="Controls" type="HBoxContainer" parent="ScreenGame/VBox"]
+[node name="Controls" type="HBoxContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
-[node name="BtnDel" type="Button" parent="ScreenGame/VBox/Controls"]
+[node name="BtnDel" type="Button" parent="ScreenGame/Margin/VBox/Controls"]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
-text = " Borrar"
+text = "Borrar Último"
 
-[node name="BtnClear" type="Button" parent="ScreenGame/VBox/Controls"]
+[node name="BtnClear" type="Button" parent="ScreenGame/Margin/VBox/Controls"]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "REINICIAR"
 
-[node name="BtnRun" type="Button" parent="ScreenGame/VBox/Controls"]
+[node name="BtnRun" type="Button" parent="ScreenGame/Margin/VBox/Controls"]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "EJECUTAR"
+text = "EJECUTAR FLUJO"
 
 [node name="ScreenVictory" type="Control" parent="."]
 visible = false
@@ -278,9 +286,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -150.0
+offset_left = -200.0
 offset_top = -100.0
-offset_right = 150.0
+offset_right = 200.0
 offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -295,11 +303,12 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Motivo:"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="BtnReiniciar" type="Button" parent="ScreenGameOver/VBox"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-text = "Reiniciar Nivel"
+text = "Reintentar Nivel"
 
 [node name="BtnVolver" type="Button" parent="ScreenGameOver/VBox"]
 custom_minimum_size = Vector2(0, 50)
