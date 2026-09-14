@@ -41,6 +41,7 @@ layout_mode = 2
 
 [node name="LabelUser" type="Label" parent="VBox/TopHUD/UserBadge" unique_id=499129973]
 layout_mode = 2
+theme_override_font_sizes/font_size = 11
 text = "Novato_UAZ"
 
 [node name="Spacer" type="Control" parent="VBox/TopHUD" unique_id=492539689]
@@ -52,6 +53,7 @@ layout_mode = 2
 
 [node name="LabelPoints" type="Label" parent="VBox/TopHUD/PointsBadge" unique_id=210928863]
 layout_mode = 2
+theme_override_font_sizes/font_size = 11
 text = "Puntos: 0"
 
 [node name="Banner" type="VBoxContainer" parent="VBox" unique_id=1658743933]
@@ -59,11 +61,13 @@ layout_mode = 2
 
 [node name="CampusSub" type="Label" parent="VBox/Banner" unique_id=1975084148]
 layout_mode = 2
+theme_override_font_sizes/font_size = 10
 text = "CAMPUS VIRTUAL UAZ"
 horizontal_alignment = 1
 
 [node name="CampusTitle" type="Label" parent="VBox/Banner" unique_id=1880610483]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "EDIFICIO ING. SOFTWARE"
 horizontal_alignment = 1
 
@@ -77,12 +81,14 @@ alignment = 1
 
 [node name="DialogueBubble" type="Label" parent="VBox/VisualNovelSection/PanelNPC" unique_id=1646329074]
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "¡Bienvenido novato! Selecciona un salón para comenzar."
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="BtnTalkNPC" type="Button" parent="VBox/VisualNovelSection/PanelNPC" unique_id=1468687269]
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Hablar con la comunidad"
 
 [node name="DoorsContainer" type="VBoxContainer" parent="VBox" unique_id=1492030576]
@@ -93,19 +99,23 @@ theme_override_constants/separation = 8
 [node name="BtnAulaProg" type="Button" parent="VBox/DoorsContainer" unique_id=393914066]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Aula 101: Introduccion a la Programacion"
 
 [node name="BtnAulaSoft" type="Button" parent="VBox/DoorsContainer" unique_id=1729043212]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Aula 102: Fundamentos de Ing. de Software"
 
 [node name="BtnAulaLogic" type="Button" parent="VBox/DoorsContainer" unique_id=1010522020]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Aula 103: Logica y Algoritmos"
 
 [node name="BtnAulaLinux" type="Button" parent="VBox/DoorsContainer" unique_id=1156422126]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Aula 104: Sistemas Operativos y Linux"

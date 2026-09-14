@@ -16,7 +16,8 @@ extends Control
 var tips: Array[String] = [
 	"¡Hola novato! En RoboFlow debes orientar al robot antes de avanzar.",
 	"La metodología TSP exige verificar casos de uso con listas de chequeo.",
-	"Completa el algoritmo con la menor cantidad de comandos para obtener maxima puntuacion."
+	"Completa el algoritmo con la menor cantidad de comandos para obtener maxima puntuacion.",
+	"En el Aula 102 aprenderás a clasificar requerimientos en la Lluvia de Requerimientos."
 ]
 
 func _ready() -> void:
@@ -25,7 +26,7 @@ func _ready() -> void:
 
 	btn_npc.pressed.connect(_on_npc_talk)
 	btn_door_prog.pressed.connect(func(): _open_classroom("Aula 101: Introducción a la Programación", "res://scenes/classroom/AulaProgramacion.tscn"))
-	btn_door_soft.pressed.connect(func(): _open_classroom("Aula 102: Fundamentos de Ing. de Software", ""))
+	btn_door_soft.pressed.connect(func(): _open_classroom("Aula 102: Fundamentos de Ing. de Software", "res://scenes/classroom/AulaIngSoftware.tscn"))
 	btn_door_logic.pressed.connect(func(): _open_classroom("Aula 103: Lógica Computacional y Algoritmos", "res://scenes/classroom/AulaLogica.tscn"))
 	btn_door_linux.pressed.connect(func(): _open_classroom("Aula 104: Sistemas Operativos y Linux", "res://scenes/classroom/SistemaOperativoLinux.tscn"))
 

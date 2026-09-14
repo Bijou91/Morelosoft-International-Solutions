@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://aulasolinux104uaz"]
+[gd_scene format=3 uid="uid://7p0vgbs1frn2"]
 
 [ext_resource type="PackedScene" uid="uid://clsbaseuaz01" path="res://scenes/classroom/ClassroomBase.tscn" id="1_cbase"]
 

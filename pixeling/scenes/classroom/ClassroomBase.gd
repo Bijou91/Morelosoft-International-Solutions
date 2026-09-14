@@ -9,7 +9,8 @@ class_name ClassroomBase extends Control
 @export var teacher_tip: String = "Revisa los conceptos clave antes de ingresar al minijuego didáctico."
 @export var minigames_list: Array[Dictionary] = []
 
-@onready var lbl_title: Label = $VBox/TopHUD/Title
+@onready var lbl_title: Label = $VBox/Title
+@onready var lbl_code: Label = $VBox/TopHUD/SubjectCode
 @onready var lbl_tip: Label = $VBox/Blackboard/Margin/VBox/LabelTip
 @onready var minigames_container: VBoxContainer = $VBox/MinigamesSection/Scroll/MinigamesList
 @onready var btn_back: Button = $VBox/TopHUD/BtnBack
@@ -17,8 +18,10 @@ class_name ClassroomBase extends Control
 func _ready() -> void:
 	if lbl_title:
 		lbl_title.text = classroom_name
+	if lbl_code:
+		lbl_code.text = subject_code
 	if lbl_tip:
-		lbl_tip.text = " %s:\n\"%s\"" % [teacher_name, teacher_tip]
+		lbl_tip.text = "%s:\n\"%s\"" % [teacher_name, teacher_tip]
 	if btn_back:
 		btn_back.pressed.connect(_on_back_to_lobby)
 	
@@ -39,9 +42,10 @@ func _populate_minigames() -> void:
 		
 		var saved_data: Dictionary = StateManager.get_minigame_data(cu_id)
 		var stars_count: int = saved_data.get("stars", 0)
-		var stars_str: String = "%d/3 estrellas" % stars_count
-		btn.text = "%s  (%d/3 estrellas)  [Record: %d pts]" % [title, stars_count, saved_data.get("score", 0)]
-		btn.custom_minimum_size = Vector2(0, 48)
+		var stars_str: String = "⭐".repeat(stars_count) + "☆".repeat(3 - stars_count)
+		btn.text = "%s\n%s (%d/3)  •  Récord: %d pts" % [title, stars_str, stars_count, saved_data.get("score", 0)]
+		btn.custom_minimum_size = Vector2(0, 54)
+		btn.add_theme_font_size_override("font_size", 12)
 		btn.pressed.connect(func(): _launch_minigame(scene_path))
 		minigames_container.add_child(btn)
 
