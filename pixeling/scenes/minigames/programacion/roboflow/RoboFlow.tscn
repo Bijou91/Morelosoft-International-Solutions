@@ -118,9 +118,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="BtnPause" type="Button" parent="ScreenGame/Margin/VBox/TopHUD"]
-custom_minimum_size = Vector2(70, 32)
+custom_minimum_size = Vector2(80, 32)
 layout_mode = 2
-text = "Pausa"
+text = "[ II PAUSA ]"
 
 [node name="Spacer2" type="Control" parent="ScreenGame/Margin/VBox/TopHUD"]
 layout_mode = 2
