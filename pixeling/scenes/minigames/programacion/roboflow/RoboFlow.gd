@@ -24,6 +24,7 @@ var selected_diff: String = "NORMAL"
 # Referencias a Pantallas Principales
 @onready var screen_start = $ScreenStart
 @onready var screen_game = $ScreenGame
+@onready var screen_pause = $ScreenPause
 @onready var screen_victory = $ScreenVictory
 @onready var screen_game_over = $ScreenGameOver
 
@@ -45,19 +46,23 @@ var selected_diff: String = "NORMAL"
 @onready var btn_clear: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnClear
 @onready var btn_run: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnRun
 @onready var btn_back: Button = $ScreenGame/Margin/VBox/TopHUD/BtnBack
+@onready var btn_pause: Button = $ScreenGame/Margin/VBox/TopHUD/BtnPause
 @onready var lives_label: Label = $ScreenGame/Margin/VBox/TopHUD/LivesLabel
 
-# Nodos - Pantallas de Fin
+# Nodos - Pantallas de Fin y Pausa
 @onready var lbl_victory_stats = $ScreenVictory/VBox/LblStats
 @onready var btn_victory_back = $ScreenVictory/VBox/BtnVolver
 @onready var lbl_gameover_reason = $ScreenGameOver/VBox/LblReason
 @onready var btn_gameover_restart = $ScreenGameOver/VBox/BtnReiniciar
 @onready var btn_gameover_back = $ScreenGameOver/VBox/BtnVolver
+@onready var btn_pause_resume = $ScreenPause/VBox/BtnResume
+@onready var btn_pause_restart = $ScreenPause/VBox/BtnRestart
+@onready var btn_pause_back = $ScreenPause/VBox/BtnBack
 
 func _ready() -> void:
 	super._ready()
 	minigame_id = "roboflow"
-	minigame_title = "RoboFlow: Control de Flujos"
+	minigame_title = "RoboFlow"
 	subject_name = "Introducción a la Programación"
 
 	# Conexiones: Pantalla de Inicio
@@ -74,11 +79,15 @@ func _ready() -> void:
 	btn_clear.pressed.connect(reiniciar_nivel)
 	btn_run.pressed.connect(run_program)
 	btn_back.pressed.connect(_on_back_pressed)
+	btn_pause.pressed.connect(_on_pause_pressed)
 
-	# Conexiones: Pantallas Finales
+	# Conexiones: Pantallas Finales y Pausa
 	btn_victory_back.pressed.connect(_on_back_pressed)
 	btn_gameover_restart.pressed.connect(_on_iniciar_pressed)
 	btn_gameover_back.pressed.connect(_on_back_pressed)
+	btn_pause_resume.pressed.connect(_on_resume_pressed)
+	btn_pause_restart.pressed.connect(func(): reiniciar_nivel(); _show_screen(screen_game))
+	btn_pause_back.pressed.connect(_on_back_pressed)
 
 	_show_screen(screen_start)
 	select_difficulty_ui("NORMAL")
@@ -88,6 +97,7 @@ func _show_screen(screen: Control) -> void:
 	screen_game.visible = false
 	screen_victory.visible = false
 	screen_game_over.visible = false
+	screen_pause.visible = false
 	screen.visible = true
 
 func select_difficulty_ui(diff: String) -> void:
@@ -159,11 +169,11 @@ func setup_level(diff: String) -> void:
 	if EventBus.has_signal("minigame_started"):
 		EventBus.minigame_started.emit(minigame_id, current_difficulty)
 		
-	set_status("Dificultad %s iniciada. Construye tu algoritmo." % current_difficulty)
+	set_status("Dificultad %s iniciada. Diseña el flujo." % current_difficulty)
 
 func update_lives_display() -> void:
 	if lives_label:
-		lives_label.text = "Vidas: %d / %d" % [current_lives, max_lives]
+		lives_label.text = "Vidas: %d" % current_lives
 
 func reset_robot() -> void:
 	current_pos = start_pos
@@ -226,7 +236,7 @@ func add_instruction(cmd: String) -> void:
 	if instructions.size() >= max_instructions:
 		if AudioManager.has_method("play_error"):
 			AudioManager.play_error()
-		set_status("Límite de %d instrucciones alcanzado." % max_instructions)
+		set_status("Límite de %d instrucciones." % max_instructions)
 		return
 
 	if AudioManager.has_method("play_click"):
@@ -254,7 +264,7 @@ func reiniciar_nivel() -> void:
 	update_pipeline_ui()
 	update_lives_display()
 	btn_run.disabled = false
-	set_status("Nivel reiniciado. Vidas restauradas a %d." % max_lives)
+	set_status("Nivel reiniciado. Vidas: %d." % max_lives)
 
 func update_pipeline_ui() -> void:
 	for child in pipeline_container.get_children():
@@ -273,7 +283,6 @@ func update_pipeline_ui() -> void:
 		slot.add_child(lbl)
 		pipeline_container.add_child(slot)
 		
-	# Mover el scroll al final
 	await get_tree().process_frame
 	var scroll = pipeline_container.get_parent() as ScrollContainer
 	if scroll:
@@ -292,7 +301,7 @@ func deduct_life(reason: String) -> void:
 	if current_lives <= 0:
 		handle_game_over(reason)
 	else:
-		set_status("FALLO: %s (-1 vida). Restantes: %d." % [reason, current_lives])
+		set_status("FALLO: %s (-1 vida)." % reason)
 		reset_robot()
 		update_robot_display()
 
@@ -315,14 +324,14 @@ func run_program() -> void:
 	if instructions.is_empty():
 		if AudioManager.has_method("play_error"):
 			AudioManager.play_error()
-		set_status("¡El flujo está vacío! Agrega instrucciones.")
+		set_status("El flujo está vacío.")
 		return
 
 	is_running = true
 	attempts += 1
 	reset_robot()
 	update_robot_display()
-	set_status("Compilando y ejecutando flujo...")
+	set_status("Compilando y ejecutando...")
 
 	var dirs := ["N", "E", "S", "O"]
 	var deltas := {
@@ -343,12 +352,12 @@ func run_program() -> void:
 
 			if next_pos.x < 0 or next_pos.x >= grid_cols or next_pos.y < 0 or next_pos.y >= grid_rows:
 				is_running = false
-				deduct_life("Fuera de los límites del tablero")
+				deduct_life("Fuera del tablero")
 				return
 
 			if next_pos in obstacles:
 				is_running = false
-				deduct_life("Colisión contra obstáculo")
+				deduct_life("Choque en obstáculo")
 				return
 
 			current_pos = next_pos
@@ -376,7 +385,7 @@ func run_program() -> void:
 
 	is_running = false
 	if current_pos != goal_pos:
-		deduct_life("Fin de instrucciones sin alcanzar la meta")
+		deduct_life("Fin sin alcanzar la meta")
 
 func handle_victory() -> void:
 	is_running = false
@@ -405,7 +414,7 @@ func handle_victory() -> void:
 	var final_score: int = maxi(50, base_score * stars + lives_bonus - (attempts - 1) * 20)
 	var steps_taken: int = instructions.size()
 	
-	lbl_victory_stats.text = "Pasos Tomados: %d\nPuntuación Final: %d\nEstrellas: %d\nVidas Restantes: %d" % [steps_taken, final_score, stars, current_lives]
+	lbl_victory_stats.text = "Pasos Tomados: %d\nPuntos: %d\nEstrellas: %d\nVidas Restantes: %d" % [steps_taken, final_score, stars, current_lives]
 	
 	finish_game(true, final_score, stars, "Flujo completado exitosamente")
 	_show_screen(screen_victory)
@@ -413,6 +422,18 @@ func handle_victory() -> void:
 func set_status(msg: String) -> void:
 	if status_label:
 		status_label.text = msg
+
+func _on_pause_pressed() -> void:
+	if is_running:
+		return
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
+	_show_screen(screen_pause)
+
+func _on_resume_pressed() -> void:
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
+	_show_screen(screen_game)
 
 func _on_back_pressed() -> void:
 	if AudioManager.has_method("play_click"):

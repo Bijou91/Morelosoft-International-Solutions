@@ -45,7 +45,7 @@ theme_override_constants/separation = 20
 
 [node name="Title" type="Label" parent="ScreenStart/VBox"]
 layout_mode = 2
-text = "RoboFlow: Control de Flujos"
+text = "RoboFlow"
 horizontal_alignment = 1
 
 [node name="DiffLabel" type="Label" parent="ScreenStart/VBox"]
@@ -109,7 +109,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 
 [node name="BtnBack" type="Button" parent="ScreenGame/Margin/VBox/TopHUD"]
-custom_minimum_size = Vector2(100, 32)
+custom_minimum_size = Vector2(70, 32)
 layout_mode = 2
 text = "Volver"
 
@@ -117,9 +117,10 @@ text = "Volver"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="ScreenGame/Margin/VBox/TopHUD"]
+[node name="BtnPause" type="Button" parent="ScreenGame/Margin/VBox/TopHUD"]
+custom_minimum_size = Vector2(70, 32)
 layout_mode = 2
-text = "RoboFlow • Control de Flujos"
+text = "Pausa"
 
 [node name="Spacer2" type="Control" parent="ScreenGame/Margin/VBox/TopHUD"]
 layout_mode = 2
@@ -127,7 +128,7 @@ size_flags_horizontal = 3
 
 [node name="LivesLabel" type="Label" parent="ScreenGame/Margin/VBox/TopHUD"]
 layout_mode = 2
-text = "Vidas: 3 / 3"
+text = "Vidas: 3"
 
 [node name="StatusBanner" type="PanelContainer" parent="ScreenGame/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
@@ -138,7 +139,7 @@ layout_mode = 2
 text = "Estado del programa"
 horizontal_alignment = 1
 vertical_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="BoardPanel" type="CenterContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
@@ -155,7 +156,8 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="ScreenGame/Margin/VBox/PipelineSection"]
 layout_mode = 2
-text = "LÍNEA DE EJECUCIÓN (Límite: --):"
+text = "RUTINA (Límite: --):"
+autowrap_mode = 3
 
 [node name="Scroll" type="ScrollContainer" parent="ScreenGame/Margin/VBox/PipelineSection"]
 custom_minimum_size = Vector2(0, 64)
@@ -208,6 +210,59 @@ custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "EJECUTAR"
+
+[node name="ScreenPause" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ScreenPause"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="VBox" type="VBoxContainer" parent="ScreenPause"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="ScreenPause/VBox"]
+layout_mode = 2
+text = "PAUSA"
+horizontal_alignment = 1
+
+[node name="BtnResume" type="Button" parent="ScreenPause/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Reanudar"
+
+[node name="BtnRestart" type="Button" parent="ScreenPause/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Reiniciar Nivel"
+
+[node name="BtnBack" type="Button" parent="ScreenPause/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Volver al Salón"
 
 [node name="ScreenVictory" type="Control" parent="."]
 visible = false
@@ -301,7 +356,7 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Motivo:"
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="BtnReiniciar" type="Button" parent="ScreenGameOver/VBox"]
 custom_minimum_size = Vector2(0, 50)
