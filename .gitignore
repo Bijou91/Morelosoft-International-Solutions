@@ -3,7 +3,10 @@ Morelosoft International Solutions-20260908T224219Z-1-001/
 *.docx
 *.pdf
 *.puml
+
+# Excluir imágenes de docs en raíz pero permitir assets del videojuego
 *.png
+!pixeling/**
 
 # Godot Engine 4.x
 .godot/
