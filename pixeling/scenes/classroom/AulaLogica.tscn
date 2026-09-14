@@ -5,10 +5,10 @@
 [node name="AulaLogica" unique_id=1211487495 instance=ExtResource("1_cbase")]
 classroom_name = "Aula 103: Lógica Computacional y Algoritmos"
 subject_code = "LOG-01"
-teacher_name = "Ing. Omar Martínez (Docente UAZ)"
+teacher_name = "Ing. Placeholder (Docente UAZ)"
 teacher_tip = "La lógica es la base de todo algoritmo. Piensa antes de responder: cada segundo cuenta en el Derby de Bateo."
 minigames_list = Array[Dictionary]([{
 "id": "derby_de_bateo",
-"name": "Derby de Bateo (Lógica y Algoritmos)",
+"name": "Derby de Bateo (Proposiciones Lógicas)",
 "scene": "res://scenes/minigames/logica/derby_de_bateo/DerbyDeBateo.tscn"
 }])
