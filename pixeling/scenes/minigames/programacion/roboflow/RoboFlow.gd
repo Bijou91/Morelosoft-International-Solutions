@@ -45,7 +45,6 @@ var selected_diff: String = "NORMAL"
 @onready var btn_del: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnDel
 @onready var btn_clear: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnClear
 @onready var btn_run: Button = $ScreenGame/Margin/VBox/ActionGrid/BtnRun
-@onready var btn_back: Button = $ScreenGame/Margin/VBox/TopHUD/BtnBack
 @onready var btn_pause: Button = $ScreenGame/Margin/VBox/TopHUD/BtnPause
 @onready var lives_label: Label = $ScreenGame/Margin/VBox/TopHUD/LivesLabel
 
@@ -78,7 +77,6 @@ func _ready() -> void:
 	btn_del.pressed.connect(remove_last_instruction)
 	btn_clear.pressed.connect(reiniciar_nivel)
 	btn_run.pressed.connect(run_program)
-	btn_back.pressed.connect(_on_back_pressed)
 	btn_pause.pressed.connect(_on_pause_pressed)
 
 	# Conexiones: Pantallas Finales y Pausa

@@ -108,11 +108,6 @@ theme_override_constants/separation = 12
 [node name="TopHUD" type="HBoxContainer" parent="ScreenGame/Margin/VBox"]
 layout_mode = 2
 
-[node name="BtnBack" type="Button" parent="ScreenGame/Margin/VBox/TopHUD"]
-custom_minimum_size = Vector2(70, 32)
-layout_mode = 2
-text = "Volver"
-
 [node name="Spacer" type="Control" parent="ScreenGame/Margin/VBox/TopHUD"]
 layout_mode = 2
 size_flags_horizontal = 3
