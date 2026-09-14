@@ -18,6 +18,7 @@ const LinuxQuestions = preload("res://scenes/minigames/sistemas_operativos/termi
 
 # Referencias de la terminal CRT
 @onready var crt_panel: Panel = $CRTContainer/TerminalPanel
+@onready var columns_hbox: HBoxContainer = $CRTContainer/TerminalPanel/ColumnsHBox
 @onready var left_column: VBoxContainer = $CRTContainer/TerminalPanel/ColumnsHBox/LeftColumn
 @onready var right_column: VBoxContainer = $CRTContainer/TerminalPanel/ColumnsHBox/RightColumn
 @onready var terminal_log_label: Label = $CRTContainer/TerminalPanel/TerminalLogLabel
@@ -93,6 +94,13 @@ const NOISE_CHARS: Array[String] = [
 # Estado de juego
 const TOTAL_QUESTIONS: int = 5
 const ROWS_PER_COLUMN: int = 12
+
+# Layout de terminal por dificultad
+# FACIL: 1 columna, 1 token por fila
+# NORMAL: 2 columnas, 1 token por fila
+# INGENIERO: 2 columnas, 2 tokens por fila
+var layout_columns: int = 2   # columnas activas (1 o 2)
+var layout_slots: int = 2     # tokens por fila (1 o 2)
 var round_questions: Array[Dictionary] = []
 var current_question_index: int = 0
 var current_question: Dictionary = {}
@@ -160,13 +168,20 @@ func _setup_token_styles() -> void:
 	style_active_token_dim.content_margin_bottom = 0.0
 
 func _connect_signals() -> void:
-	# Controles D-Pad y Enter
+	# Controles D-Pad y Enter — solo señales internas, sin mouse/touch
 	btn_up.pressed.connect(_on_dpad_up)
 	btn_down.pressed.connect(_on_dpad_down)
 	btn_left.pressed.connect(_on_dpad_left)
 	btn_right.pressed.connect(_on_dpad_right)
 	btn_enter.pressed.connect(_on_enter_pressed)
 	btn_pause.pressed.connect(_on_pause_pressed)
+
+	# Los controles D-Pad y Enter son puramente visuales (decorativos).
+	# El juego se controla solo con teclado (WASD/flechas/Enter).
+	# NO deshabilitar mouse_filter aquí — los botones visuales no tienen
+	# señales conectadas a la lógica del juego, eso es suficiente.
+	# (Los tokens de respuesta en la terminal SÍ tienen mouse_filter=IGNORE
+	#  para evitar que el jugador los seleccione directamente con click/touch)
 
 	# Selector de dificultad
 	btn_diff_facil.pressed.connect(func(): _on_difficulty_chosen("FACIL"))
@@ -239,12 +254,18 @@ func _on_difficulty_chosen(diff: String) -> void:
 		"FACIL":
 			max_lives = 5
 			time_limit_per_question = 30.0
+			layout_columns = 1
+			layout_slots = 1
 		"NORMAL":
 			max_lives = 3
 			time_limit_per_question = 25.0
+			layout_columns = 2
+			layout_slots = 1
 		"INGENIERO":
 			max_lives = 1
 			time_limit_per_question = 20.0
+			layout_columns = 2
+			layout_slots = 2
 
 	current_lives = max_lives
 	_show_tutorial()
@@ -254,21 +275,30 @@ func _show_tutorial() -> void:
 	modal_tutorial.visible = true
 	
 	var diff_name: String = current_difficulty.capitalize()
+	var layout_desc: String
+	match current_difficulty:
+		"FACIL":
+			layout_desc = "1 columna · 1 opción por fila — más fácil de escanear"
+		"NORMAL":
+			layout_desc = "2 columnas · 1 opción por fila — nivel medio"
+		_:
+			layout_desc = "2 columnas · 2 opciones por fila — máxima dificultad"
+
 	var rules_text: String = """OBJETIVO DEL CASO DE USO 16:
 Descifra la memoria de la terminal hacker retro y ejecuta el comando de Linux solicitado.
 
 MECÁNICA DE TERMINAL FALLOUT:
 1. Lee la situación problemática que te plantea el profesor en el globo superior.
-2. En las 2 columnas de memoria verás más de 30 datos entremezclados: palabras en inglés, códigos hexadecimales, bloques de símbolos y ~7 comandos reales de Linux.
+2. En la terminal verás datos entremezclados: palabras en inglés, códigos hexadecimales, bloques de símbolos y ~7 comandos reales de Linux.
 3. Solo UNO de los comandos de Linux es el correcto para la situación.
-4. Usa la cruceta D-Pad (Arriba, Abajo, Izquierda, Derecha) para navegar entre los datos resaltados en verde.
-5. Presiona ENTER (o toca directamente el comando en pantalla) para ejecutarlo.
+4. Usa el D-Pad (Arriba, Abajo, Izquierda, Derecha) para navegar entre los datos resaltados en verde.
+5. Presiona ENTER para ejecutar el comando seleccionado.
 
 REGLAS DE PARTIDA:
-• Dificultad: %s (%d vidas).
+• Dificultad: %s (%d vidas) — %s
 • Tiempo por desafío: %d segundos. Si el tiempo se agota, equivale a perder 1 vida.
 • Seleccionar un comando erróneo o basura de memoria descontará 1 vida.
-• ¡Completa los 5 desafíos para ganar estrellas y puntos para tu perfil!""" % [diff_name, max_lives, int(time_limit_per_question)]
+• ¡Completa los 5 desafíos para ganar estrellas y puntos para tu perfil!""" % [diff_name, max_lives, layout_desc, int(time_limit_per_question)]
 
 	tutorial_body.text = rules_text
 
@@ -324,9 +354,12 @@ func _build_fallout_matrix() -> void:
 
 	terminal_log_label.text = "ROBCO INDUSTRIES (TM) TERMLINK - SELECT SYSTEM COMMAND"
 
+	# Mostrar u ocultar la columna derecha según layout
+	right_column.visible = (layout_columns == 2)
+
 	var correct_cmd: String = current_question.get("command", "pwd")
 
-	# 1. Preparar pool de ~7 comandos reales de Linux (1 correcto + ~6 distractores)
+	# 1. Preparar pool de distractores de comandos reales de Linux
 	var linux_pool: Array[String] = []
 	for cmd in ALL_LINUX_COMMANDS:
 		if cmd != correct_cmd:
@@ -337,7 +370,7 @@ func _build_fallout_matrix() -> void:
 	for i in range(mini(6, linux_pool.size())):
 		real_linux_distractors.append(linux_pool[i])
 
-	# 2. Preparar pool de más de 25 falsos (palabras inglesas, hex, corchetes)
+	# 2. Preparar pool de falsos
 	var fake_words_copy: Array = FAKE_WORDS.duplicate()
 	fake_words_copy.shuffle()
 	var fake_hex_copy: Array = FAKE_HEX.duplicate()
@@ -345,47 +378,71 @@ func _build_fallout_matrix() -> void:
 	var fake_brackets_copy: Array = FAKE_BRACKETS.duplicate()
 	fake_brackets_copy.shuffle()
 
-	# 3. Ensamblar los tokens que irán en las 24 líneas (12 líneas x 2 columnas)
-	# Unas líneas tendrán 1 token y otras 2 tokens (total ~32-36 tokens seleccionables)
+	# 3. Calcular cuántos tokens necesitamos según el layout
+	# tokens_needed = ROWS_PER_COLUMN * layout_columns * layout_slots
+	var tokens_needed: int = ROWS_PER_COLUMN * layout_columns * layout_slots
+
 	var tokens_to_place: Array[Dictionary] = []
-	
-	# El correcto
+
+	# El correcto siempre va
 	tokens_to_place.append({ "text": correct_cmd, "type": "CORRECT" })
-	
-	# Los 6 distractores de comandos reales
+
+	# Los distractores de comandos reales
 	for cmd in real_linux_distractors:
 		tokens_to_place.append({ "text": cmd, "type": "LINUX_CMD" })
-		
-	# 28 palabras falsas en inglés
-	for i in range(28):
-		tokens_to_place.append({ "text": fake_words_copy[i % fake_words_copy.size()], "type": "FAKE_WORD" })
-		
-	# 8 códigos hexadecimales
-	for i in range(8):
-		tokens_to_place.append({ "text": fake_hex_copy[i % fake_hex_copy.size()], "type": "FAKE_HEX" })
 
-	# 5 pares de corchetes
-	for i in range(5):
-		tokens_to_place.append({ "text": fake_brackets_copy[i % fake_brackets_copy.size()], "type": "FAKE_BRACKET" })
+	# Rellenar con falsos hasta completar tokens_needed (con margen)
+	var fill_needed: int = tokens_needed - tokens_to_place.size() + 5
+	for i in range(fill_needed):
+		var roll: int = i % 3
+		if roll == 0:
+			tokens_to_place.append({ "text": fake_words_copy[i % fake_words_copy.size()], "type": "FAKE_WORD" })
+		elif roll == 1:
+			tokens_to_place.append({ "text": fake_hex_copy[i % fake_hex_copy.size()], "type": "FAKE_HEX" })
+		else:
+			tokens_to_place.append({ "text": fake_brackets_copy[i % fake_brackets_copy.size()], "type": "FAKE_BRACKET" })
 
 	# Barajar los tokens
 	tokens_to_place.shuffle()
 
-	# 4. Asignar exactamente 2 tokens a cada una de las 24 líneas (12 en izquierda, 12 en derecha)
+	# GARANTÍA: la respuesta correcta debe quedar dentro del rango visible.
+	# Si quedó en un índice >= tokens_needed (zona que no se coloca), la movemos
+	# a una posición aleatoria dentro del rango visible.
+	var correct_idx: int = -1
+	for i in range(tokens_to_place.size()):
+		if tokens_to_place[i].get("type", "") == "CORRECT":
+			correct_idx = i
+			break
+	if correct_idx >= tokens_needed:
+		var swap_to: int = randi() % tokens_needed
+		var tmp: Dictionary = tokens_to_place[swap_to]
+		tokens_to_place[swap_to] = tokens_to_place[correct_idx]
+		tokens_to_place[correct_idx] = tmp
+
+	# 4. Ajustar alineación del HBox según cantidad de columnas
+	if layout_columns == 1:
+		# Fácil: 1 columna centrada horizontalmente
+		columns_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	else:
+		# Normal/Ingeniero: 2 columnas ocupan todo el ancho
+		columns_hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+
+	# 5. Distribuir tokens en las filas y columnas según el layout
 	var token_idx: int = 0
 	var base_addr_left: int = 0xD320 + current_question_index * 0x0040
 	var base_addr_right: int = base_addr_left + ROWS_PER_COLUMN * 12
 
 	for row in range(ROWS_PER_COLUMN):
-		# Generar fila de la columna izquierda (col = 0) con 2 tokens
+		# Columna izquierda siempre presente
 		var addr_l: String = "0x%04X" % (base_addr_left + row * 12)
 		_create_terminal_row(left_column, 0, row, addr_l, tokens_to_place, token_idx)
-		token_idx += 2
+		token_idx += layout_slots
 
-		# Generar fila de la columna derecha (col = 1) con 2 tokens
-		var addr_r: String = "0x%04X" % (base_addr_right + row * 12)
-		_create_terminal_row(right_column, 1, row, addr_r, tokens_to_place, token_idx)
-		token_idx += 2
+		# Columna derecha solo en NORMAL e INGENIERO
+		if layout_columns == 2:
+			var addr_r: String = "0x%04X" % (base_addr_right + row * 12)
+			_create_terminal_row(right_column, 1, row, addr_r, tokens_to_place, token_idx)
+			token_idx += layout_slots
 
 	active_token_index = 0
 	_update_active_token_highlight()
@@ -405,7 +462,8 @@ func _create_terminal_row(parent_col: VBoxContainer, col_idx: int, row_idx: int,
 	# Caracteres de ruido iniciales
 	row_hbox.add_child(_create_noise_label(_random_noise(1)))
 
-	for slot in range(2):
+	# layout_slots determina cuántos tokens van en esta fila (1 o 2)
+	for slot in range(layout_slots):
 		if pool_start + slot < token_pool.size():
 			var t_data: Dictionary = token_pool[pool_start + slot]
 			var btn := _create_token_button(t_data.text, all_tokens.size())
@@ -418,8 +476,10 @@ func _create_terminal_row(parent_col: VBoxContainer, col_idx: int, row_idx: int,
 				"col": col_idx,
 				"row": row_idx,
 				"slot": slot,
-				"grid_x": col_idx * 2 + slot, # 0, 1, 2, 3
-				"grid_y": row_idx,            # 0..11
+				# grid_x: en INGENIERO hay 4 posiciones (col*2+slot),
+				# en NORMAL hay 2 (col*1+slot=col), en FACIL hay 1 (siempre 0)
+				"grid_x": col_idx * layout_slots + slot,
+				"grid_y": row_idx,
 				"index": all_tokens.size()
 			}
 			all_tokens.append(token_entry)
@@ -429,22 +489,17 @@ func _create_terminal_row(parent_col: VBoxContainer, col_idx: int, row_idx: int,
 
 	parent_col.add_child(row_hbox)
 
-func _create_token_button(text: String, token_index: int) -> Button:
+func _create_token_button(text: String, _token_index: int) -> Button:
 	var btn := Button.new()
 	btn.text = text
 	btn.flat = false
 	btn.focus_mode = FOCUS_NONE
-	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	# IMPORTANTE: deshabilitar completamente mouse y touch.
+	# El jugador NO puede seleccionar respuestas haciendo click/touch.
+	# Solo puede navegar con el D-Pad (teclado) y confirmar con ENTER.
+	btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	btn.add_theme_font_size_override("font_size", 9)
 	_set_button_visuals(btn, false, false)
-
-	btn.pressed.connect(func():
-		active_token_index = token_index
-		blink_timer = 0.0
-		blink_state = true
-		_update_active_token_highlight()
-		_on_enter_pressed()
-	)
 
 	return btn
 
@@ -531,7 +586,11 @@ func _on_dpad_left() -> void:
 	if all_tokens.is_empty(): return
 	AudioManager.play_step()
 	var cur: Dictionary = all_tokens[active_token_index]
-	var next_x: int = (cur.grid_x - 1 + 4) % 4
+	# Total de posiciones grid_x = layout_columns * layout_slots
+	var total_x: int = layout_columns * layout_slots
+	if total_x <= 1:
+		return  # En FACIL (1 col, 1 slot) no hay movimiento lateral
+	var next_x: int = (cur.grid_x - 1 + total_x) % total_x
 	var target_idx: int = _find_token_by_grid(next_x, cur.grid_y)
 	if target_idx != -1:
 		active_token_index = target_idx
@@ -541,7 +600,10 @@ func _on_dpad_right() -> void:
 	if all_tokens.is_empty(): return
 	AudioManager.play_step()
 	var cur: Dictionary = all_tokens[active_token_index]
-	var next_x: int = (cur.grid_x + 1) % 4
+	var total_x: int = layout_columns * layout_slots
+	if total_x <= 1:
+		return  # En FACIL no hay movimiento lateral
+	var next_x: int = (cur.grid_x + 1) % total_x
 	var target_idx: int = _find_token_by_grid(next_x, cur.grid_y)
 	if target_idx != -1:
 		active_token_index = target_idx
