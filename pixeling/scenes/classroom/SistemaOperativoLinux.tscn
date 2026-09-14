@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://aulasolinux104uaz"]
+
+[ext_resource type="PackedScene" uid="uid://clsbaseuaz01" path="res://scenes/classroom/ClassroomBase.tscn" id="1_cbase"]
+
+[node name="SistemaOperativoLinux" instance=ExtResource("1_cbase")]
+classroom_name = "Aula 104: Sistemas Operativos y Linux"
+subject_code = "SO-01"
+teacher_name = "Ing. Héctor Varela (Docente de Sistemas Operativos)"
+teacher_tip = "En la terminal de Linux, cada parámetro altera el comportamiento de un comando. Lee con atención lo que el sistema te solicita antes de ejecutar."
+minigames_list = [{
+"id": "terminal_linux",
+"name": "Linux Command (Desafío Terminal CU-16)",
+"scene": "res://scenes/minigames/sistemas_operativos/terminal_linux/LinuxCommand.tscn"
+}]

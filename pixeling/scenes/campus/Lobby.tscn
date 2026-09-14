@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://b0xlobbyuaz01"]
+[gd_scene format=3 uid="uid://b0xlobbyua001"]
 
-[ext_resource type="Script" path="res://scenes/campus/Lobby.gd" id="1_lob01"]
+[ext_resource type="Script" uid="uid://dtcviy1y1kqnm" path="res://scenes/campus/Lobby.gd" id="1_lob01"]
 
-[node name="Lobby" type="Control"]
+[node name="Lobby" type="Control" unique_id=2010305913]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_lob01")
 
-[node name="BgColor" type="ColorRect" parent="."]
+[node name="BgColor" type="ColorRect" parent="." unique_id=1412815410]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0588235, 0.0666667, 0.101961, 1)
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1417152747]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,79 +33,79 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="TopHUD" type="HBoxContainer" parent="VBox"]
+[node name="TopHUD" type="HBoxContainer" parent="VBox" unique_id=1732594536]
 layout_mode = 2
 
-[node name="UserBadge" type="PanelContainer" parent="VBox/TopHUD"]
+[node name="UserBadge" type="PanelContainer" parent="VBox/TopHUD" unique_id=2124053227]
 layout_mode = 2
 
-[node name="LabelUser" type="Label" parent="VBox/TopHUD/UserBadge"]
+[node name="LabelUser" type="Label" parent="VBox/TopHUD/UserBadge" unique_id=499129973]
 layout_mode = 2
 text = "Novato_UAZ"
 
-[node name="Spacer" type="Control" parent="VBox/TopHUD"]
+[node name="Spacer" type="Control" parent="VBox/TopHUD" unique_id=492539689]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PointsBadge" type="PanelContainer" parent="VBox/TopHUD"]
+[node name="PointsBadge" type="PanelContainer" parent="VBox/TopHUD" unique_id=1704530077]
 layout_mode = 2
 
-[node name="LabelPoints" type="Label" parent="VBox/TopHUD/PointsBadge"]
+[node name="LabelPoints" type="Label" parent="VBox/TopHUD/PointsBadge" unique_id=210928863]
 layout_mode = 2
 text = "Puntos: 0"
 
-[node name="Banner" type="VBoxContainer" parent="VBox"]
+[node name="Banner" type="VBoxContainer" parent="VBox" unique_id=1658743933]
 layout_mode = 2
 
-[node name="CampusSub" type="Label" parent="VBox/Banner"]
+[node name="CampusSub" type="Label" parent="VBox/Banner" unique_id=1975084148]
 layout_mode = 2
 text = "CAMPUS VIRTUAL UAZ"
 horizontal_alignment = 1
 
-[node name="CampusTitle" type="Label" parent="VBox/Banner"]
+[node name="CampusTitle" type="Label" parent="VBox/Banner" unique_id=1880610483]
 layout_mode = 2
 text = "EDIFICIO ING. SOFTWARE"
 horizontal_alignment = 1
 
-[node name="VisualNovelSection" type="PanelContainer" parent="VBox"]
+[node name="VisualNovelSection" type="PanelContainer" parent="VBox" unique_id=1765526247]
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 
-[node name="PanelNPC" type="VBoxContainer" parent="VBox/VisualNovelSection"]
+[node name="PanelNPC" type="VBoxContainer" parent="VBox/VisualNovelSection" unique_id=164705492]
 layout_mode = 2
 alignment = 1
 
-[node name="DialogueBubble" type="Label" parent="VBox/VisualNovelSection/PanelNPC"]
+[node name="DialogueBubble" type="Label" parent="VBox/VisualNovelSection/PanelNPC" unique_id=1646329074]
 layout_mode = 2
 text = "¡Bienvenido novato! Selecciona un salón para comenzar."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="BtnTalkNPC" type="Button" parent="VBox/VisualNovelSection/PanelNPC"]
+[node name="BtnTalkNPC" type="Button" parent="VBox/VisualNovelSection/PanelNPC" unique_id=1468687269]
 layout_mode = 2
 text = "Hablar con la comunidad"
 
-[node name="DoorsContainer" type="VBoxContainer" parent="VBox"]
+[node name="DoorsContainer" type="VBoxContainer" parent="VBox" unique_id=1492030576]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="BtnAulaProg" type="Button" parent="VBox/DoorsContainer"]
+[node name="BtnAulaProg" type="Button" parent="VBox/DoorsContainer" unique_id=393914066]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 text = "Aula 101: Introduccion a la Programacion"
 
-[node name="BtnAulaSoft" type="Button" parent="VBox/DoorsContainer"]
+[node name="BtnAulaSoft" type="Button" parent="VBox/DoorsContainer" unique_id=1729043212]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 text = "Aula 102: Fundamentos de Ing. de Software"
 
-[node name="BtnAulaLogic" type="Button" parent="VBox/DoorsContainer"]
+[node name="BtnAulaLogic" type="Button" parent="VBox/DoorsContainer" unique_id=1010522020]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-text = "Aula 103: Logica Computacional y Algoritmos"
+text = "Aula 103: Logica y Algoritmos"
 
-[node name="BtnAulaLinux" type="Button" parent="VBox/DoorsContainer"]
+[node name="BtnAulaLinux" type="Button" parent="VBox/DoorsContainer" unique_id=1156422126]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 text = "Aula 104: Sistemas Operativos y Linux"

@@ -25,7 +25,8 @@ var player_data: Dictionary = {
 			"roboflow": { "completed": false, "score": 0, "stars": 0 },
 			"lluvia_requerimientos": { "completed": false, "score": 0, "stars": 0 },
 			"tablas_verdad": { "completed": false, "score": 0, "stars": 0 },
-			"terminal_linux": { "completed": false, "score": 0, "stars": 0 }
+			"terminal_linux": { "completed": false, "score": 0, "stars": 0 },
+			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0 }
 		}
 	}
 }

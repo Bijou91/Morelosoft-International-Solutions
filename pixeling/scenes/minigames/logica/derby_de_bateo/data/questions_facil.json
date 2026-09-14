@@ -1,0 +1,212 @@
+[
+  {
+    "question": "¿Qué es una proposición lógica?",
+    "correct": "Un enunciado declarativo que puede ser verdadero o falso",
+    "incorrect": [
+      "Una pregunta o mandato que no tiene valor de verdad"
+    ]
+  },
+  {
+    "question": "¿Cuál de las siguientes es una proposición simple?",
+    "correct": "La capital de Rusia es Moscú",
+    "incorrect": [
+      "Puedo manejar un auto si tiene dirección hidráulica"
+    ]
+  },
+  {
+    "question": "¿Cuál de las siguientes es una proposición compuesta?",
+    "correct": "Puedo manejar un auto si tiene dirección hidráulica",
+    "incorrect": [
+      "La capital de Rusia es Moscú"
+    ]
+  },
+  {
+    "question": "¿Qué valor de verdad tiene la negación de una proposición verdadera?",
+    "correct": "Falso",
+    "incorrect": [
+      "Verdadero"
+    ]
+  },
+  {
+    "question": "En lógica formal, ¿qué expresa una oración declarativa?",
+    "correct": "El significado de una proposición",
+    "incorrect": [
+      "Una emoción o deseo del hablante"
+    ]
+  },
+  {
+    "question": "¿Con qué palabra inicia siempre una proposición categórica?",
+    "correct": "Un cuantificador",
+    "incorrect": [
+      "Un conector de negación"
+    ]
+  },
+  {
+    "question": "¿Qué estructura representa a una proposición Universal Afirmativa?",
+    "correct": "Todo A es B",
+    "incorrect": [
+      "Ningún A es B"
+    ]
+  },
+  {
+    "question": "¿Qué estructura representa a una proposición Universal Negativa?",
+    "correct": "Ningún A es B",
+    "incorrect": [
+      "Algunos A son B"
+    ]
+  },
+  {
+    "question": "¿Qué estructura representa a una proposición Existencial Afirmativa?",
+    "correct": "Algunos A son B",
+    "incorrect": [
+      "Todo A es B"
+    ]
+  },
+  {
+    "question": "¿Qué estructura representa a una proposición Existencial Negativa?",
+    "correct": "Algunos A no son B",
+    "incorrect": [
+      "Ningún A es B"
+    ]
+  },
+  {
+    "question": "El enunciado 'Todos los hombres son mortales' es una proposición de tipo:",
+    "correct": "Universal Afirmativa",
+    "incorrect": [
+      "Existencial Afirmativa"
+    ]
+  },
+  {
+    "question": "El enunciado 'Ningún auto antiguo es demasiado rápido' es una proposición de tipo:",
+    "correct": "Universal Negativa",
+    "incorrect": [
+      "Existencial Negativa"
+    ]
+  },
+  {
+    "question": "El enunciado 'Algunos animales son mamíferos' es una proposición de tipo:",
+    "correct": "Existencial Afirmativa",
+    "incorrect": [
+      "Universal Afirmativa"
+    ]
+  },
+  {
+    "question": "¿Cuál es la tabla de verdad de la conjunción (AND) cuando ambas proposiciones son verdaderas?",
+    "correct": "Verdadero",
+    "incorrect": [
+      "Falso"
+    ]
+  },
+  {
+    "question": "¿Cuándo es falsa una disyunción inclusiva (OR)?",
+    "correct": "Cuando ambas proposiciones son falsas",
+    "incorrect": [
+      "Cuando al menos una es verdadera"
+    ]
+  },
+  {
+    "question": "¿Qué representa el símbolo ￢ o ~ en lógica matemática?",
+    "correct": "Negación",
+    "incorrect": [
+      "Conjunción"
+    ]
+  },
+  {
+    "question": "¿Qué representa el símbolo ∧ en lógica formal?",
+    "correct": "Conjunción (AND)",
+    "incorrect": [
+      "Disyunción (OR)"
+    ]
+  },
+  {
+    "question": "¿Qué representa el símbolo ∨ en lógica formal?",
+    "correct": "Disyunción (OR)",
+    "incorrect": [
+      "Conjunción (AND)"
+    ]
+  },
+  {
+    "question": "¿Qué operador lógico corresponde a la condición 'Si... entonces...'?",
+    "correct": "Condicional (→)",
+    "incorrect": [
+      "Bicondicional (↔)"
+    ]
+  },
+  {
+    "question": "¿Cuándo es falsa una proposición condicional p → q?",
+    "correct": "Cuando p es verdadera y q es falsa",
+    "incorrect": [
+      "Cuando p es falsa y q es verdadera"
+    ]
+  },
+  {
+    "question": "¿Qué operador lógico expresa equivalencia exacta ('si y solo si')?",
+    "correct": "Bicondicional (↔)",
+    "incorrect": [
+      "Condicional (→)"
+    ]
+  },
+  {
+    "question": "¿Cuál es el resultado de la negación ￢(FALSE)?",
+    "correct": "TRUE",
+    "incorrect": [
+      "FALSE"
+    ]
+  },
+  {
+    "question": "¿Una proposición puede ser verdadera y falsa al mismo tiempo?",
+    "correct": "No, sólo puede tener un valor de verdad",
+    "incorrect": [
+      "Sí, depende del contexto"
+    ]
+  },
+  {
+    "question": "¿Qué es una tautología?",
+    "correct": "Una proposición compuesta que siempre es verdadera",
+    "incorrect": [
+      "Una proposición compuesta que siempre es falsa"
+    ]
+  },
+  {
+    "question": "¿Qué es una contradicción?",
+    "correct": "Una proposición compuesta que siempre es falsa",
+    "incorrect": [
+      "Una proposición compuesta que siempre es verdadera"
+    ]
+  },
+  {
+    "question": "¿Cómo se llama una proposición que puede ser verdadera o falsa según los valores de sus componentes?",
+    "correct": "Contingencia",
+    "incorrect": [
+      "Tautología"
+    ]
+  },
+  {
+    "question": "En la cuantificación lógica, ¿qué símbolo representa al cuantificador universal 'para todo'?",
+    "correct": "∀",
+    "incorrect": [
+      "∃"
+    ]
+  },
+  {
+    "question": "En la cuantificación lógica, ¿qué símbolo representa al cuantificador existencial 'existe al menos uno'?",
+    "correct": "∃",
+    "incorrect": [
+      "∀"
+    ]
+  },
+  {
+    "question": "¿Qué hace la ley de la doble negación ￢(￢p)?",
+    "correct": "Equivale a la proposición original p",
+    "incorrect": [
+      "Equivale a la negación de p"
+    ]
+  },
+  {
+    "question": "¿Cuántas filas de combinaciones de verdad tiene una tabla con 2 variables proporcionales (p y q)?",
+    "correct": "4 filas",
+    "incorrect": [
+      "2 filas"
+    ]
+  }
+]

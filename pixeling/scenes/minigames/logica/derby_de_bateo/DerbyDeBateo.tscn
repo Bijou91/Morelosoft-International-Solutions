@@ -1,0 +1,146 @@
+[gd_scene load_steps=2 format=3 uid="uid://derbybateo01"]
+
+[ext_resource type="Script" path="res://scenes/minigames/logica/derby_de_bateo/DerbyDeBateo.gd" id="1_derby"]
+
+[node name="DerbyDeBateo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_derby")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0705882, 0.109804, 1)
+
+[node name="TopHUD" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 42.0
+grow_horizontal = 2
+
+[node name="BtnBack" type="Button" parent="TopHUD"]
+layout_mode = 2
+text = "Volver"
+
+[node name="Spacer" type="Control" parent="TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="TopHUD"]
+layout_mode = 2
+text = "Derby de Bateo"
+
+[node name="Spacer2" type="Control" parent="TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LivesLabel" type="Label" parent="TopHUD"]
+layout_mode = 2
+text = "Vidas: 3 / 3"
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 50.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="DifficultySelector" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LabelDiff" type="Label" parent="VBox/DifficultySelector"]
+layout_mode = 2
+text = "Dificultad:"
+
+[node name="BtnDiffFacil" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fácil"
+
+[node name="BtnDiffNormal" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Normal"
+
+[node name="BtnDiffIng" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ingeniero"
+
+[node name="StatusBanner" type="PanelContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBox/StatusBanner"]
+layout_mode = 2
+text = "Elige dificultad para comenzar"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="QuestionPanel" type="PanelContainer" parent="VBox"]
+visible = false
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Margin" type="MarginContainer" parent="VBox/QuestionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="QuestionLabel" type="Label" parent="VBox/QuestionPanel/Margin"]
+layout_mode = 2
+text = "Aquí aparecerá la pregunta de Lógica y Algoritmos"
+autowrap_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OptionsContainer" type="VBoxContainer" parent="VBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="BottomBar" type="HBoxContainer" parent="VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ScoreLabel" type="Label" parent="VBox/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Aciertos: 0"
+
+[node name="StreakLabel" type="Label" parent="VBox/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Racha: 0"
+horizontal_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="VBox/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⏱ 10s"
+horizontal_alignment = 2

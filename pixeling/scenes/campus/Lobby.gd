@@ -26,8 +26,8 @@ func _ready() -> void:
 	btn_npc.pressed.connect(_on_npc_talk)
 	btn_door_prog.pressed.connect(func(): _open_classroom("Aula 101: Introducción a la Programación", "res://scenes/classroom/AulaProgramacion.tscn"))
 	btn_door_soft.pressed.connect(func(): _open_classroom("Aula 102: Fundamentos de Ing. de Software", ""))
-	btn_door_logic.pressed.connect(func(): _open_classroom("Aula 103: Lógica Computacional y Algoritmos", ""))
-	btn_door_linux.pressed.connect(func(): _open_classroom("Aula 104: Sistemas Operativos y Linux", ""))
+	btn_door_logic.pressed.connect(func(): _open_classroom("Aula 103: Lógica Computacional y Algoritmos", "res://scenes/classroom/AulaLogica.tscn"))
+	btn_door_linux.pressed.connect(func(): _open_classroom("Aula 104: Sistemas Operativos y Linux", "res://scenes/classroom/SistemaOperativoLinux.tscn"))
 
 func update_hud() -> void:
 	lbl_user.text = StateManager.get_username()

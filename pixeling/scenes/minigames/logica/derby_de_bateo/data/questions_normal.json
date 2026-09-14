@@ -1,0 +1,242 @@
+[
+  {
+    "question": "Según las Leyes de De Morgan, ¿a qué equivale la negación de una disyunción ￢(p ∨ q)?",
+    "correct": "￢p ∧ ￢q",
+    "incorrect": [
+      "￢p ∨ ￢q",
+      "p ∧ q"
+    ]
+  },
+  {
+    "question": "¿Cuál es el valor de verdad de la proposición condicional (p → q) si el antecedente (p) es Falso y el consecuente (q) es Verdadero?",
+    "correct": "Verdadero",
+    "incorrect": [
+      "Falso",
+      "Indeterminado"
+    ]
+  },
+  {
+    "question": "Según los diagramas de Venn para silogismos categóricos, ¿qué representa el área sombreada o rellenada?",
+    "correct": "Ausencia de elementos (conjunto vacío)",
+    "incorrect": [
+      "Existencia de al menos un elemento",
+      "La intersección universal de tres conjuntos"
+    ]
+  },
+  {
+    "question": "En los diagramas de Venn para validar silogismos, ¿qué indica la marca de una 'x' o una estrella?",
+    "correct": "Existencia de al menos un elemento",
+    "incorrect": [
+      "Ausencia total de elementos",
+      "El universo completo del silogismo"
+    ]
+  },
+  {
+    "question": "¿A qué expresión equivale lógicamente la implicación condicional (p → q)?",
+    "correct": "￢p ∨ q",
+    "incorrect": [
+      "￢p ∧ q",
+      "p ∨ ￢q"
+    ]
+  },
+  {
+    "question": "¿Cuál es la proposición contrapositiva de una proposición p → q?",
+    "correct": "￢q → ￢p",
+    "incorrect": [
+      "q → p",
+      "￢p → ￢q"
+    ]
+  },
+  {
+    "question": "¿Cuántas filas de combinaciones tiene una tabla de verdad compuesta por 3 variables proposicionales (p, q, r)?",
+    "correct": "8 filas",
+    "incorrect": [
+      "6 filas",
+      "9 filas"
+    ]
+  },
+  {
+    "question": "¿Qué tipo de proposición categórica es 'Algunos políticos no son honestos'?",
+    "correct": "Existencial Negativa",
+    "incorrect": [
+      "Universal Negativa",
+      "Existencial Afirmativa"
+    ]
+  },
+  {
+    "question": "¿Cuál de las siguientes expresiones representa la ley de Idempotencia para la disyunción?",
+    "correct": "p ∨ p ≡ p",
+    "incorrect": [
+      "p ∨ F ≡ p",
+      "p ∨ ￢p ≡ V"
+    ]
+  },
+  {
+    "question": "Si evaluamos la expresión lógica (Verdadero ∧ Falso) ∨ Verdadero, ¿cuál es el resultado final?",
+    "correct": "Verdadero",
+    "incorrect": [
+      "Falso",
+      "Depende de la contingencia"
+    ]
+  },
+  {
+    "question": "¿Qué regla de inferencia se define como: si se tiene (p ∨ q) y se afirma que (￢p), entonces se concluye (q)?",
+    "correct": "Modus Tollendo Ponens",
+    "incorrect": [
+      "Modus Ponendo Ponens",
+      "Silogismo Hipotético"
+    ]
+  },
+  {
+    "question": "En lógica de predicados, ¿qué significa la expresión ∀x, P(x)?",
+    "correct": "Para todo elemento x del universo, se cumple la propiedad P",
+    "incorrect": [
+      "Existe al menos un x que cumple la propiedad P",
+      "Ningún elemento x cumple con la propiedad P"
+    ]
+  },
+  {
+    "question": "¿Cuál es la negación lógica de la proposición universal 'Todos los hombres son mortales'?",
+    "correct": "Algunos hombres no son mortales",
+    "incorrect": [
+      "Ningún hombre es mortal",
+      "Todos los hombres son inmortales"
+    ]
+  },
+  {
+    "question": "¿Cuál de las siguientes proposiciones lógicas resulta siempre en una Tautología?",
+    "correct": "p ∨ ￢p",
+    "incorrect": [
+      "p ∧ ￢p",
+      "p → ￢p"
+    ]
+  },
+  {
+    "question": "¿Qué nombre recibe el método de demostración que establece la verdad de una afirmación demostrando la falsedad de su proposición contraria?",
+    "correct": "Demostración indirecta",
+    "incorrect": [
+      "Demostración directa",
+      "Demostración por inducción"
+    ]
+  },
+  {
+    "question": "Si una proposición bicondicional (p ↔ q) es evaluada como Verdadera, ¿qué podemos deducir sobre p y q?",
+    "correct": "Ambas tienen exactamente el mismo valor de verdad",
+    "incorrect": [
+      "Ambas son obligatoriamente verdaderas",
+      "Una es verdadera y la otra es obligatoriamente falsa"
+    ]
+  },
+  {
+    "question": "¿Cómo se le conoce formalmente a la variable 'p' dentro de una proposición condicional (p → q)?",
+    "correct": "Antecedente o Hipótesis",
+    "incorrect": [
+      "Consecuente o Conclusión",
+      "Premisa Universal"
+    ]
+  },
+  {
+    "question": "Al formalizar lógicamente la oración 'No es cierto que llueve y hace frío', ¿cuál es la estructura correcta?",
+    "correct": "￢(p ∧ q)",
+    "incorrect": [
+      "￢p ∧ ￢q",
+      "￢p ∨ ￢q"
+    ]
+  },
+  {
+    "question": "¿Qué establece la Ley de Absorción en su forma p ∨ (p ∧ q)?",
+    "correct": "Equivale simplemente a 'p'",
+    "incorrect": [
+      "Equivale simplemente a 'q'",
+      "Equivale a la tautología (Verdadero)"
+    ]
+  },
+  {
+    "question": "¿Cuál es el resultado de evaluar (Falso ↔ Falso)?",
+    "correct": "Verdadero",
+    "incorrect": [
+      "Falso",
+      "Contingencia"
+    ]
+  },
+  {
+    "question": "Si se tienen las premisas p → q, y q → r, ¿qué se puede concluir mediante el Silogismo Hipotético?",
+    "correct": "p → r",
+    "incorrect": [
+      "r → p",
+      "￢p → ￢r"
+    ]
+  },
+  {
+    "question": "¿Cuál de las siguientes opciones describe correctamente a una proposición de tipo Existencial Afirmativa?",
+    "correct": "Establece la existencia de al menos un elemento de una clase que pertenece a otra",
+    "incorrect": [
+      "Excluye completamente a los miembros de una clase respecto a otra",
+      "Incluye a todos los miembros absolutos de una clase dentro de otra"
+    ]
+  },
+  {
+    "question": "En lógica formal, ¿qué describe el 'Modus Ponendo Ponens'?",
+    "correct": "Una regla donde al afirmar el antecedente de un condicional, se afirma también su consecuente",
+    "incorrect": [
+      "Una regla donde negando el consecuente, se concluye la negación del antecedente",
+      "Una regla para simplificar disyunciones múltiples"
+    ]
+  },
+  {
+    "question": "Si la disyunción inclusiva (p ∨ q) resulta ser Falsa, ¿cuál es el único escenario posible en la tabla de verdad?",
+    "correct": "Tanto p como q son Falsas",
+    "incorrect": [
+      "Sólo p es Falsa y q es Verdadera",
+      "Sólo q es Falsa y p es Verdadera"
+    ]
+  },
+  {
+    "question": "La proposición 'Ningún león caza de noche' se puede formalizar lógicamente utilizando primordialmente:",
+    "correct": "El cuantificador universal negado o en forma de condicional (∀x, ... → ￢Q)",
+    "incorrect": [
+      "El cuantificador existencial afirmativo (∃x, ... ∧ Q)",
+      "El operador de equivalencia bicondicional (↔)"
+    ]
+  },
+  {
+    "question": "La tabla de verdad de la expresión (p ∧ ￢p) resultará en una columna final compuesta enteramente de:",
+    "correct": "Valores Falsos (es una contradicción)",
+    "incorrect": [
+      "Valores Verdaderos (es una tautología)",
+      "Valores Verdaderos y Falsos (es una contingencia)"
+    ]
+  },
+  {
+    "question": "¿Cómo se conoce a la proposición recíproca (inversa de lectura) de la forma p → q?",
+    "correct": "q → p",
+    "incorrect": [
+      "￢p → ￢q",
+      "￢q → ￢p"
+    ]
+  },
+  {
+    "question": "En la lógica de predicados, ¿qué función cumple el 'Universo de Discurso' (U)?",
+    "correct": "Define el conjunto de todas las entidades sobre las cuales tratan los predicados",
+    "incorrect": [
+      "Es el valor de verdad absoluto de una proposición compuesta",
+      "Es el operador lógico para unir dos proposiciones simples"
+    ]
+  },
+  {
+    "question": "¿Cuál de las siguientes notaciones representa correctamente al cuantificador existencial?",
+    "correct": "∃",
+    "incorrect": [
+      "∀",
+      "∴"
+    ]
+  },
+  {
+    "question": "Si una oración declarativa no puede evaluarse como verdadera ni como falsa (por ejemplo, una pregunta), entonces:",
+    "correct": "No se considera una proposición lógica",
+    "incorrect": [
+      "Es una proposición contingente",
+      "Se evalúa como una contradicción"
+    ]
+  }
+]
