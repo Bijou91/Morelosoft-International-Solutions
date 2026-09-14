@@ -109,32 +109,44 @@ func setup_level(diff: String) -> void:
 	current_difficulty = diff
 	match diff:
 		"FACIL":
-			grid_cols = 4
-			grid_rows = 5
-			max_instructions = 6
-			max_lives = 5
-			current_lives = 5
-			start_pos = Vector2i(1, 0)
-			goal_pos = Vector2i(1, 4)
-			obstacles = [Vector2i(0, 1), Vector2i(2, 2), Vector2i(3, 3)]
-		"NORMAL":
 			grid_cols = 5
-			grid_rows = 6
-			max_instructions = 9
+			grid_rows = 5
+			max_instructions = 8
 			max_lives = 3
 			current_lives = 3
-			start_pos = Vector2i(2, 0)
-			goal_pos = Vector2i(2, 5)
-			obstacles = [Vector2i(2, 2), Vector2i(1, 4), Vector2i(3, 4), Vector2i(0, 2), Vector2i(4, 2)]
-		"INGENIERO":
+			start_pos = Vector2i(0, 0)
+			goal_pos = Vector2i(4, 4)
+			# Bloque central para forzar rodear por arriba o por abajo
+			obstacles = [Vector2i(1, 1), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(3, 3)]
+		"NORMAL":
 			grid_cols = 6
 			grid_rows = 6
-			max_instructions = 10
+			max_instructions = 12
+			max_lives = 3
+			current_lives = 3
+			start_pos = Vector2i(0, 0)
+			goal_pos = Vector2i(5, 5)
+			# Laberinto en forma de 'S'
+			obstacles = [
+				Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3),
+				Vector2i(3, 2), Vector2i(3, 3), Vector2i(3, 4), Vector2i(3, 5),
+				Vector2i(4, 1), Vector2i(5, 1)
+			]
+		"INGENIERO":
+			grid_cols = 7
+			grid_rows = 7
+			max_instructions = 16
 			max_lives = 1
 			current_lives = 1
 			start_pos = Vector2i(0, 0)
-			goal_pos = Vector2i(5, 5)
-			obstacles = [Vector2i(1, 0), Vector2i(1, 1), Vector2i(3, 2), Vector2i(3, 3), Vector2i(4, 3)]
+			goal_pos = Vector2i(6, 6)
+			# Múltiples rutas estrechas con trampas
+			obstacles = [
+				Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2), Vector2i(4, 0),
+				Vector2i(4, 1), Vector2i(4, 2), Vector2i(4, 3), Vector2i(2, 4),
+				Vector2i(3, 4), Vector2i(4, 4), Vector2i(5, 4), Vector2i(1, 6),
+				Vector2i(2, 6), Vector2i(6, 2)
+			]
 
 	instructions.clear()
 	reset_robot()
@@ -384,8 +396,9 @@ func handle_victory() -> void:
 
 	var lives_bonus: int = current_lives * 40
 	var final_score: int = maxi(50, base_score * stars + lives_bonus - (attempts - 1) * 20)
+	var steps_taken: int = instructions.size()
 	
-	lbl_victory_stats.text = "Puntuación Final: %d\nEstrellas: %d\nVidas Restantes: %d" % [final_score, stars, current_lives]
+	lbl_victory_stats.text = "Pasos Tomados: %d\nPuntuación Final: %d\nEstrellas: %d\nVidas Restantes: %d" % [steps_taken, final_score, stars, current_lives]
 	
 	# Finish game registra el resultado y emite EventBus.points_updated a traves de StateManager
 	finish_game(true, final_score, stars, "Flujo completado exitosamente")
