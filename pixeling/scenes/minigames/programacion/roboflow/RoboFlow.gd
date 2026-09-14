@@ -19,24 +19,39 @@ var obstacles: Array[Vector2i] = []
 var instructions: Array[String] = []
 var is_running: bool = false
 var attempts: int = 0
+var selected_diff: String = "NORMAL"
 
-# Referencias a Nodos
-@onready var status_label: Label = $VBox/StatusBanner/Label
-@onready var board_grid: GridContainer = $VBox/BoardPanel/GridBoard
-@onready var pipeline_container: HBoxContainer = $VBox/PipelineSection/Scroll/PipelineSlots
-@onready var btn_fwd: Button = $VBox/Palette/BtnFwd
-@onready var btn_left: Button = $VBox/Palette/BtnLeft
-@onready var btn_right: Button = $VBox/Palette/BtnRight
-@onready var btn_del: Button = $VBox/Controls/BtnDel
-@onready var btn_clear: Button = $VBox/Controls/BtnClear
-@onready var btn_run: Button = $VBox/Controls/BtnRun
-@onready var btn_back: Button = $TopHUD/BtnBack
-@onready var lives_label: Label = $TopHUD/LivesLabel
+# Referencias a Pantallas Principales
+@onready var screen_start = $ScreenStart
+@onready var screen_game = $ScreenGame
+@onready var screen_victory = $ScreenVictory
+@onready var screen_game_over = $ScreenGameOver
 
-# Selector de Dificultad
-@onready var btn_diff_facil: Button = $VBox/DifficultySelector/BtnDiffFacil
-@onready var btn_diff_normal: Button = $VBox/DifficultySelector/BtnDiffNormal
-@onready var btn_diff_ing: Button = $VBox/DifficultySelector/BtnDiffIng
+# Nodos - Pantalla de Inicio
+@onready var btn_diff_facil = $ScreenStart/VBox/DiffSelector/BtnDiffFacil
+@onready var btn_diff_normal = $ScreenStart/VBox/DiffSelector/BtnDiffNormal
+@onready var btn_diff_ing = $ScreenStart/VBox/DiffSelector/BtnDiffIng
+@onready var btn_iniciar = $ScreenStart/VBox/BtnIniciar
+
+# Nodos - Pantalla de Juego
+@onready var status_label: Label = $ScreenGame/VBox/StatusBanner/Label
+@onready var board_grid: GridContainer = $ScreenGame/VBox/BoardPanel/GridBoard
+@onready var pipeline_container: HBoxContainer = $ScreenGame/VBox/PipelineSection/Scroll/PipelineSlots
+@onready var btn_fwd: Button = $ScreenGame/VBox/Palette/BtnFwd
+@onready var btn_left: Button = $ScreenGame/VBox/Palette/BtnLeft
+@onready var btn_right: Button = $ScreenGame/VBox/Palette/BtnRight
+@onready var btn_del: Button = $ScreenGame/VBox/Controls/BtnDel
+@onready var btn_clear: Button = $ScreenGame/VBox/Controls/BtnClear
+@onready var btn_run: Button = $ScreenGame/VBox/Controls/BtnRun
+@onready var btn_back: Button = $ScreenGame/TopHUD/BtnBack
+@onready var lives_label: Label = $ScreenGame/TopHUD/LivesLabel
+
+# Nodos - Pantallas de Fin
+@onready var lbl_victory_stats = $ScreenVictory/VBox/LblStats
+@onready var btn_victory_back = $ScreenVictory/VBox/BtnVolver
+@onready var lbl_gameover_reason = $ScreenGameOver/VBox/LblReason
+@onready var btn_gameover_restart = $ScreenGameOver/VBox/BtnReiniciar
+@onready var btn_gameover_back = $ScreenGameOver/VBox/BtnVolver
 
 func _ready() -> void:
 	super._ready()
@@ -44,7 +59,13 @@ func _ready() -> void:
 	minigame_title = "RoboFlow: Control de Flujos"
 	subject_name = "Introducción a la Programación"
 
-	# Conectar botones de comandos y control
+	# Conexiones: Pantalla de Inicio
+	btn_diff_facil.pressed.connect(func(): select_difficulty_ui("FACIL"))
+	btn_diff_normal.pressed.connect(func(): select_difficulty_ui("NORMAL"))
+	btn_diff_ing.pressed.connect(func(): select_difficulty_ui("INGENIERO"))
+	btn_iniciar.pressed.connect(_on_iniciar_pressed)
+
+	# Conexiones: Pantalla de Juego
 	btn_fwd.pressed.connect(func(): add_instruction("FORWARD"))
 	btn_left.pressed.connect(func(): add_instruction("TURN_LEFT"))
 	btn_right.pressed.connect(func(): add_instruction("TURN_RIGHT"))
@@ -53,12 +74,36 @@ func _ready() -> void:
 	btn_run.pressed.connect(run_program)
 	btn_back.pressed.connect(_on_back_pressed)
 
-	# Conectar selector de dificultad
-	btn_diff_facil.pressed.connect(func(): setup_level("FACIL"))
-	btn_diff_normal.pressed.connect(func(): setup_level("NORMAL"))
-	btn_diff_ing.pressed.connect(func(): setup_level("INGENIERO"))
+	# Conexiones: Pantallas Finales
+	btn_victory_back.pressed.connect(_on_back_pressed)
+	btn_gameover_restart.pressed.connect(_on_iniciar_pressed)
+	btn_gameover_back.pressed.connect(_on_back_pressed)
 
+	_show_screen(screen_start)
+	select_difficulty_ui("NORMAL")
+
+func _show_screen(screen: Control) -> void:
+	screen_start.visible = false
+	screen_game.visible = false
+	screen_victory.visible = false
+	screen_game_over.visible = false
+	screen.visible = true
+
+func select_difficulty_ui(diff: String) -> void:
+	selected_diff = diff
+	btn_diff_facil.modulate = Color(1,1,1) if diff != "FACIL" else Color(0.3, 0.9, 0.3)
+	btn_diff_normal.modulate = Color(1,1,1) if diff != "NORMAL" else Color(0.3, 0.9, 0.3)
+	btn_diff_ing.modulate = Color(1,1,1) if diff != "INGENIERO" else Color(0.3, 0.9, 0.3)
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
+
+func _on_iniciar_pressed() -> void:
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
+	
+	current_difficulty = selected_diff
 	setup_level(current_difficulty)
+	_show_screen(screen_game)
 
 func setup_level(diff: String) -> void:
 	current_difficulty = diff
@@ -97,9 +142,13 @@ func setup_level(diff: String) -> void:
 	update_pipeline_ui()
 	update_lives_display()
 	btn_run.disabled = false
+	attempts = 0
+	is_running = false
 	
 	# Notificar inicio formal del minijuego al EventBus global
-	EventBus.minigame_started.emit(minigame_id, current_difficulty)
+	if EventBus.has_signal("minigame_started"):
+		EventBus.minigame_started.emit(minigame_id, current_difficulty)
+		
 	set_status("Dificultad %s iniciada (%d vidas). Diseña tu algoritmo." % [current_difficulty, current_lives])
 
 func update_lives_display() -> void:
@@ -163,25 +212,29 @@ func add_instruction(cmd: String) -> void:
 	if is_running or current_lives <= 0:
 		return
 	if instructions.size() >= max_instructions:
-		AudioManager.play_error()
+		if AudioManager.has_method("play_error"):
+			AudioManager.play_error()
 		set_status("Límite de %d instrucciones alcanzado" % max_instructions)
 		return
 
-	AudioManager.play_click()
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
 	instructions.append(cmd)
 	update_pipeline_ui()
 
 func remove_last_instruction() -> void:
 	if is_running or instructions.is_empty() or current_lives <= 0:
 		return
-	AudioManager.play_click()
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
 	instructions.pop_back()
 	update_pipeline_ui()
 
 func reiniciar_nivel() -> void:
 	if is_running:
 		return
-	AudioManager.play_click()
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
 	instructions.clear()
 	current_lives = max_lives
 	reset_robot()
@@ -190,9 +243,6 @@ func reiniciar_nivel() -> void:
 	update_lives_display()
 	btn_run.disabled = false
 	set_status("Nivel reiniciado. Vidas restauradas a %d." % max_lives)
-
-func clear_instructions() -> void:
-	reiniciar_nivel()
 
 func update_pipeline_ui() -> void:
 	for child in pipeline_container.get_children():
@@ -207,12 +257,10 @@ func update_pipeline_ui() -> void:
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 		if i < instructions.size():
-			lbl.text = "%d
-%s" % [i + 1, labels.get(instructions[i], "CMD")]
+			lbl.text = "%d\n%s" % [i + 1, labels.get(instructions[i], "CMD")]
 			slot.modulate = Color(0.3, 0.9, 1.0)
 		else:
-			lbl.text = "%d
--" % (i + 1)
+			lbl.text = "%d\n-" % (i + 1)
 			slot.modulate = Color(0.4, 0.4, 0.5)
 
 		slot.add_child(lbl)
@@ -221,32 +269,39 @@ func update_pipeline_ui() -> void:
 func deduct_life(reason: String) -> void:
 	current_lives = maxi(0, current_lives - 1)
 	update_lives_display()
-	AudioManager.play_error()
-	EventBus.life_lost.emit(current_lives)
+	
+	if AudioManager.has_method("play_error"):
+		AudioManager.play_error()
+		
+	if EventBus.has_signal("life_lost"):
+		EventBus.life_lost.emit(current_lives)
 
 	if current_lives <= 0:
 		handle_game_over(reason)
 	else:
-		set_status("FALLO: %s (-1 vida. Restantes: %d). Corrige el flujo y reintenta." % [reason, current_lives])
+		set_status("FALLO: %s (-1 vida). Restantes: %d." % [reason, current_lives])
 		reset_robot()
 		update_robot_display()
 
 func handle_game_over(reason: String) -> void:
 	is_running = false
-	AudioManager.play_game_over()
-	EventBus.game_over.emit(minigame_id)
-	set_status("GAME OVER: %s. Sin vidas restantes. Pulsa REINICIAR o Volver." % reason)
-	btn_run.disabled = true
+	if AudioManager.has_method("play_game_over"):
+		AudioManager.play_game_over()
+		
+	if EventBus.has_signal("game_over"):
+		EventBus.game_over.emit(minigame_id)
+		
+	lbl_gameover_reason.text = "Motivo: " + reason
+	_show_screen(screen_game_over)
 
 func run_program() -> void:
 	if is_running:
 		return
 	if current_lives <= 0:
-		AudioManager.play_error()
-		set_status("No tienes vidas disponibles. Pulsa REINICIAR para restaurar vidas.")
 		return
 	if instructions.is_empty():
-		AudioManager.play_error()
+		if AudioManager.has_method("play_error"):
+			AudioManager.play_error()
 		set_status("¡El pipeline está vacío! Agrega instrucciones")
 		return
 
@@ -273,33 +328,35 @@ func run_program() -> void:
 			var delta: Vector2i = deltas.get(current_dir, Vector2i.ZERO)
 			var next_pos: Vector2i = current_pos + delta
 
-			# Comprobar límites del tablero
 			if next_pos.x < 0 or next_pos.x >= grid_cols or next_pos.y < 0 or next_pos.y >= grid_rows:
 				is_running = false
-				deduct_life("Robot fuera de los límites del tablero")
+				deduct_life("Fuera de los límites del tablero")
 				return
 
-			# Comprobar obstáculos
 			if next_pos in obstacles:
 				is_running = false
 				deduct_life("Colisión contra obstáculo")
 				return
 
 			current_pos = next_pos
-			AudioManager.play_step()
+			if AudioManager.has_method("play_step"):
+				AudioManager.play_step()
+				
 		elif cmd == "TURN_LEFT":
 			var idx: int = dirs.find(current_dir)
 			current_dir = dirs[(idx + 3) % 4]
-			AudioManager.play_rotate()
+			if AudioManager.has_method("play_rotate"):
+				AudioManager.play_rotate()
+				
 		elif cmd == "TURN_RIGHT":
 			var idx: int = dirs.find(current_dir)
 			current_dir = dirs[(idx + 1) % 4]
-			AudioManager.play_rotate()
+			if AudioManager.has_method("play_rotate"):
+				AudioManager.play_rotate()
 
 		update_robot_display()
 		await get_tree().create_timer(0.45).timeout
 
-		# Comprobar si llegó a la meta
 		if current_pos == goal_pos:
 			handle_victory()
 			return
@@ -310,7 +367,8 @@ func run_program() -> void:
 
 func handle_victory() -> void:
 	is_running = false
-	AudioManager.play_success()
+	if AudioManager.has_method("play_success"):
+		AudioManager.play_success()
 
 	var stars: int = 1
 	if instructions.size() <= (max_instructions - 2) and current_lives == max_lives:
@@ -326,18 +384,20 @@ func handle_victory() -> void:
 
 	var lives_bonus: int = current_lives * 40
 	var final_score: int = maxi(50, base_score * stars + lives_bonus - (attempts - 1) * 20)
-	set_status("Nivel completado con éxito (%d estrellas, %d vidas, %d puntos)" % [stars, current_lives, final_score])
-
-	await get_tree().create_timer(1.8).timeout
+	
+	lbl_victory_stats.text = "Puntuación Final: %d\nEstrellas: %d\nVidas Restantes: %d" % [final_score, stars, current_lives]
+	
+	# Finish game registra el resultado y emite EventBus.points_updated a traves de StateManager
 	finish_game(true, final_score, stars, "Flujo completado exitosamente")
-	_on_back_pressed()
+	_show_screen(screen_victory)
 
 func set_status(msg: String) -> void:
 	if status_label:
 		status_label.text = msg
 
 func _on_back_pressed() -> void:
-	AudioManager.play_click()
+	if AudioManager.has_method("play_click"):
+		AudioManager.play_click()
 	if ResourceLoader.exists("res://scenes/classroom/AulaProgramacion.tscn"):
 		get_tree().change_scene_to_file("res://scenes/classroom/AulaProgramacion.tscn")
 	else:

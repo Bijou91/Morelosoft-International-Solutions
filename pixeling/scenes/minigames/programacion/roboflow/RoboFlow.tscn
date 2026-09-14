@@ -20,7 +20,73 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0627451, 0.0705882, 0.109804, 1)
 
-[node name="TopHUD" type="HBoxContainer" parent="."]
+[node name="ScreenStart" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ScreenStart"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="ScreenStart/VBox"]
+layout_mode = 2
+text = "RoboFlow: Control de Flujos"
+horizontal_alignment = 1
+
+[node name="DiffLabel" type="Label" parent="ScreenStart/VBox"]
+layout_mode = 2
+text = "Selecciona la Dificultad:"
+horizontal_alignment = 1
+
+[node name="DiffSelector" type="HBoxContainer" parent="ScreenStart/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnDiffFacil" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fácil"
+
+[node name="BtnDiffNormal" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Normal"
+
+[node name="BtnDiffIng" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ingeniero"
+
+[node name="BtnIniciar" type="Button" parent="ScreenStart/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "INICIAR"
+
+[node name="ScreenGame" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopHUD" type="HBoxContainer" parent="ScreenGame"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -30,28 +96,27 @@ offset_right = -10.0
 offset_bottom = 42.0
 grow_horizontal = 2
 
-[node name="BtnBack" type="Button" parent="TopHUD"]
+[node name="BtnBack" type="Button" parent="ScreenGame/TopHUD"]
 layout_mode = 2
 text = "Volver"
 
-[node name="Spacer" type="Control" parent="TopHUD"]
+[node name="Spacer" type="Control" parent="ScreenGame/TopHUD"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="TopHUD"]
+[node name="Title" type="Label" parent="ScreenGame/TopHUD"]
 layout_mode = 2
 text = "RoboFlow • Control de Flujos"
 
-[node name="Spacer2" type="Control" parent="TopHUD"]
+[node name="Spacer2" type="Control" parent="ScreenGame/TopHUD"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LivesLabel" type="Label" parent="TopHUD"]
+[node name="LivesLabel" type="Label" parent="ScreenGame/TopHUD"]
 layout_mode = 2
 text = "Vidas: 3 / 3"
 
-
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="ScreenGame"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -64,99 +129,179 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="DifficultySelector" type="HBoxContainer" parent="VBox"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="LabelDiff" type="Label" parent="VBox/DifficultySelector"]
-layout_mode = 2
-text = "Dificultad:"
-
-[node name="BtnDiffFacil" type="Button" parent="VBox/DifficultySelector"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Fácil"
-
-[node name="BtnDiffNormal" type="Button" parent="VBox/DifficultySelector"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Normal"
-
-[node name="BtnDiffIng" type="Button" parent="VBox/DifficultySelector"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Ingeniero"
-
-[node name="StatusBanner" type="PanelContainer" parent="VBox"]
+[node name="StatusBanner" type="PanelContainer" parent="ScreenGame/VBox"]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBox/StatusBanner"]
+[node name="Label" type="Label" parent="ScreenGame/VBox/StatusBanner"]
 layout_mode = 2
 text = "Estado del programa"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BoardPanel" type="CenterContainer" parent="VBox"]
+[node name="BoardPanel" type="CenterContainer" parent="ScreenGame/VBox"]
 custom_minimum_size = Vector2(0, 270)
 layout_mode = 2
 
-[node name="GridBoard" type="GridContainer" parent="VBox/BoardPanel"]
+[node name="GridBoard" type="GridContainer" parent="ScreenGame/VBox/BoardPanel"]
 layout_mode = 2
 theme_override_constants/h_separation = 3
 theme_override_constants/v_separation = 3
 columns = 5
 
-[node name="PipelineSection" type="VBoxContainer" parent="VBox"]
+[node name="PipelineSection" type="VBoxContainer" parent="ScreenGame/VBox"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBox/PipelineSection"]
+[node name="Label" type="Label" parent="ScreenGame/VBox/PipelineSection"]
 layout_mode = 2
 text = "LÍNEA DE EJECUCIÓN:"
 
-[node name="Scroll" type="ScrollContainer" parent="VBox/PipelineSection"]
+[node name="Scroll" type="ScrollContainer" parent="ScreenGame/VBox/PipelineSection"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 vertical_scroll_mode = 0
 
-[node name="PipelineSlots" type="HBoxContainer" parent="VBox/PipelineSection/Scroll"]
+[node name="PipelineSlots" type="HBoxContainer" parent="ScreenGame/VBox/PipelineSection/Scroll"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Palette" type="HBoxContainer" parent="VBox"]
+[node name="Palette" type="HBoxContainer" parent="ScreenGame/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="BtnFwd" type="Button" parent="VBox/Palette"]
+[node name="BtnFwd" type="Button" parent="ScreenGame/VBox/Palette"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "AVANZAR"
 
-[node name="BtnLeft" type="Button" parent="VBox/Palette"]
+[node name="BtnLeft" type="Button" parent="ScreenGame/VBox/Palette"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "↰ GIRAR IZQ"
 
-[node name="BtnRight" type="Button" parent="VBox/Palette"]
+[node name="BtnRight" type="Button" parent="ScreenGame/VBox/Palette"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "↱ GIRAR DER"
 
-[node name="Controls" type="HBoxContainer" parent="VBox"]
+[node name="Controls" type="HBoxContainer" parent="ScreenGame/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="BtnDel" type="Button" parent="VBox/Controls"]
+[node name="BtnDel" type="Button" parent="ScreenGame/VBox/Controls"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = " Borrar"
 
-[node name="BtnClear" type="Button" parent="VBox/Controls"]
+[node name="BtnClear" type="Button" parent="ScreenGame/VBox/Controls"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "REINICIAR"
 
-[node name="BtnRun" type="Button" parent="VBox/Controls"]
+[node name="BtnRun" type="Button" parent="ScreenGame/VBox/Controls"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "EJECUTAR"
+
+[node name="ScreenVictory" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ScreenVictory"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.45, 0.18, 1)
+
+[node name="VBox" type="VBoxContainer" parent="ScreenVictory"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="ScreenVictory/VBox"]
+layout_mode = 2
+text = "¡Misión Completada!"
+horizontal_alignment = 1
+
+[node name="LblStats" type="Label" parent="ScreenVictory/VBox"]
+layout_mode = 2
+text = "Puntuación Final: 0
+Estrellas: 0
+Vidas Restantes: 0"
+horizontal_alignment = 1
+
+[node name="BtnVolver" type="Button" parent="ScreenVictory/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Volver al Salón"
+
+[node name="ScreenGameOver" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ScreenGameOver"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.5, 0.12, 0.12, 1)
+
+[node name="VBox" type="VBoxContainer" parent="ScreenGameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="ScreenGameOver/VBox"]
+layout_mode = 2
+text = "¡Fin de la Partida!"
+horizontal_alignment = 1
+
+[node name="LblReason" type="Label" parent="ScreenGameOver/VBox"]
+layout_mode = 2
+text = "Motivo:"
+horizontal_alignment = 1
+
+[node name="BtnReiniciar" type="Button" parent="ScreenGameOver/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Reiniciar Nivel"
+
+[node name="BtnVolver" type="Button" parent="ScreenGameOver/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Volver al Salón"
