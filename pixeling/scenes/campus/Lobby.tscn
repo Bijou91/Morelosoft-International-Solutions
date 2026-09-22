@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dtcviy1y1kqnm" path="res://scenes/campus/Lobby.gd" id="1_lob01"]
 
-[node name="Lobby" type="Control" unique_id=2010305913]
+[node name="Lobby" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,16 +11,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_lob01")
 
-[node name="BgColor" type="ColorRect" parent="." unique_id=1412815410]
+[node name="BgColor" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0588235, 0.0666667, 0.101961, 1)
+color = Color(0.12, 0.12, 0.18, 1.0)
 
-[node name="VBox" type="VBoxContainer" parent="." unique_id=1417152747]
+[node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,89 +33,407 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
-[node name="TopHUD" type="HBoxContainer" parent="VBox" unique_id=1732594536]
+[node name="TopHUD" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
 
-[node name="UserBadge" type="PanelContainer" parent="VBox/TopHUD" unique_id=2124053227]
+[node name="UserBadge" type="PanelContainer" parent="VBox/TopHUD"]
 layout_mode = 2
 
-[node name="LabelUser" type="Label" parent="VBox/TopHUD/UserBadge" unique_id=499129973]
+[node name="LabelUser" type="Label" parent="VBox/TopHUD/UserBadge"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 text = "Novato_UAZ"
 
-[node name="Spacer" type="Control" parent="VBox/TopHUD" unique_id=492539689]
+[node name="Spacer" type="Control" parent="VBox/TopHUD"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="PointsBadge" type="PanelContainer" parent="VBox/TopHUD" unique_id=1704530077]
+[node name="PointsBadge" type="PanelContainer" parent="VBox/TopHUD"]
 layout_mode = 2
 
-[node name="LabelPoints" type="Label" parent="VBox/TopHUD/PointsBadge" unique_id=210928863]
+[node name="LabelPoints" type="Label" parent="VBox/TopHUD/PointsBadge"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 text = "Puntos: 0"
 
-[node name="Banner" type="VBoxContainer" parent="VBox" unique_id=1658743933]
+[node name="PanelNPC" type="PanelContainer" parent="VBox"]
 layout_mode = 2
 
-[node name="CampusSub" type="Label" parent="VBox/Banner" unique_id=1975084148]
-layout_mode = 2
-theme_override_font_sizes/font_size = 10
-text = "CAMPUS VIRTUAL UAZ"
-horizontal_alignment = 1
-
-[node name="CampusTitle" type="Label" parent="VBox/Banner" unique_id=1880610483]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "EDIFICIO ING. SOFTWARE"
-horizontal_alignment = 1
-
-[node name="VisualNovelSection" type="PanelContainer" parent="VBox" unique_id=1765526247]
-custom_minimum_size = Vector2(0, 160)
-layout_mode = 2
-
-[node name="PanelNPC" type="VBoxContainer" parent="VBox/VisualNovelSection" unique_id=164705492]
-layout_mode = 2
-alignment = 1
-
-[node name="DialogueBubble" type="Label" parent="VBox/VisualNovelSection/PanelNPC" unique_id=1646329074]
+[node name="DialogueBubble" type="Label" parent="VBox/PanelNPC"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "¡Bienvenido novato! Selecciona un salón para comenzar."
+text = "¡Bienvenido al Campus Virtual! Explora las alas del edificio."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="BtnTalkNPC" type="Button" parent="VBox/VisualNovelSection/PanelNPC" unique_id=1468687269]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Hablar con la comunidad"
-
-[node name="DoorsContainer" type="VBoxContainer" parent="VBox" unique_id=1492030576]
+[node name="RoomsContainer" type="Control" parent="VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 8
 
-[node name="BtnAulaProg" type="Button" parent="VBox/DoorsContainer" unique_id=393914066]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Aula 101: Introduccion a la Programacion"
+[node name="RoomLeft" type="Control" parent="VBox/RoomsContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="BtnAulaSoft" type="Button" parent="VBox/DoorsContainer" unique_id=1729043212]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Aula 102: Fundamentos de Ing. de Software"
+[node name="BtnAulaProg" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 140.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 10
+text = "Salón
+(Programación)"
 
-[node name="BtnAulaLogic" type="Button" parent="VBox/DoorsContainer" unique_id=1010522020]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Aula 103: Logica y Algoritmos"
+[node name="BtnAulaSoft" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 10.0
+offset_right = 310.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 10
+text = "Salón
+(Ing. Software)"
 
-[node name="BtnAulaLinux" type="Button" parent="VBox/DoorsContainer" unique_id=1156422126]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
+[node name="TiendaMike" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 100.0
+offset_right = 290.0
+offset_bottom = 150.0
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomLeft/TiendaMike"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_font_sizes/font_size = 12
-text = "Aula 104: Sistemas Operativos y Linux"
+text = "Tienda
+Mike"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Couches1" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 100.0
+offset_right = 70.0
+offset_bottom = 180.0
+
+[node name="Couches2" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 220.0
+offset_right = 70.0
+offset_bottom = 300.0
+
+[node name="Couches3" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 220.0
+offset_right = 250.0
+offset_bottom = 270.0
+
+[node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -30.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "ALA IZQUIERDA"
+horizontal_alignment = 1
+
+[node name="BtnToCenter" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -25.0
+offset_bottom = 25.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "->"
+
+[node name="RoomCenter" type="Control" parent="VBox/RoomsContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Stairs" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -70.0
+offset_top = 10.0
+offset_right = 70.0
+offset_bottom = 80.0
+grow_horizontal = 2
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Stairs"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "Escaleras"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Exterior" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = -100.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Exterior"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 9
+text = "Maquina\nExpendedora"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Sillas1" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -120.0
+offset_right = 50.0
+offset_bottom = -40.0
+grow_vertical = 0
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Sillas1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 9
+text = "sillas"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Sillas2" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -80.0
+offset_right = 20.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Sillas2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 9
+text = "sillas"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -30.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "CENTRO"
+horizontal_alignment = 1
+
+[node name="BtnToLeft" type="Button" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -25.0
+offset_right = 50.0
+offset_bottom = 25.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "<-"
+
+[node name="BtnToRight" type="Button" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -25.0
+offset_bottom = 25.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "->"
+
+[node name="RoomRight" type="Control" parent="VBox/RoomsContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Ventanal" type="Panel" parent="VBox/RoomsContainer/RoomRight"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 10.0
+offset_right = 80.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomRight/Ventanal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "Ventanal"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnAulaLogic" type="Button" parent="VBox/RoomsContainer/RoomRight"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -80.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 10
+text = "Salón
+(Lógica)"
+
+[node name="BtnAulaLinux" type="Button" parent="VBox/RoomsContainer/RoomRight"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = 30.0
+offset_right = -10.0
+offset_bottom = 100.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 10
+text = "Salón
+(Linux)"
+
+[node name="SillasRight" type="Panel" parent="VBox/RoomsContainer/RoomRight"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -80.0
+offset_right = 40.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomRight/SillasRight"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 9
+text = "Sillas"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomRight"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -30.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "ALA DERECHA"
+horizontal_alignment = 1
+
+[node name="BtnToCenter" type="Button" parent="VBox/RoomsContainer/RoomRight"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -25.0
+offset_right = 50.0
+offset_bottom = 25.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "<-"
