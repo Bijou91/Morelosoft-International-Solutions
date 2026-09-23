@@ -18,6 +18,7 @@ var obstacles: Array[Vector2i] = []
 
 var instructions: Array[String] = []
 var is_running: bool = false
+var is_game_paused: bool = false
 var attempts: int = 0
 var selected_diff: String = "NORMAL"
 
@@ -84,7 +85,12 @@ func _ready() -> void:
 	btn_gameover_restart.pressed.connect(_on_iniciar_pressed)
 	btn_gameover_back.pressed.connect(_on_back_pressed)
 	btn_pause_resume.pressed.connect(_on_resume_pressed)
-	btn_pause_restart.pressed.connect(func(): reiniciar_nivel(); _show_screen(screen_game))
+	btn_pause_restart.pressed.connect(func():
+		is_running = false
+		is_game_paused = false
+		reiniciar_nivel()
+		_show_screen(screen_game)
+	)
 	btn_pause_back.pressed.connect(_on_back_pressed)
 
 	_show_screen(screen_start)
@@ -253,8 +259,8 @@ func remove_last_instruction() -> void:
 	update_pipeline_ui()
 
 func reiniciar_nivel() -> void:
-	if is_running:
-		return
+	is_running = false
+	is_game_paused = false
 	if AudioManager.has_method("play_click"):
 		AudioManager.play_click()
 	instructions.clear()
@@ -342,8 +348,13 @@ func run_program() -> void:
 	}
 
 	for i in range(instructions.size()):
+		while is_game_paused:
+			if not is_inside_tree() or not is_running:
+				return
+			await get_tree().process_frame
+
 		if not is_running:
-			break
+			return
 
 		var cmd: String = instructions[i]
 		if cmd == "FORWARD":
@@ -377,7 +388,22 @@ func run_program() -> void:
 				AudioManager.play_rotate()
 
 		update_robot_display()
-		await get_tree().create_timer(0.40).timeout
+
+		var elapsed: float = 0.0
+		while elapsed < 0.40:
+			if not is_inside_tree() or not is_running:
+				return
+			if not is_game_paused:
+				elapsed += get_process_delta_time()
+			await get_tree().process_frame
+
+		while is_game_paused:
+			if not is_inside_tree() or not is_running:
+				return
+			await get_tree().process_frame
+
+		if not is_running:
+			return
 
 		if current_pos == goal_pos:
 			handle_victory()
@@ -424,18 +450,20 @@ func set_status(msg: String) -> void:
 		status_label.text = msg
 
 func _on_pause_pressed() -> void:
-	if is_running:
-		return
 	if AudioManager.has_method("play_click"):
 		AudioManager.play_click()
+	is_game_paused = true
 	_show_screen(screen_pause)
 
 func _on_resume_pressed() -> void:
 	if AudioManager.has_method("play_click"):
 		AudioManager.play_click()
+	is_game_paused = false
 	_show_screen(screen_game)
 
 func _on_back_pressed() -> void:
+	is_running = false
+	is_game_paused = false
 	if AudioManager.has_method("play_click"):
 		AudioManager.play_click()
 	if ResourceLoader.exists("res://scenes/classroom/AulaProgramacion.tscn"):
