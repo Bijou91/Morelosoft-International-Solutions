@@ -87,7 +87,7 @@ var time_remaining: float = 0.0
 var spawn_timer: float = 0.0
 var active_requirements: Array = []
 var move_direction: int = 0 # -1 izquierda, 0 quieto, 1 derecha
-var selected_difficulty: String = "INTERMEDIO"
+var selected_difficulty: String = "NORMAL"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # REFERENCIAS UI (asignadas en _build_ui)
@@ -422,19 +422,19 @@ func _build_overlay_difficulty() -> void:
 	btn_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
 	vbox.add_child(btn_facil)
 
-	var btn_inter := Button.new()
-	btn_inter.text = "🟡  Intermedio  (5 vidas)"
-	btn_inter.add_theme_font_size_override("font_size", 12)
-	btn_inter.custom_minimum_size = Vector2(0, 38)
-	btn_inter.pressed.connect(func(): _on_difficulty_selected("INTERMEDIO"))
-	vbox.add_child(btn_inter)
+	var btn_normal := Button.new()
+	btn_normal.text = "🟡  Normal  (5 vidas)"
+	btn_normal.add_theme_font_size_override("font_size", 12)
+	btn_normal.custom_minimum_size = Vector2(0, 38)
+	btn_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
+	vbox.add_child(btn_normal)
 
-	var btn_dificil := Button.new()
-	btn_dificil.text = "🔴  Difícil  (3 vidas)"
-	btn_dificil.add_theme_font_size_override("font_size", 12)
-	btn_dificil.custom_minimum_size = Vector2(0, 38)
-	btn_dificil.pressed.connect(func(): _on_difficulty_selected("DIFICIL"))
-	vbox.add_child(btn_dificil)
+	var btn_ing := Button.new()
+	btn_ing.text = "🔴  Ingeniero  (3 vidas)"
+	btn_ing.add_theme_font_size_override("font_size", 12)
+	btn_ing.custom_minimum_size = Vector2(0, 38)
+	btn_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
+	vbox.add_child(btn_ing)
 
 
 func _build_overlay_instructions() -> void:
@@ -506,7 +506,7 @@ func _build_overlay_pause() -> void:
 	btn_quit.text = "🚪  Salir al Campus"
 	btn_quit.add_theme_font_size_override("font_size", 12)
 	btn_quit.custom_minimum_size = Vector2(0, 38)
-	btn_quit.pressed.connect(_on_back_pressed)
+	btn_quit.pressed.connect(_on_exit_to_campus)
 	vbox.add_child(btn_quit)
 
 
@@ -540,7 +540,7 @@ func _build_overlay_game_over() -> void:
 	btn_quit.text = "🚪  Salir al Campus"
 	btn_quit.add_theme_font_size_override("font_size", 11)
 	btn_quit.custom_minimum_size = Vector2(0, 36)
-	btn_quit.pressed.connect(_on_back_pressed)
+	btn_quit.pressed.connect(_on_exit_to_campus)
 	vbox.add_child(btn_quit)
 
 
@@ -615,7 +615,7 @@ func _on_difficulty_selected(diff: String) -> void:
 	_configure_difficulty(diff)
 
 	# Actualizar label de instrucciones con la dificultad elegida
-	var diff_names := {"FACIL": "FÁCIL", "INTERMEDIO": "INTERMEDIO", "DIFICIL": "DIFÍCIL"}
+	var diff_names := {"FACIL": "FÁCIL", "NORMAL": "NORMAL", "INGENIERO": "INGENIERO"}
 	instr_difficulty_label.text = "Dificultad: %s — %d vidas" % [diff_names.get(diff, diff), max_lives]
 
 	difficulty_overlay.visible = false
@@ -640,7 +640,7 @@ func _configure_difficulty(diff: String) -> void:
 			fall_speed_end = 140.0
 			functional_ratio = 0.55
 			difficulty_multiplier = 1
-		"INTERMEDIO":
+		"NORMAL":
 			max_lives = 5
 			current_lives = 5
 			game_duration = 75.0
@@ -650,7 +650,7 @@ func _configure_difficulty(diff: String) -> void:
 			fall_speed_end = 180.0
 			functional_ratio = 0.50
 			difficulty_multiplier = 2
-		"DIFICIL":
+		"INGENIERO":
 			max_lives = 3
 			current_lives = 3
 			game_duration = 60.0
@@ -963,3 +963,10 @@ func _on_back_pressed() -> void:
 		get_tree().change_scene_to_file("res://scenes/classroom/AulaIngSoftware.tscn")
 	else:
 		get_tree().change_scene_to_file("res://scenes/campus/Lobby.tscn")
+
+
+func _on_exit_to_campus() -> void:
+	AudioManager.play_click()
+	is_game_active = false
+	_clear_active_requirements()
+	get_tree().change_scene_to_file("res://scenes/campus/Lobby.tscn")

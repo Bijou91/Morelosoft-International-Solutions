@@ -8,7 +8,7 @@ subject_code = "ISW-01"
 teacher_name = "Docente de Software (UAZ)"
 teacher_tip = "• Funcionales: QUÉ hace el sistema (servicios a capturar).\n• No Funcionales: CÓMO opera (restricciones a esquivar)."
 minigames_list = [{
-"id": "CU-07",
+"id": "lluvia_requerimientos",
 "name": "Lluvia de Requerimientos",
 "scene": "res://scenes/minigames/ing_software/lluvia_requerimientos/LluviaReqs.tscn"
 }]
