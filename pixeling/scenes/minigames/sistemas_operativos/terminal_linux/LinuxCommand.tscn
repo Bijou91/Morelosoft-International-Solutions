@@ -333,19 +333,19 @@ autowrap_mode = 2
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "🟢 FÁCIL (5 Vidas)
-Comandos básicos: pwd, ls, cd, mkdir..."
+Comandos básicos"
 
 [node name="BtnNormal" type="Button" parent="Modals/DifficultyModal/Panel/VBox"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "🟡 NORMAL (3 Vidas)
-Rutas y archivos: cp, mv, rm, ls -l, man..."
+Rutas y archivos"
 
 [node name="BtnIngeniero" type="Button" parent="Modals/DifficultyModal/Panel/VBox"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "🔴 INGENIERO (1 Vida)
-Avanzado: grep, find, chmod, sudo, kill..."
+Avanzado"
 
 [node name="TutorialModal" type="ColorRect" parent="Modals"]
 visible = false

@@ -116,6 +116,7 @@ var time_remaining: float = 25.0
 var is_timer_active: bool = false
 var is_game_paused: bool = false
 var is_waiting_next: bool = false
+var current_match_generation: int = 0
 
 # Matriz de tokens interactivos
 var all_tokens: Array[Dictionary] = []
@@ -284,15 +285,15 @@ func _show_tutorial() -> void:
 		_:
 			layout_desc = "2 columnas · 2 opciones por fila — máxima dificultad"
 
-	var rules_text: String = """OBJETIVO DEL CASO DE USO 16:
+	var rules_text: String = """INSTRUCCIONES:
 Descifra la memoria de la terminal hacker retro y ejecuta el comando de Linux solicitado.
 
-MECÁNICA DE TERMINAL FALLOUT:
+CÓMO JUGAR:
 1. Lee la situación problemática que te plantea el profesor en el globo superior.
-2. En la terminal verás datos entremezclados: palabras en inglés, códigos hexadecimales, bloques de símbolos y ~7 comandos reales de Linux.
+2. En la terminal verás datos entremezclados: palabras en inglés, códigos hexadecimales, bloques de símbolos y varios comandos de Linux.
 3. Solo UNO de los comandos de Linux es el correcto para la situación.
-4. Usa el D-Pad (Arriba, Abajo, Izquierda, Derecha) para navegar entre los datos resaltados en verde.
-5. Presiona ENTER para ejecutar el comando seleccionado.
+4. Usa el D-Pad (o las teclas W/A/S/D / flechas) para navegar entre los datos resaltados en verde.
+5. Presiona ENTER (o la barra espaciadora) para ejecutar el comando seleccionado.
 
 REGLAS DE PARTIDA:
 • Dificultad: %s (%d vidas) — %s
@@ -307,6 +308,7 @@ func _start_match() -> void:
 	_hide_all_modals()
 	super.start_game(current_difficulty)
 
+	current_match_generation += 1
 	total_score = 0
 	correct_answers_count = 0
 	current_question_index = 0
@@ -626,19 +628,27 @@ func _validate_token(token_entry: Dictionary) -> void:
 	var chosen_text: String = token_entry.text
 	var token_type: String = token_entry.type
 	var correct_cmd: String = current_question.get("command", "")
+	var match_gen: int = current_match_generation
 
 	if token_type == "CORRECT" or chosen_text == correct_cmd:
 		# Acierto (FN-04, FN-05, FN-06, FN-07)
 		correct_answers_count += 1
 		AudioManager.play_success()
 
-		var base_points: int = 150
+		var base_points: int = 45
+		var time_mult: float = 0.5
 		match current_difficulty:
-			"FACIL": base_points = 100
-			"NORMAL": base_points = 200
-			"INGENIERO": base_points = 350
+			"FACIL":
+				base_points = 45
+				time_mult = 0.5
+			"NORMAL":
+				base_points = 90
+				time_mult = 1.0
+			"INGENIERO":
+				base_points = 135
+				time_mult = 1.5
 
-		var time_bonus: int = int(time_remaining * 8)
+		var time_bonus: int = int(time_remaining * time_mult)
 		var round_points: int = base_points + time_bonus
 		total_score += round_points
 
@@ -646,7 +656,7 @@ func _validate_token(token_entry: Dictionary) -> void:
 		teacher_label.text = current_question.get("feedback_correct", "¡Comando correcto!")
 
 		await get_tree().create_timer(2.0).timeout
-		if is_inside_tree():
+		if is_inside_tree() and match_gen == current_match_generation and not is_game_paused:
 			_load_question(current_question_index + 1)
 
 	elif token_type == "LINUX_CMD":
@@ -678,8 +688,9 @@ func _deduct_life(reason: String) -> void:
 		_handle_game_over(reason)
 	else:
 		is_waiting_next = true
+		var match_gen: int = current_match_generation
 		await get_tree().create_timer(2.2).timeout
-		if is_inside_tree():
+		if is_inside_tree() and match_gen == current_match_generation and not is_game_paused:
 			_load_question(current_question_index + 1)
 
 func _handle_game_over(reason: String) -> void:
@@ -701,9 +712,6 @@ func _handle_victory() -> void:
 		stars = 3
 	elif current_lives >= 2:
 		stars = 2
-
-	var lives_bonus: int = current_lives * 50
-	total_score += lives_bonus
 
 	finish_game(true, total_score, stars, "Desafío de Comandos Linux completado con éxito")
 
