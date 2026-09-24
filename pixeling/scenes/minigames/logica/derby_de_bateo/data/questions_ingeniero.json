@@ -1,6 +1,6 @@
 [
   {
-    "question": "En una encuesta a 156 niños, a 52 les gusta el balón, 63 los carritos, 87 videojuegos. 26 juegan con balón y carritos, 37 con carritos y videojuegos, 23 con balón y videojuegos, y 7 expresaron gusto por los tres. ¿A cuántos niños les gusta solamente jugar con el balón?[cite: 5]",
+    "question": "En una encuesta a 156 niños, a 52 les gusta el balón, 63 los carritos, 87 videojuegos. 26 juegan con balón y carritos, 37 con carritos y videojuegos, 23 con balón y videojuegos, y 7 expresaron gusto por los tres. ¿A cuántos niños les gusta solamente jugar con el balón?",
     "correct": "17 niños",
     "incorrect": [
       "34 niños",
@@ -10,7 +10,7 @@
     ]
   },
   {
-    "question": "Utilizando los datos de la encuesta de 156 niños (52 balón, 63 carritos, 87 videojuegos, con sus respectivas intersecciones), ¿a cuántos niños les gusta solamente jugar con los videojuegos?[cite: 5]",
+    "question": "Utilizando los datos de la encuesta de 156 niños (52 balón, 63 carritos, 87 videojuegos, con sus respectivas intersecciones), ¿a cuántos niños les gusta solamente jugar con los videojuegos?",
     "correct": "34 niños",
     "incorrect": [
       "87 niños",
@@ -20,7 +20,7 @@
     ]
   },
   {
-    "question": "Con los mismos datos de la encuesta de 156 niños sobre sus juguetes favoritos, ¿a cuántos niños les gusta otro juguete no mencionado en la encuesta?[cite: 5]",
+    "question": "Con los mismos datos de la encuesta de 156 niños sobre sus juguetes favoritos, ¿a cuántos niños les gusta otro juguete no mencionado en la encuesta?",
     "correct": "98 niños",
     "incorrect": [
       "156 niños",
@@ -30,7 +30,7 @@
     ]
   },
   {
-    "question": "Se encuesta a 150 familias: 10 tienen hijos en Básica, Media y Universitaria; 16 en Básica y Uni; 30 en Media y Básica; 22 en Media y Uni. 72 en Media, 71 en Básica, 38 en Uni. ¿Cuántas familias tienen hijos solo en la universidad?[cite: 5]",
+    "question": "Se encuesta a 150 familias: 10 tienen hijos en Básica, Media y Universitaria; 16 en Básica y Uni; 30 en Media y Básica; 22 en Media y Uni. 72 en Media, 71 en Básica, 38 en Uni. ¿Cuántas familias tienen hijos solo en la universidad?",
     "correct": "10 familias",
     "incorrect": [
       "38 familias",
@@ -40,7 +40,7 @@
     ]
   },
   {
-    "question": "Basado en la encuesta de 150 familias sobre niveles educativos, ¿cuál es el número total de familias que tienen hijos únicamente en dos niveles diferentes?[cite: 5]",
+    "question": "Basado en la encuesta de 150 familias sobre niveles educativos, ¿cuál es el número total de familias que tienen hijos únicamente en dos niveles diferentes?",
     "correct": "38 familias",
     "incorrect": [
       "68 familias",
@@ -50,7 +50,7 @@
     ]
   },
   {
-    "question": "Dado el conjunto E = {{1,2,3},{4,5}}, ¿cuál es el valor de verdad y la justificación de la afirmación {4,5} ∈ E?[cite: 3, 4]",
+    "question": "Dado el conjunto E = {{1,2,3},{4,5}}, ¿cuál es el valor de verdad y la justificación de la afirmación {4,5} ∈ E?",
     "correct": "Verdadero, porque el subconjunto completo es un elemento explícito de E",
     "incorrect": [
       "Falso, porque 4 y 5 son elementos separados dentro de la jerarquía",
@@ -60,7 +60,7 @@
     ]
   },
   {
-    "question": "Dado el conjunto E = {{1,2,3},{4,5}}, ¿cuál es el valor de verdad lógico de la afirmación 1 ∈ E?[cite: 3, 4]",
+    "question": "Dado el conjunto E = {{1,2,3},{4,5}}, ¿cuál es el valor de verdad lógico de la afirmación 1 ∈ E?",
     "correct": "Falso, porque 1 está dentro de un subconjunto, no es un elemento directo de E",
     "incorrect": [
       "Verdadero, porque 1 es parte del primer sub-elemento de E",
@@ -70,7 +70,7 @@
     ]
   },
   {
-    "question": "Si deseas definir por especificación (comprensión) el conjunto de números enteros tales que su cuadrado sea 9, ¿cuál es la notación correcta?[cite: 3, 4]",
+    "question": "Si deseas definir por especificación (comprensión) el conjunto de números enteros tales que su cuadrado sea 9, ¿cuál es la notación correcta?",
     "correct": "A = {x | x ∈ Z, x^2 = 9}",
     "incorrect": [
       "A = {x | x^2 = 9}",
@@ -80,7 +80,7 @@
     ]
   },
   {
-    "question": "¿Qué relación de igualdad existe estrictamente entre D = {1,3,5,7} y G = {3,7,5,1}?[cite: 3, 4]",
+    "question": "¿Qué relación de igualdad existe estrictamente entre D = {1,3,5,7} y G = {3,7,5,1}?",
     "correct": "D = G, son el mismo conjunto sin importar el orden de sus elementos",
     "incorrect": [
       "D ⊂ G, pero no son totalmente iguales",
@@ -120,7 +120,7 @@
     ]
   },
   {
-    "question": "¿Cuál es la definición teórica exacta de una proposición categórica en lógica clásica?[cite: 6]",
+    "question": "¿Cuál es la definición teórica exacta de una proposición categórica en lógica clásica?",
     "correct": "Una proposición que trata acerca de los elementos de dos clases y describe la relación entre ellos",
     "incorrect": [
       "Una proposición compuesta unida exclusivamente por operadores condicionales",
@@ -130,7 +130,7 @@
     ]
   },
   {
-    "question": "¿Con qué elemento lógico debe comenzar obligatoriamente toda proposición categórica formal?[cite: 6]",
+    "question": "¿Con qué elemento lógico debe comenzar obligatoriamente toda proposición categórica formal?",
     "correct": "Con un cuantificador (Todos, ningún, algunos, etc.)",
     "incorrect": [
       "Con una variable proposicional minúscula (p, q, r)",
@@ -190,7 +190,7 @@
     ]
   },
   {
-    "question": "En notación formal de teoría de conjuntos y proposiciones, ¿qué símbolo se utiliza para indicar directamente que el conjunto B no contiene como elemento a 'x'?[cite: 3]",
+    "question": "En notación formal de teoría de conjuntos y proposiciones, ¿qué símbolo se utiliza para indicar directamente que el conjunto B no contiene como elemento a 'x'?",
     "correct": "x ∉ B",
     "incorrect": [
       "x ⊄ B",
@@ -200,7 +200,7 @@
     ]
   },
   {
-    "question": "Al definir por especificación matemática el conjunto de enteros positivos cuyo resultado de sumarle 3 sea exactamente 8, ¿cuál es la notación rigurosa?[cite: 3, 4]",
+    "question": "Al definir por especificación matemática el conjunto de enteros positivos cuyo resultado de sumarle 3 sea exactamente 8, ¿cuál es la notación rigurosa?",
     "correct": "x = {x | x ∈ Z+, x + 3 = 8}",
     "incorrect": [
       "x = {5}",
@@ -210,7 +210,7 @@
     ]
   },
   {
-    "question": "En un diagrama de Venn de 3 conjuntos, si el conjunto Universo (U) es 156 y la unión total (T) de los 3 conjuntos es 58, ¿qué operación realizas lógicamente para encontrar a los elementos que no pertenecen a ninguno?[cite: 5]",
+    "question": "En un diagrama de Venn de 3 conjuntos, si el conjunto Universo (U) es 156 y la unión total (T) de los 3 conjuntos es 58, ¿qué operación realizas lógicamente para encontrar a los elementos que no pertenecen a ninguno?",
     "correct": "U - T (156 - 58) = 98",
     "incorrect": [
       "U + T (156 + 58) = 214",
@@ -220,7 +220,7 @@
     ]
   },
   {
-    "question": "¿Cuál es la estructura lógica deductiva correcta correspondiente a una proposición categórica Universal Negativa?[cite: 6]",
+    "question": "¿Cuál es la estructura lógica deductiva correcta correspondiente a una proposición categórica Universal Negativa?",
     "correct": "Ningún 'A' es 'B'",
     "incorrect": [
       "Todo 'A' es 'B'",
@@ -230,7 +230,7 @@
     ]
   },
   {
-    "question": "¿Qué valor de verdad tiene la proposición lógica $0 \\in \\mathbb{Z}^+$ (Cero pertenece al conjunto de los enteros positivos)?[cite: 3]",
+    "question": "¿Qué valor de verdad tiene la proposición lógica $0 \\in \\mathbb{Z}^+$ (Cero pertenece al conjunto de los enteros positivos)?",
     "correct": "Falso",
     "incorrect": [
       "Verdadero",
@@ -270,7 +270,7 @@
     ]
   },
   {
-    "question": "¿Cuál es el valor de verdad de la expresión matemática $\\{\\} \\in \\{1,0\\}$ (¿El conjunto vacío pertenece al conjunto C={1,0}?) según la teoría axiomática?[cite: 3]",
+    "question": "¿Cuál es el valor de verdad de la expresión matemática $\\{\\} \\in \\{1,0\\}$ (¿El conjunto vacío pertenece al conjunto C={1,0}?) según la teoría axiomática?",
     "correct": "Falso, es un subconjunto (⊂) universal pero no cuenta como un elemento (∈) listado en esa definición",
     "incorrect": [
       "Verdadero, axiomáticamente el conjunto vacío pertenece a la totalidad de los conjuntos",
