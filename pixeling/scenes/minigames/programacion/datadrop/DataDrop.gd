@@ -24,6 +24,8 @@ var completed_connections: Array[Dictionary] = [] # [{left_index, target_type, c
 var selected_source_index: int = -1
 var is_dragging: bool = false
 var drag_current_pos: Vector2 = Vector2.ZERO
+var left_buttons: Array[Button] = []
+var right_buttons: Dictionary = {} # String (tipo) -> Button
 
 var max_lives: int = 3
 var current_lives: int = 3
@@ -56,6 +58,7 @@ var error_spark_to: Vector2 = Vector2.ZERO
 
 # Referencias del Tablero
 @onready var board_panel: Panel = $ScreenGame/VBox/BoardSection/BoardPanel
+@onready var left_scroll: ScrollContainer = $ScreenGame/VBox/BoardSection/BoardPanel/HBox/LeftScroll
 @onready var left_container: VBoxContainer = $ScreenGame/VBox/BoardSection/BoardPanel/HBox/LeftScroll/LeftColumn
 @onready var right_container: VBoxContainer = $ScreenGame/VBox/BoardSection/BoardPanel/HBox/RightColumn
 @onready var cable_canvas: Control = $ScreenGame/VBox/BoardSection/BoardPanel/CableCanvas
@@ -125,6 +128,17 @@ func _input(event: InputEvent) -> void:
 			if is_dragging and selected_source_index >= 0:
 				_handle_drop_release(mb.global_position)
 
+	elif event is InputEventScreenDrag:
+		if is_dragging or selected_source_index >= 0:
+			drag_current_pos = _to_canvas_local(event.position)
+			cable_canvas.queue_redraw()
+
+	elif event is InputEventScreenTouch:
+		var st: InputEventScreenTouch = event
+		if not st.pressed:
+			if is_dragging and selected_source_index >= 0:
+				_handle_drop_release(st.position)
+
 func _to_canvas_local(global_pos: Vector2) -> Vector2:
 	return cable_canvas.get_global_transform().affine_inverse() * global_pos
 
@@ -189,6 +203,7 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	is_game_paused = false
 	selected_source_index = -1
 	is_dragging = false
+	drag_current_pos = Vector2.ZERO
 	completed_connections.clear()
 	error_flash_timer = 0.0
 
@@ -205,9 +220,14 @@ func start_game(difficulty: String = "NORMAL") -> void:
 
 func _build_board_ui() -> void:
 	for child in left_container.get_children():
+		left_container.remove_child(child)
 		child.queue_free()
 	for child in right_container.get_children():
+		right_container.remove_child(child)
 		child.queue_free()
+
+	left_buttons.clear()
+	right_buttons.clear()
 
 	# Columna izquierda: Valores literales ("Dato")
 	for i in range(round_pairs.size()):
@@ -224,6 +244,7 @@ func _build_board_ui() -> void:
 		btn.button_down.connect(func(): _on_left_port_down(idx))
 		btn.pressed.connect(func(): _on_left_port_clicked(idx))
 		left_container.add_child(btn)
+		left_buttons.append(btn)
 
 	# Columna derecha: 6 Tipos de variable requeridos (int, float, string, bool, char, list)
 	for type_info in DataDropQuestions.ALL_TYPES:
@@ -242,7 +263,9 @@ func _build_board_ui() -> void:
 		var t_name: String = type_info.type
 		btn.pressed.connect(func(): _on_right_port_clicked(t_name))
 		right_container.add_child(btn)
+		right_buttons[type_info.type] = btn
 
+	left_scroll.scroll_vertical = 0
 	cable_canvas.queue_redraw()
 
 func _on_left_port_down(index: int) -> void:
@@ -272,22 +295,22 @@ func _handle_drop_release(global_drop_pos: Vector2) -> void:
 		return
 
 	# Comprobar si se soltó sobre algún botón receptor
-	for child in right_container.get_children():
-		var btn := child as Button
-		if btn and btn.get_global_rect().has_point(global_drop_pos):
-			var target_type: String = btn.name.replace("RightPort_", "")
-			_verify_connection(selected_source_index, target_type)
+	for t_name in right_buttons:
+		var btn: Button = right_buttons[t_name]
+		if is_instance_valid(btn) and btn.get_global_rect().has_point(global_drop_pos):
+			_verify_connection(selected_source_index, t_name)
 			selected_source_index = -1
 			_highlight_left_buttons()
 			cable_canvas.queue_redraw()
 			return
 
 	# Si se soltó sobre el mismo botón izquierdo de origen, mantenerlo seleccionado para modo clic
-	var left_btn: Button = left_container.get_node_or_null("LeftPort_%d" % selected_source_index)
-	if left_btn and left_btn.get_global_rect().has_point(global_drop_pos):
-		# No cancelar: se mantiene seleccionado
-		cable_canvas.queue_redraw()
-		return
+	if selected_source_index >= 0 and selected_source_index < left_buttons.size():
+		var left_btn: Button = left_buttons[selected_source_index]
+		if is_instance_valid(left_btn) and left_btn.get_global_rect().has_point(global_drop_pos):
+			# No cancelar: se mantiene seleccionado
+			cable_canvas.queue_redraw()
+			return
 
 	# FA-02.02: Si se soltó en la zona intermedia entre contenedores, se retrae sin penalización
 	AudioManager.play_click()
@@ -313,16 +336,18 @@ func _on_right_port_clicked(target_type: String) -> void:
 
 ## FN-03: Verifica correspondencia lógica entre valor y tipo
 func _verify_connection(left_index: int, target_type: String) -> void:
-	if left_index < 0 or left_index >= round_pairs.size():
+	if left_index < 0 or left_index >= round_pairs.size() or left_index >= left_buttons.size():
+		return
+	if not right_buttons.has(target_type):
 		return
 
 	var item: Dictionary = round_pairs[left_index]
 	var is_correct: bool = (item.type == target_type)
 
-	var left_btn: Button = left_container.get_node_or_null("LeftPort_%d" % left_index)
-	var right_btn: Button = right_container.get_node_or_null("RightPort_%s" % target_type)
+	var left_btn: Button = left_buttons[left_index]
+	var right_btn: Button = right_buttons[target_type]
 
-	if not left_btn or not right_btn:
+	if not is_instance_valid(left_btn) or not is_instance_valid(right_btn):
 		return
 
 	if is_correct:
@@ -385,18 +410,19 @@ func _is_left_completed(idx: int) -> bool:
 	return false
 
 func _highlight_left_buttons() -> void:
-	for i in range(round_pairs.size()):
-		var btn: Button = left_container.get_node_or_null("LeftPort_%d" % i)
-		if btn and not btn.disabled:
+	for i in range(left_buttons.size()):
+		var btn: Button = left_buttons[i]
+		if is_instance_valid(btn) and not btn.disabled:
 			if i == selected_source_index:
 				btn.modulate = Color("ffea00")
 			else:
 				btn.modulate = Color.WHITE
 
 func _get_left_port_pos(index: int) -> Vector2:
-	var btn: Button = left_container.get_node_or_null("LeftPort_%d" % index)
-	if btn:
-		return _to_canvas_local(btn.global_position + Vector2(btn.size.x, btn.size.y * 0.5))
+	if index >= 0 and index < left_buttons.size():
+		var btn: Button = left_buttons[index]
+		if is_instance_valid(btn):
+			return _to_canvas_local(btn.global_position + Vector2(btn.size.x, btn.size.y * 0.5))
 	return Vector2.ZERO
 
 ## Renderizado de cables garantizado sobre CableCanvas
