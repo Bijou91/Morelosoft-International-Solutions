@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://derbybateo01"]
+[gd_scene format=3 uid="uid://derbybateo01"]
 
-[ext_resource type="Script" path="res://scenes/minigames/logica/derby_de_bateo/DerbyDeBateo.gd" id="1_derby"]
+[ext_resource type="Script" uid="uid://c2skb7g0uv54h" path="res://scenes/minigames/logica/derby_de_bateo/DerbyDeBateo.gd" id="1_derby"]
 
-[node name="DerbyDeBateo" type="Control"]
+[node name="DerbyDeBateo" type="Control" unique_id=134889459]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_derby")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=236575439]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0627451, 0.0705882, 0.109804, 1)
 
-[node name="TopHUD" type="HBoxContainer" parent="."]
+[node name="TopHUD" type="HBoxContainer" parent="." unique_id=969746135]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -30,27 +30,31 @@ offset_right = -10.0
 offset_bottom = 42.0
 grow_horizontal = 2
 
-[node name="BtnBack" type="Button" parent="TopHUD"]
+[node name="BtnBack" type="Button" parent="TopHUD" unique_id=368231096]
 layout_mode = 2
 text = "Volver"
 
-[node name="Spacer" type="Control" parent="TopHUD"]
+[node name="BtnPause" type="Button" parent="TopHUD" unique_id=898162493]
+layout_mode = 2
+text = "Pausa"
+
+[node name="Spacer" type="Control" parent="TopHUD" unique_id=845309506]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="TopHUD"]
+[node name="Title" type="Label" parent="TopHUD" unique_id=2085856392]
 layout_mode = 2
 text = "Derby de Bateo"
 
-[node name="Spacer2" type="Control" parent="TopHUD"]
+[node name="Spacer2" type="Control" parent="TopHUD" unique_id=985374208]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LivesLabel" type="Label" parent="TopHUD"]
+[node name="LivesLabel" type="Label" parent="TopHUD" unique_id=792975698]
 layout_mode = 2
 text = "Vidas: 3 / 3"
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=709488340]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -63,84 +67,173 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 
-[node name="DifficultySelector" type="HBoxContainer" parent="VBox"]
+[node name="DifficultySelector" type="HBoxContainer" parent="VBox" unique_id=776877065]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="LabelDiff" type="Label" parent="VBox/DifficultySelector"]
+[node name="LabelDiff" type="Label" parent="VBox/DifficultySelector" unique_id=678878204]
 layout_mode = 2
 text = "Dificultad:"
 
-[node name="BtnDiffFacil" type="Button" parent="VBox/DifficultySelector"]
+[node name="BtnDiffFacil" type="Button" parent="VBox/DifficultySelector" unique_id=801325517]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Fácil"
 
-[node name="BtnDiffNormal" type="Button" parent="VBox/DifficultySelector"]
+[node name="BtnDiffNormal" type="Button" parent="VBox/DifficultySelector" unique_id=1504026715]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Normal"
 
-[node name="BtnDiffIng" type="Button" parent="VBox/DifficultySelector"]
+[node name="BtnDiffIng" type="Button" parent="VBox/DifficultySelector" unique_id=2086861717]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Ingeniero"
 
-[node name="StatusBanner" type="PanelContainer" parent="VBox"]
+[node name="StatusBanner" type="PanelContainer" parent="VBox" unique_id=1442633856]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBox/StatusBanner"]
+[node name="Label" type="Label" parent="VBox/StatusBanner" unique_id=2076908403]
 layout_mode = 2
 text = "Elige dificultad para comenzar"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="QuestionPanel" type="PanelContainer" parent="VBox"]
+[node name="QuestionPanel" type="PanelContainer" parent="VBox" unique_id=902165215]
 visible = false
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="Margin" type="MarginContainer" parent="VBox/QuestionPanel"]
+[node name="Margin" type="MarginContainer" parent="VBox/QuestionPanel" unique_id=909476889]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="QuestionLabel" type="Label" parent="VBox/QuestionPanel/Margin"]
+[node name="QuestionLabel" type="Label" parent="VBox/QuestionPanel/Margin" unique_id=382756032]
 layout_mode = 2
 text = "Aquí aparecerá la pregunta de Lógica y Algoritmos"
-autowrap_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 2
 
-[node name="OptionsContainer" type="VBoxContainer" parent="VBox"]
+[node name="OptionsContainer" type="VBoxContainer" parent="VBox" unique_id=236198525]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="BottomBar" type="HBoxContainer" parent="VBox"]
+[node name="BottomBar" type="HBoxContainer" parent="VBox" unique_id=1231723228]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ScoreLabel" type="Label" parent="VBox/BottomBar"]
+[node name="ScoreLabel" type="Label" parent="VBox/BottomBar" unique_id=1243679508]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Aciertos: 0"
 
-[node name="StreakLabel" type="Label" parent="VBox/BottomBar"]
+[node name="StreakLabel" type="Label" parent="VBox/BottomBar" unique_id=33278407]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Racha: 0"
 horizontal_alignment = 1
 
-[node name="TimerLabel" type="Label" parent="VBox/BottomBar"]
+[node name="TimerLabel" type="Label" parent="VBox/BottomBar" unique_id=835956098]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "⏱ 10s"
 horizontal_alignment = 2
+
+[node name="PauseOverlay" type="ColorRect" parent="." unique_id=1971617699]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="VBox" type="VBoxContainer" parent="PauseOverlay" unique_id=328328299]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -60.0
+offset_right = 120.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="PauseOverlay/VBox" unique_id=807339289]
+layout_mode = 2
+text = "JUEGO EN PAUSA"
+horizontal_alignment = 1
+
+[node name="BtnResume" type="Button" parent="PauseOverlay/VBox" unique_id=95935810]
+layout_mode = 2
+text = "Reanudar Partida"
+
+[node name="BtnExit" type="Button" parent="PauseOverlay/VBox" unique_id=874829275]
+layout_mode = 2
+text = "Salir al Aula"
+
+[node name="GameOverOverlay" type="ColorRect" parent="." unique_id=1278985691]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.05, 0.05, 0.9)
+
+[node name="VBox" type="VBoxContainer" parent="GameOverOverlay" unique_id=1215562597]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -80.0
+offset_right = 150.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="GameOverOverlay/VBox" unique_id=1364272338]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "¡JUEGO TERMINADO!"
+horizontal_alignment = 1
+
+[node name="ReasonLabel" type="Label" parent="GameOverOverlay/VBox" unique_id=496116784]
+layout_mode = 2
+text = "Razón"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="GameOverOverlay/VBox" unique_id=496712076]
+layout_mode = 2
+text = "Aciertos: 0
+Puntos Totales: 0
+Estrellas: 0"
+horizontal_alignment = 1
+
+[node name="BtnRetry" type="Button" parent="GameOverOverlay/VBox" unique_id=636567765]
+layout_mode = 2
+text = "Reintentar"
+
+[node name="BtnExit" type="Button" parent="GameOverOverlay/VBox" unique_id=2078152934]
+layout_mode = 2
+text = "Volver al Aula"

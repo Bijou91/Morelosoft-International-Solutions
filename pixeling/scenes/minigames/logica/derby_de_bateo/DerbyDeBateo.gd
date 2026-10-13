@@ -5,7 +5,13 @@
 extends MiniGameBase
 
 # --- Configuración por dificultad ---
-const TIMER_SECONDS: float = 10.0
+# --- Configuración por dificultad ---
+const TIMER_BY_DIFF: Dictionary = {
+	"FACIL": 10.0,
+	"NORMAL": 20.0,
+	"INGENIERO": 60.0
+}
+
 const OPTIONS_BY_DIFF: Dictionary = {
 	"FACIL": 2,
 	"NORMAL": 3,
@@ -27,7 +33,7 @@ var questions: Array = []
 var current_question: Dictionary = {}
 var current_options: Array[String] = []
 var correct_option_index: int = -1
-var time_left: float = TIMER_SECONDS
+var time_left: float = 10.0
 var is_playing: bool = false
 var is_answering: bool = false
 var max_lives: int = 3
@@ -35,6 +41,7 @@ var current_lives: int = 3
 var streak: int = 0
 var total_correct: int = 0
 var total_answered: int = 0
+var total_score: int = 0
 
 # --- Rutas de JSON (aisladas en esta carpeta) ---
 const DATA_PATHS: Dictionary = {
@@ -61,6 +68,20 @@ const DATA_PATHS: Dictionary = {
 @onready var score_label: Label = $VBox/BottomBar/ScoreLabel
 @onready var streak_label: Label = $VBox/BottomBar/StreakLabel
 
+#Logica de pausa
+@onready var btn_pause: Button = $TopHUD/BtnPause
+@onready var pause_overlay: ColorRect = $PauseOverlay
+@onready var btn_resume: Button = $PauseOverlay/VBox/BtnResume
+@onready var btn_exit: Button = $PauseOverlay/VBox/BtnExit
+
+# Logica de Game Over
+@onready var game_over_overlay: ColorRect = $GameOverOverlay
+@onready var go_title_label: Label = $GameOverOverlay/VBox/TitleLabel
+@onready var go_reason_label: Label = $GameOverOverlay/VBox/ReasonLabel
+@onready var go_stats_label: Label = $GameOverOverlay/VBox/StatsLabel
+@onready var btn_go_retry: Button = $GameOverOverlay/VBox/BtnRetry
+@onready var btn_go_exit: Button = $GameOverOverlay/VBox/BtnExit
+
 func _ready() -> void:
 	super._ready()
 	minigame_id = "derby_de_bateo"
@@ -74,6 +95,20 @@ func _ready() -> void:
 
 	_show_difficulty_selector()
 	set_status("Elige dificultad para comenzar el Derby de Bateo")
+	
+	# Conectar nuevos botones
+	btn_pause.pressed.connect(_on_pause_pressed)
+	btn_resume.pressed.connect(_on_resume_pressed)
+	btn_exit.pressed.connect(_on_exit_pressed)
+	
+	# Conectar el botón de la pantalla de Game Over
+	btn_go_exit.pressed.connect(_on_go_exit_pressed)
+	
+	# Conectar el botón de reintentar
+	btn_go_retry.pressed.connect(_on_go_retry_pressed)
+
+	# CRÍTICO: Permitir que el menú de pausa funcione mientras el juego está congelado
+	pause_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _process(delta: float) -> void:
 	if not is_playing or is_answering:
@@ -95,6 +130,7 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	streak = 0
 	total_correct = 0
 	total_answered = 0
+	total_score = 0
 	is_playing = true
 	is_answering = false
 
@@ -102,7 +138,10 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	question_panel.visible = true
 	options_container.visible = true
 	$VBox/BottomBar.visible = true
-
+	
+	btn_back.visible = false
+	btn_pause.visible = true
+	
 	EventBus.minigame_started.emit(minigame_id, current_difficulty)
 	_update_lives_display()
 	_update_score_ui()
@@ -118,6 +157,10 @@ func _show_difficulty_selector() -> void:
 	options_container.visible = false
 	$VBox/BottomBar.visible = false
 	is_playing = false
+	
+	btn_back.visible = true
+	if btn_pause: # Comprobación de seguridad por si el nodo aún no carga
+		btn_pause.visible = false
 
 func _load_questions(diff: String) -> void:
 	questions.clear()
@@ -152,7 +195,7 @@ func _next_question() -> void:
 	current_question = questions.pop_front()
 	_build_options()
 	question_label.text = str(current_question.get("question", "Pregunta no disponible"))
-	time_left = TIMER_SECONDS
+	time_left = TIMER_BY_DIFF.get(current_difficulty, 10.0)
 	is_answering = false
 	_update_timer_ui()
 	set_status("¡Responde antes de que se acabe el tiempo!")
@@ -218,6 +261,7 @@ func _handle_correct() -> void:
 	var points: int = SCORE_BASE.get(current_difficulty, 100)
 	# Bonus por racha
 	points += mini(streak * 10, 50)
+	total_score += points
 	set_status("¡Correcto! +%d pts  |  Racha: %d" % [points, streak])
 	_update_score_ui()
 
@@ -258,12 +302,19 @@ func _handle_game_over(reason: String) -> void:
 		stars = 1
 
 	var final_score: int = total_correct * SCORE_BASE.get(current_difficulty, 100)
-	set_status("GAME OVER: %s. Aciertos: %d  |  Puntos: %d" % [reason, total_correct, final_score])
-
-	await get_tree().create_timer(2.0).timeout
+	
+	# Mostrar mensaje rápido en el banner
+	set_status("GAME OVER. Revisa tus resultados.")
+	
+	# Llenar la pantalla de estadísticas
+	go_reason_label.text = reason
+	go_stats_label.text = "Aciertos: %d\nPuntos Totales: %d\nEstrellas: %d" % [total_correct, final_score, stars]
+	
+	# Llamar a finish_game para guardar el progreso internamente
 	finish_game(total_correct > 0, final_score, stars, "Derby finalizado con %d aciertos" % total_correct)
-	# Volver al aula (no al lobby directamente)
-	_on_back_pressed()
+	
+	# Mostrar la pantalla superpuesta
+	game_over_overlay.visible = true
 
 # ---------------------------------------------------------------------------
 # UI helpers
@@ -271,7 +322,8 @@ func _handle_game_over(reason: String) -> void:
 
 func _update_timer_ui() -> void:
 	if timer_label:
-		var secs: int = ceili(maxi(0.0, time_left))
+		var secs: int = ceili(maxf(0.0, time_left))
+		
 		timer_label.text = "⏱ %ds" % secs
 		if secs <= 3:
 			timer_label.modulate = Color(1.0, 0.3, 0.3)
@@ -284,7 +336,7 @@ func _update_lives_display() -> void:
 
 func _update_score_ui() -> void:
 	if score_label:
-		score_label.text = "Aciertos: %d" % total_correct
+		score_label.text = "Aciertos: %d | Pts: %d" % [total_correct, total_score]
 	if streak_label:
 		streak_label.text = "Racha: %d" % streak
 
@@ -300,3 +352,41 @@ func _on_back_pressed() -> void:
 		get_tree().change_scene_to_file("res://scenes/classroom/AulaLogica.tscn")
 	else:
 		get_tree().change_scene_to_file("res://scenes/campus/Lobby.tscn")
+
+# ---------------------------------------------------------------------------
+# Sistema de Pausa
+# ---------------------------------------------------------------------------
+
+func _on_pause_pressed() -> void:
+	# Evitar pausar si estamos en el selector de dificultad o procesando un error
+	if not is_playing or is_answering:
+		return
+	
+	AudioManager.play_click()
+	get_tree().paused = true
+	pause_overlay.visible = true
+
+func _on_resume_pressed() -> void:
+	AudioManager.play_click()
+	get_tree().paused = false
+	pause_overlay.visible = false
+
+func _on_exit_pressed() -> void:
+	# Despausar antes de cambiar de escena para evitar bugs en el aula
+	get_tree().paused = false 
+	_on_back_pressed()
+
+func _on_go_exit_pressed() -> void:
+	AudioManager.play_click()
+	# Esto utilizará tu lógica existente para volver al aula
+	_on_back_pressed()
+	
+func _on_go_retry_pressed() -> void:
+	AudioManager.play_click()
+	
+	# Ocultar la pantalla de Game Over
+	game_over_overlay.visible = false
+	
+	# Volver a mostrar el selector de dificultad 
+	_show_difficulty_selector()
+	set_status("Elige dificultad para volver a intentar")
