@@ -6,9 +6,13 @@
 classroom_name = "Aula 102: Ing. de Software"
 subject_code = "ISW-01"
 teacher_name = "Docente de Software (UAZ)"
-teacher_tip = "• Funcionales: QUÉ hace el sistema (servicios a capturar).\n• No Funcionales: CÓMO opera (restricciones a esquivar)."
+teacher_tip = "• Req: Funcionales (QUÉ) y No Funcionales (CÓMO).\n• UML: «include» es obligatorio; «extend» es opcional/condicional."
 minigames_list = [{
 "id": "lluvia_requerimientos",
 "name": "Lluvia de Requerimientos",
 "scene": "res://scenes/minigames/ing_software/lluvia_requerimientos/LluviaReqs.tscn"
+}, {
+"id": "include_extend",
+"name": "¿Include o Extend?",
+"scene": "res://scenes/minigames/ing_software/include_extend/IncludeExtend.tscn"
 }]

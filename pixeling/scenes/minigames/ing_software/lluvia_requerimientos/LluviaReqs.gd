@@ -436,6 +436,13 @@ func _build_overlay_difficulty() -> void:
 	btn_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
 	vbox.add_child(btn_ing)
 
+	var btn_back := Button.new()
+	btn_back.text = "←  Volver al Salón"
+	btn_back.add_theme_font_size_override("font_size", 11)
+	btn_back.custom_minimum_size = Vector2(0, 34)
+	btn_back.pressed.connect(_on_back_pressed)
+	vbox.add_child(btn_back)
+
 
 func _build_overlay_instructions() -> void:
 	var parts: Array = _create_overlay(Color(0, 0, 0, 0.82))
@@ -450,7 +457,7 @@ func _build_overlay_instructions() -> void:
 	vbox.add_child(title)
 
 	instr_difficulty_label = Label.new()
-	instr_difficulty_label.text = "Dificultad: INTERMEDIO — 5 vidas"
+	instr_difficulty_label.text = "Dificultad: NORMAL — 5 vidas"
 	instr_difficulty_label.add_theme_font_size_override("font_size", 10)
 	instr_difficulty_label.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
 	instr_difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -482,6 +489,16 @@ func _build_overlay_instructions() -> void:
 	btn_start.pressed.connect(_on_start_pressed)
 	vbox.add_child(btn_start)
 
+	var btn_change := Button.new()
+	btn_change.text = "←  Cambiar Dificultad"
+	btn_change.add_theme_font_size_override("font_size", 11)
+	btn_change.custom_minimum_size = Vector2(0, 34)
+	btn_change.pressed.connect(func():
+		AudioManager.play_click()
+		_show_difficulty_selector()
+	)
+	vbox.add_child(btn_change)
+
 
 func _build_overlay_pause() -> void:
 	var parts: Array = _create_overlay(Color(0, 0, 0, 0.70))
@@ -502,12 +519,12 @@ func _build_overlay_pause() -> void:
 	btn_resume.pressed.connect(_toggle_pause)
 	vbox.add_child(btn_resume)
 
-	var btn_quit := Button.new()
-	btn_quit.text = "🚪  Salir al Campus"
-	btn_quit.add_theme_font_size_override("font_size", 12)
-	btn_quit.custom_minimum_size = Vector2(0, 38)
-	btn_quit.pressed.connect(_on_exit_to_campus)
-	vbox.add_child(btn_quit)
+	var btn_salon := Button.new()
+	btn_salon.text = "←  Volver al Salón"
+	btn_salon.add_theme_font_size_override("font_size", 12)
+	btn_salon.custom_minimum_size = Vector2(0, 38)
+	btn_salon.pressed.connect(_on_back_pressed)
+	vbox.add_child(btn_salon)
 
 
 func _build_overlay_game_over() -> void:
@@ -530,18 +547,18 @@ func _build_overlay_game_over() -> void:
 	vbox.add_child(final_score_label)
 
 	var btn_retry := Button.new()
-	btn_retry.text = "🔄  Reintentar"
+	btn_retry.text = "🔄  Reiniciar Actividad"
 	btn_retry.add_theme_font_size_override("font_size", 13)
 	btn_retry.custom_minimum_size = Vector2(0, 40)
 	btn_retry.pressed.connect(_on_retry_pressed)
 	vbox.add_child(btn_retry)
 
-	var btn_quit := Button.new()
-	btn_quit.text = "🚪  Salir al Campus"
-	btn_quit.add_theme_font_size_override("font_size", 11)
-	btn_quit.custom_minimum_size = Vector2(0, 36)
-	btn_quit.pressed.connect(_on_exit_to_campus)
-	vbox.add_child(btn_quit)
+	var btn_salon := Button.new()
+	btn_salon.text = "←  Volver al Salón"
+	btn_salon.add_theme_font_size_override("font_size", 11)
+	btn_salon.custom_minimum_size = Vector2(0, 36)
+	btn_salon.pressed.connect(_on_back_pressed)
+	vbox.add_child(btn_salon)
 
 
 func _build_overlay_victory() -> void:
@@ -569,12 +586,20 @@ func _build_overlay_victory() -> void:
 	victory_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(victory_score_label)
 
-	var btn_continue := Button.new()
-	btn_continue.text = "▶  Continuar"
-	btn_continue.add_theme_font_size_override("font_size", 13)
-	btn_continue.custom_minimum_size = Vector2(0, 40)
-	btn_continue.pressed.connect(_on_continue_pressed)
-	vbox.add_child(btn_continue)
+	# Opciones de salida al finalizar la actividad
+	var btn_salon := Button.new()
+	btn_salon.text = "📚  Volver al Salón"
+	btn_salon.add_theme_font_size_override("font_size", 13)
+	btn_salon.custom_minimum_size = Vector2(0, 40)
+	btn_salon.pressed.connect(_on_back_pressed)
+	vbox.add_child(btn_salon)
+
+	var btn_campus := Button.new()
+	btn_campus.text = "🚪  Salir al Campus"
+	btn_campus.add_theme_font_size_override("font_size", 13)
+	btn_campus.custom_minimum_size = Vector2(0, 40)
+	btn_campus.pressed.connect(_on_exit_to_campus)
+	vbox.add_child(btn_campus)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPERS DE UI

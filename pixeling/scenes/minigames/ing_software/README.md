@@ -4,7 +4,8 @@
 Esta carpeta aloja los minijuegos didácticos asociados a la ingeniería de requisitos, ciclo de vida del software y metodologías ágiles/TSP.
 
 ## Minijuegos del Módulo:
-* `lluvia_requerimientos/`: **Lluvia de Requerimientos** - El estudiante clasifica requerimientos funcionales y no funcionales en tiempo real.
+* `lluvia_requerimientos/`: **Lluvia de Requerimientos** (CU-07) - El estudiante clasifica requerimientos funcionales y no funcionales en tiempo real.
+* `include_extend/`: **¿Include o Extend?** (CU-08) - Práctica interactiva contra reloj para identificar relaciones UML «include» y «extend».
 * *(Futuro Sprint 2)* `casos_uso/`: Asociación interactiva de actores, precondiciones y flujos principales.
 * *(Futuro Sprint 3)* `estimacion_tsp/`: Estimación de tamaños, tiempos y métricas de calidad bajo TSP.
 

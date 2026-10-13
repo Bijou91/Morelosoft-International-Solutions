@@ -34,7 +34,8 @@ pixeling/
         ├── programacion/       # Materia: Introducción a la Programación
         │   └── roboflow/       # RoboFlow: Control de Flujos (Carlos Aguirre)
         ├── ing_software/       # Materia: Fundamentos de Ing. de Software
-        │   └── lluvia_requerimientos/ # Lluvia de Requerimientos (Karol Espino)
+        │   ├── lluvia_requerimientos/ # Lluvia de Requerimientos (Karol Espino)
+        │   └── include_extend/        # ¿Include o Extend? (Karol Espino)
         ├── logica/             # Materia: Lógica Computacional y Algoritmos
         │   └── tablas_verdad/  # Tablas de Verdad (Omar Martínez)
         └── sistemas_operativos/# Materia: Sistemas Operativos y Linux

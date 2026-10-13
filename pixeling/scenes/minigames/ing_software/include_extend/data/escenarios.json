@@ -1,0 +1,326 @@
+[
+	{
+		"id": "ATM-INC",
+		"contexto": "El usuario interactúa con el cajero automático.",
+		"cu_base": "Retirar efectivo",
+		"cu_relacionado": "Validar PIN",
+		"relacion": "include",
+		"regla": "El cajero siempre pide el PIN antes de entregar dinero.",
+		"explicacion": "Validar PIN ocurre SIEMPRE al retirar efectivo → «include»."
+	},
+	{
+		"id": "ATM-EXT",
+		"contexto": "El usuario termina un retiro en el cajero automático.",
+		"cu_base": "Retirar efectivo",
+		"cu_relacionado": "Imprimir comprobante",
+		"relacion": "extend",
+		"regla": "El comprobante solo se imprime si el usuario lo solicita.",
+		"explicacion": "Imprimir comprobante es opcional: depende del usuario → «extend»."
+	},
+	{
+		"id": "SHOP-INC",
+		"contexto": "Un cliente paga su compra en una tienda en línea.",
+		"cu_base": "Realizar pago",
+		"cu_relacionado": "Validar tarjeta",
+		"relacion": "include",
+		"regla": "Toda tarjeta se valida con el banco antes de cobrar.",
+		"explicacion": "Validar tarjeta forma parte obligatoria del pago → «include»."
+	},
+	{
+		"id": "SHOP-EXT",
+		"contexto": "Un cliente paga su compra en una tienda en línea.",
+		"cu_base": "Realizar pago",
+		"cu_relacionado": "Aplicar cupón de descuento",
+		"relacion": "extend",
+		"regla": "El cupón se aplica únicamente si el cliente tiene uno.",
+		"explicacion": "Aplicar cupón ocurre solo bajo una condición → «extend»."
+	},
+	{
+		"id": "LIB-INC",
+		"contexto": "Un alumno pide un libro en la biblioteca de la UAZ.",
+		"cu_base": "Prestar libro",
+		"cu_relacionado": "Verificar credencial",
+		"relacion": "include",
+		"regla": "No se presta ningún libro sin revisar la credencial vigente.",
+		"explicacion": "Verificar credencial se ejecuta en TODO préstamo → «include»."
+	},
+	{
+		"id": "LIB-EXT",
+		"contexto": "Un alumno regresa un libro a la biblioteca.",
+		"cu_base": "Devolver libro",
+		"cu_relacionado": "Cobrar multa por retraso",
+		"relacion": "extend",
+		"regla": "La multa se cobra solo si el libro se entrega tarde.",
+		"explicacion": "Cobrar multa depende de una condición (retraso) → «extend»."
+	},
+	{
+		"id": "SCH-INC",
+		"contexto": "Un alumno usa el sistema de control escolar.",
+		"cu_base": "Inscribir materias",
+		"cu_relacionado": "Verificar adeudos",
+		"relacion": "include",
+		"regla": "Antes de inscribir, siempre se revisa que no haya adeudos.",
+		"explicacion": "Verificar adeudos es un paso obligatorio de la inscripción → «include»."
+	},
+	{
+		"id": "SCH-EXT",
+		"contexto": "Un alumno revisa su kárdex en control escolar.",
+		"cu_base": "Consultar calificaciones",
+		"cu_relacionado": "Solicitar revisión de examen",
+		"relacion": "extend",
+		"regla": "La revisión se solicita solo si el alumno no está de acuerdo.",
+		"explicacion": "Solicitar revisión es opcional al consultar → «extend»."
+	},
+	{
+		"id": "RIDE-INC",
+		"contexto": "Un usuario pide un viaje en una app de transporte.",
+		"cu_base": "Solicitar viaje",
+		"cu_relacionado": "Calcular tarifa",
+		"relacion": "include",
+		"regla": "La app siempre muestra la tarifa antes de confirmar el viaje.",
+		"explicacion": "Calcular tarifa sucede en TODA solicitud → «include»."
+	},
+	{
+		"id": "RIDE-EXT",
+		"contexto": "Un usuario pide un viaje en una app de transporte.",
+		"cu_base": "Solicitar viaje",
+		"cu_relacionado": "Agregar parada intermedia",
+		"relacion": "extend",
+		"regla": "El usuario puede agregar una parada si lo necesita.",
+		"explicacion": "Agregar parada es un comportamiento opcional → «extend»."
+	},
+	{
+		"id": "BANK-INC",
+		"contexto": "Un cliente usa la banca en línea.",
+		"cu_base": "Transferir dinero",
+		"cu_relacionado": "Autenticar usuario",
+		"relacion": "include",
+		"regla": "Ninguna transferencia se hace sin autenticar al cliente.",
+		"explicacion": "Autenticar usuario es obligatorio para transferir → «include»."
+	},
+	{
+		"id": "BANK-EXT",
+		"contexto": "Un cliente intenta entrar a la banca en línea.",
+		"cu_base": "Iniciar sesión",
+		"cu_relacionado": "Recuperar contraseña",
+		"relacion": "extend",
+		"regla": "La recuperación se ofrece solo cuando el cliente olvidó su contraseña.",
+		"explicacion": "Recuperar contraseña ocurre solo en un caso excepcional → «extend»."
+	},
+	{
+		"id": "HOSP-INC",
+		"contexto": "Un paciente usa el portal de un hospital.",
+		"cu_base": "Agendar cita",
+		"cu_relacionado": "Verificar disponibilidad",
+		"relacion": "include",
+		"regla": "Siempre se confirma que el médico tenga espacio en su agenda.",
+		"explicacion": "Verificar disponibilidad se ejecuta en TODA cita → «include»."
+	},
+	{
+		"id": "HOSP-EXT",
+		"contexto": "Un paciente agenda una cita en el portal del hospital.",
+		"cu_base": "Agendar cita",
+		"cu_relacionado": "Enviar recordatorio SMS",
+		"relacion": "extend",
+		"regla": "El SMS se envía únicamente si el paciente activó los recordatorios.",
+		"explicacion": "Enviar SMS depende de una preferencia del paciente → «extend»."
+	},
+	{
+		"id": "STREAM-INC",
+		"contexto": "Un usuario abre una plataforma de streaming.",
+		"cu_base": "Reproducir película",
+		"cu_relacionado": "Verificar suscripción",
+		"relacion": "include",
+		"regla": "Solo se reproduce contenido con una suscripción activa.",
+		"explicacion": "Verificar suscripción ocurre antes de CADA reproducción → «include»."
+	},
+	{
+		"id": "STREAM-EXT",
+		"contexto": "Un usuario ve una película en streaming.",
+		"cu_base": "Reproducir película",
+		"cu_relacionado": "Activar subtítulos",
+		"relacion": "extend",
+		"regla": "El usuario puede activar subtítulos si así lo desea.",
+		"explicacion": "Activar subtítulos es opcional durante la reproducción → «extend»."
+	},
+	{
+		"id": "ORDER-INC",
+		"contexto": "Un cliente finaliza su carrito de compras.",
+		"cu_base": "Confirmar pedido",
+		"cu_relacionado": "Calcular total",
+		"relacion": "include",
+		"regla": "Todo pedido muestra el total con impuestos antes de confirmarse.",
+		"explicacion": "Calcular total es parte obligatoria de confirmar → «include»."
+	},
+	{
+		"id": "ORDER-EXT",
+		"contexto": "Un cliente finaliza su carrito de compras.",
+		"cu_base": "Confirmar pedido",
+		"cu_relacionado": "Envolver para regalo",
+		"relacion": "extend",
+		"regla": "La envoltura se agrega solo si el cliente la pide.",
+		"explicacion": "Envolver para regalo es un extra opcional → «extend»."
+	},
+	{
+		"id": "CINE-INC",
+		"contexto": "Un usuario compra entradas en la app del cine.",
+		"cu_base": "Comprar boletos",
+		"cu_relacionado": "Seleccionar asientos",
+		"relacion": "include",
+		"regla": "Todas las funciones son numeradas: siempre se eligen asientos.",
+		"explicacion": "Seleccionar asientos ocurre en TODA compra → «include»."
+	},
+	{
+		"id": "CINE-EXT",
+		"contexto": "Un usuario compra entradas en la app del cine.",
+		"cu_base": "Comprar boletos",
+		"cu_relacionado": "Agregar combo de dulcería",
+		"relacion": "extend",
+		"regla": "El combo de palomitas se ofrece, pero es decisión del cliente.",
+		"explicacion": "Agregar combo es opcional → «extend»."
+	},
+	{
+		"id": "SOCIAL-INC",
+		"contexto": "Un usuario comparte contenido en una red social.",
+		"cu_base": "Publicar foto",
+		"cu_relacionado": "Subir archivo",
+		"relacion": "include",
+		"regla": "Para publicar una foto, la imagen siempre se sube al servidor.",
+		"explicacion": "Subir archivo es un paso obligatorio de publicar → «include»."
+	},
+	{
+		"id": "SOCIAL-EXT",
+		"contexto": "Un usuario comparte contenido en una red social.",
+		"cu_base": "Publicar foto",
+		"cu_relacionado": "Etiquetar amigos",
+		"relacion": "extend",
+		"regla": "Etiquetar a otras personas es opcional.",
+		"explicacion": "Etiquetar amigos solo ocurre si el usuario lo elige → «extend»."
+	},
+	{
+		"id": "LMS-INC",
+		"contexto": "Un alumno usa la plataforma de tareas de su facultad.",
+		"cu_base": "Entregar tarea",
+		"cu_relacionado": "Registrar fecha de entrega",
+		"relacion": "include",
+		"regla": "Toda entrega queda registrada con fecha y hora.",
+		"explicacion": "Registrar la fecha ocurre en CADA entrega → «include»."
+	},
+	{
+		"id": "LMS-EXT",
+		"contexto": "Un alumno usa la plataforma de tareas de su facultad.",
+		"cu_base": "Entregar tarea",
+		"cu_relacionado": "Solicitar prórroga",
+		"relacion": "extend",
+		"regla": "La prórroga se pide solo si el alumno tiene una justificación.",
+		"explicacion": "Solicitar prórroga depende de una situación especial → «extend»."
+	},
+	{
+		"id": "AIR-INC",
+		"contexto": "Un pasajero usa la app de una aerolínea.",
+		"cu_base": "Hacer check-in",
+		"cu_relacionado": "Validar reservación",
+		"relacion": "include",
+		"regla": "El check-in siempre comprueba que la reservación exista.",
+		"explicacion": "Validar reservación es obligatorio para el check-in → «include»."
+	},
+	{
+		"id": "AIR-EXT",
+		"contexto": "Un pasajero hace check-in en la app de la aerolínea.",
+		"cu_base": "Hacer check-in",
+		"cu_relacionado": "Mejorar a primera clase",
+		"relacion": "extend",
+		"regla": "La mejora se ofrece solo si hay lugares y el pasajero acepta pagar.",
+		"explicacion": "Mejorar de clase es condicional y opcional → «extend»."
+	},
+	{
+		"id": "FOOD-INC",
+		"contexto": "Un cliente pide comida a domicilio.",
+		"cu_base": "Ordenar comida",
+		"cu_relacionado": "Verificar dirección",
+		"relacion": "include",
+		"regla": "Ningún pedido sale sin confirmar la dirección de entrega.",
+		"explicacion": "Verificar dirección ocurre en TODO pedido → «include»."
+	},
+	{
+		"id": "FOOD-EXT",
+		"contexto": "Un cliente pide comida a domicilio.",
+		"cu_base": "Ordenar comida",
+		"cu_relacionado": "Dejar propina",
+		"relacion": "extend",
+		"regla": "La propina es voluntaria.",
+		"explicacion": "Dejar propina es opcional → «extend»."
+	},
+	{
+		"id": "GYM-INC",
+		"contexto": "Un socio llega al gimnasio.",
+		"cu_base": "Registrar acceso",
+		"cu_relacionado": "Validar membresía",
+		"relacion": "include",
+		"regla": "El torniquete solo abre si la membresía está vigente.",
+		"explicacion": "Validar membresía se ejecuta en CADA acceso → «include»."
+	},
+	{
+		"id": "GYM-EXT",
+		"contexto": "Un socio llega al gimnasio.",
+		"cu_base": "Registrar acceso",
+		"cu_relacionado": "Rentar casillero",
+		"relacion": "extend",
+		"regla": "El casillero se renta solo si el socio lo necesita.",
+		"explicacion": "Rentar casillero es un servicio opcional → «extend»."
+	},
+	{
+		"id": "MAIL-INC",
+		"contexto": "Un usuario redacta un mensaje en su correo.",
+		"cu_base": "Enviar correo",
+		"cu_relacionado": "Validar destinatario",
+		"relacion": "include",
+		"regla": "Ningún correo se envía sin una dirección de destinatario válida.",
+		"explicacion": "Validar destinatario ocurre en TODO envío → «include»."
+	},
+	{
+		"id": "MAIL-EXT",
+		"contexto": "Un usuario redacta un mensaje en su correo.",
+		"cu_base": "Enviar correo",
+		"cu_relacionado": "Programar envío",
+		"relacion": "extend",
+		"regla": "El usuario puede elegir una fecha futura para enviar.",
+		"explicacion": "Programar envío es una variante opcional → «extend»."
+	},
+	{
+		"id": "GAME-INC",
+		"contexto": "Un jugador guarda su avance en un videojuego.",
+		"cu_base": "Guardar partida",
+		"cu_relacionado": "Escribir archivo local",
+		"relacion": "include",
+		"regla": "Guardar siempre escribe el progreso en el dispositivo.",
+		"explicacion": "Escribir el archivo es parte obligatoria de guardar → «include»."
+	},
+	{
+		"id": "GAME-EXT",
+		"contexto": "Un jugador guarda su avance en un videojuego.",
+		"cu_base": "Guardar partida",
+		"cu_relacionado": "Sincronizar en la nube",
+		"relacion": "extend",
+		"regla": "Se sincroniza solo si hay internet y el jugador lo activó.",
+		"explicacion": "Sincronizar depende de condiciones → «extend»."
+	},
+	{
+		"id": "PAY-INC",
+		"contexto": "Recursos Humanos genera la nómina quincenal.",
+		"cu_base": "Generar recibo de nómina",
+		"cu_relacionado": "Calcular deducciones",
+		"relacion": "include",
+		"regla": "Todo recibo descuenta impuestos y seguro social.",
+		"explicacion": "Calcular deducciones ocurre en CADA recibo → «include»."
+	},
+	{
+		"id": "PAY-EXT",
+		"contexto": "Recursos Humanos genera la nómina quincenal.",
+		"cu_base": "Generar recibo de nómina",
+		"cu_relacionado": "Agregar bono de puntualidad",
+		"relacion": "extend",
+		"regla": "El bono se agrega solo a quien no tuvo retardos.",
+		"explicacion": "El bono depende de una condición → «extend»."
+	}
+]
