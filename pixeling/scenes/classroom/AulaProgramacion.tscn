@@ -11,4 +11,8 @@ minigames_list = [{
 "id": "roboflow",
 "name": "RoboFlow (Control de Flujos)",
 "scene": "res://scenes/minigames/programacion/roboflow/RoboFlow.tscn"
+}, {
+"id": "datadrop",
+"name": "DataDrop (Tipos de Datos y Variables)",
+"scene": "res://scenes/minigames/programacion/datadrop/DataDrop.tscn"
 }]

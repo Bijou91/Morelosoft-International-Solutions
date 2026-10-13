@@ -4,7 +4,8 @@
 Esta carpeta aloja los minijuegos didácticos asociados a los contenidos curriculares de Programación de primer semestre.
 
 ## Minijuegos del Módulo:
-* `roboflow/`: **RoboFlow (Control de Flujos)** - El estudiante estructura secuencias algorítmicas de comandos para guiar un robot a la meta en el tablero del laberinto.
+* `roboflow/`: **RoboFlow (CU-10 - Control de Flujos)** - El estudiante estructura secuencias algorítmicas de comandos para guiar un robot a la meta en el tablero del laberinto.
+* `datadrop/`: **DataDrop (CU-11 - Tipos de Datos y Variables)** - El estudiante clasifica y asocia mediante cables valores literales con sus tipos de datos primitivos (int, float, string, bool).
 * *(Futuro Sprint 2)* `condicionales/`: Práctica de ramificaciones lógicas if/else con semáforos o sensores.
 * *(Futuro Sprint 3)* `bucles_repeticion/`: Optimización de algoritmos reduciendo instrucciones repetitivas con bucles for/while.
 * *(Futuro)* `arreglos_matrices/`: Manipulación de listas e indexación matricial.
