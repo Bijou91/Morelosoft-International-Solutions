@@ -4,9 +4,8 @@
 Esta carpeta aloja los minijuegos didácticos orientados al uso de la terminal GNU/Linux, gestión de archivos y procesos.
 
 ## Minijuegos del Módulo:
-* `terminal_linux/`: **Terminal de Comandos Linux** - Desafíos interactivos de comandos bash (`cd`, `ls`, `mkdir`, `cat`).
-* *(Futuro Sprint 2)* `permisos_chmod/`: Asignación interactiva de permisos rwx (octales y simbólicos) a usuarios y grupos.
-* *(Futuro Sprint 3)* `procesos_pipes/`: Manipulación de pipes (`|`), redirecciones (`>`, `>>`) y señales de procesos.
+* `terminal_linux/`: **Terminal de Comandos Linux** (CU-16) - Desafíos interactivos de comandos bash (`cd`, `ls`, `mkdir`, `cat`).
+* `exploracion_archivos/`: **Exploración del Sistema de Archivos** (CU-17) - Búsqueda y localización de flags en la jerarquía de directorios Linux mediante navegación, visualización de contenidos y envío de flags.
 
 ## Reglas de Extensión (Escalabilidad sin Retrabajo):
 1. Cada nuevo minijuego debe ubicarse en su propia subcarpeta con nombre semántico de alto nivel (`nombre_minijuego/`).
