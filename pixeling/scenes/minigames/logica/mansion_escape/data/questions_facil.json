@@ -1,0 +1,34 @@
+[
+  {
+    "question": "A ∩ B",
+    "correct": "v2_q01_correct.png"
+  },
+  {
+    "question": "A ∪ B",
+    "correct": "v2_q02_correct.png"
+  },
+  {
+    "question": "A − B",
+    "correct": "v2_q03_correct.png"
+  },
+  {
+    "question": "(A ∪ B)′",
+    "correct": "v2_q04_correct.png"
+  },
+  {
+    "question": "A Δ B",
+    "correct": "v2_q05_correct.png"
+  },
+  {
+    "question": "A′",
+    "correct": "v2_q06_correct.png"
+  },
+  {
+    "question": "B′",
+    "correct": "v2_q07_correct.png"
+  },
+  {
+    "question": "B − A",
+    "correct": "v2_q08_correct.png"
+  }
+]

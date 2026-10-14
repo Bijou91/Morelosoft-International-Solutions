@@ -11,4 +11,8 @@ minigames_list = Array[Dictionary]([{
 "id": "derby_de_bateo",
 "name": "Derby de Bateo (Proposiciones Lógicas)",
 "scene": "res://scenes/minigames/logica/derby_de_bateo/DerbyDeBateo.tscn"
+}, {
+"id": "mansion_escape",
+"name": "Mansión del escape (Diagramas de Venn)",
+"scene": "res://scenes/minigames/logica/mansion_escape/MansionEscape.tscn"
 }])

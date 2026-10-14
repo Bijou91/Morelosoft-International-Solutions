@@ -1,0 +1,336 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/minigames/logica/mansion_escape/MansionEscape.gd" id="1_mansion"]
+
+[node name="MansionEscape" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mansion")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0705882, 0.109804, 1)
+
+[node name="TopHUD" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 42.0
+grow_horizontal = 2
+
+[node name="BtnBack" type="Button" parent="TopHUD"]
+layout_mode = 2
+text = "Volver"
+
+[node name="BtnPause" type="Button" parent="TopHUD"]
+layout_mode = 2
+text = "Pausa"
+
+[node name="Spacer" type="Control" parent="TopHUD"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="TopHUD"]
+layout_mode = 2
+text = "Mansión del Escape"
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 50.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="DifficultySelector" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LabelDiff" type="Label" parent="VBox/DifficultySelector"]
+layout_mode = 2
+text = "Dificultad:"
+
+[node name="BtnDiffFacil" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fácil"
+
+[node name="BtnDiffNormal" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Normal"
+
+[node name="BtnDiffIng" type="Button" parent="VBox/DifficultySelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ingeniero"
+
+[node name="HudRow" type="HBoxContainer" parent="VBox"]
+visible = false
+layout_mode = 2
+
+[node name="TimerLabel" type="Label" parent="VBox/HudRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "⏱ 60s"
+
+[node name="ProgressLabel" type="Label" parent="VBox/HudRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Piso 1/5 | 0 pts"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LivesLabel" type="Label" parent="VBox/HudRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "♥ x 7"
+horizontal_alignment = 2
+
+[node name="QuestionPanel" type="PanelContainer" parent="VBox"]
+visible = false
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="VBox/QuestionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="QuestionLabel" type="Label" parent="VBox/QuestionPanel/Margin"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Aquí aparecerá la operación entre conjuntos"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="OptionsArea" type="VBoxContainer" parent="VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowTop" type="HBoxContainer" parent="VBox/OptionsArea"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="RowBottom" type="HBoxContainer" parent="VBox/OptionsArea"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Stage" type="Control" parent="VBox"]
+visible = false
+clip_contents = true
+custom_minimum_size = Vector2(0, 176)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Controls" type="HBoxContainer" parent="VBox"]
+visible = false
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnLeft" type="Button" parent="VBox/Controls"]
+custom_minimum_size = Vector2(64, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "◀"
+
+[node name="BtnRight" type="Button" parent="VBox/Controls"]
+custom_minimum_size = Vector2(64, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "▶"
+
+[node name="Spacer" type="Control" parent="VBox/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnEnter" type="Button" parent="VBox/Controls"]
+custom_minimum_size = Vector2(110, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 16
+text = "ENTRAR"
+
+[node name="PauseOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="VBox" type="VBoxContainer" parent="PauseOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -60.0
+offset_right = 120.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="PauseOverlay/VBox"]
+layout_mode = 2
+text = "JUEGO EN PAUSA"
+horizontal_alignment = 1
+
+[node name="BtnResume" type="Button" parent="PauseOverlay/VBox"]
+layout_mode = 2
+text = "Reanudar Partida"
+
+[node name="BtnExit" type="Button" parent="PauseOverlay/VBox"]
+layout_mode = 2
+text = "Salir al Aula"
+
+[node name="GameOverOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.05, 0.05, 0.9)
+
+[node name="VBox" type="VBoxContainer" parent="GameOverOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -80.0
+offset_right = 150.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="GameOverOverlay/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "¡JUEGO TERMINADO!"
+horizontal_alignment = 1
+
+[node name="ReasonLabel" type="Label" parent="GameOverOverlay/VBox"]
+layout_mode = 2
+text = "Razón"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StatsLabel" type="Label" parent="GameOverOverlay/VBox"]
+layout_mode = 2
+text = "Retos correctos: 0/5
+Puntos Totales: 0
+Estrellas: 0"
+horizontal_alignment = 1
+
+[node name="BtnRetry" type="Button" parent="GameOverOverlay/VBox"]
+layout_mode = 2
+text = "Reintentar"
+
+[node name="BtnExit" type="Button" parent="GameOverOverlay/VBox"]
+layout_mode = 2
+text = "Volver al Aula"
+
+[node name="IntroOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.92)
+
+[node name="Panel" type="PanelContainer" parent="IntroOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = -12.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="IntroOverlay/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="IntroOverlay/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="IntroOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Mansión del escape"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="IntroOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Text" type="RichTextLabel" parent="IntroOverlay/Panel/Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 13
+theme_override_font_sizes/italics_font_size = 11
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 3
+
+[node name="BtnStart" type="Button" parent="IntroOverlay/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "¡Entendido, comenzar!"
+
+[node name="BtnIntroBack" type="Button" parent="IntroOverlay/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Volver al aula"

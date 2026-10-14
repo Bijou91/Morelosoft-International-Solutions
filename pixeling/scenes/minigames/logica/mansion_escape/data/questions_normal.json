@@ -1,0 +1,34 @@
+[
+  {
+    "question": "A ∩ B ∩ C",
+    "correct": "v3_q01_correct.png"
+  },
+  {
+    "question": "(A ∩ B) − C",
+    "correct": "v3_q02_correct.png"
+  },
+  {
+    "question": "A ∪ B ∪ C",
+    "correct": "v3_q03_correct.png"
+  },
+  {
+    "question": "C − (A ∪ B)",
+    "correct": "v3_q04_correct.png"
+  },
+  {
+    "question": "(A ∪ B ∪ C)′",
+    "correct": "v3_q05_correct.png"
+  },
+  {
+    "question": "(A ∩ C) − B",
+    "correct": "v3_q06_correct.png"
+  },
+  {
+    "question": "A − (B ∪ C)",
+    "correct": "v3_q07_correct.png"
+  },
+  {
+    "question": "(A ∪ B) − C",
+    "correct": "v3_q08_correct.png"
+  }
+]
