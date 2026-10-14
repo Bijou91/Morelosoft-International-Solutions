@@ -11,4 +11,8 @@ minigames_list = [{
 "id": "terminal_linux",
 "name": "Linux Command (Desafío Terminal)",
 "scene": "res://scenes/minigames/sistemas_operativos/terminal_linux/LinuxCommand.tscn"
+}, {
+"id": "exploracion_archivos",
+"name": "Explorar el sistema de archivos",
+"scene": "res://scenes/minigames/sistemas_operativos/exploracion_archivos/FileSystemExplorer.tscn"
 }]

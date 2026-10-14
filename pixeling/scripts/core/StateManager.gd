@@ -26,6 +26,7 @@ var player_data: Dictionary = {
 			"lluvia_requerimientos": { "completed": false, "score": 0, "stars": 0 },
 			"tablas_verdad": { "completed": false, "score": 0, "stars": 0 },
 			"terminal_linux": { "completed": false, "score": 0, "stars": 0 },
+			"exploracion_archivos": { "completed": false, "score": 0, "stars": 0 },
 			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0 },
 			"include_extend": { "completed": false, "score": 0, "stars": 0 },
 			"datadrop": { "completed": false, "score": 0, "stars": 0 }

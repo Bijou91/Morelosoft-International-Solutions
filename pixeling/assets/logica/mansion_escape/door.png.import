@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0nsrh44gaeoh"
-path="res://.godot/imported/puerta_madera.png-f189ebae3872cb30bf56c93a68a53a9a.ctex"
+path="res://.godot/imported/door.png-c7421d59f5d6e88ddc3ec1e3dedcf35f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/logica/mansion_escape/puerta_madera.png"
-dest_files=["res://.godot/imported/puerta_madera.png-f189ebae3872cb30bf56c93a68a53a9a.ctex"]
+source_file="res://assets/logica/mansion_escape/door.png"
+dest_files=["res://.godot/imported/door.png-c7421d59f5d6e88ddc3ec1e3dedcf35f.ctex"]
 
 [params]
 
