@@ -1,0 +1,408 @@
+[gd_scene load_steps=2 format=3 uid="uid://datadropcu11uaz"]
+
+[ext_resource type="Script" path="res://scenes/minigames/programacion/datadrop/DataDrop.gd" id="1_dd01"]
+
+[node name="DataDrop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dd01")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0784314, 0.113725, 1)
+
+[node name="ScreenStart" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ScreenStart"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -220.0
+offset_right = 160.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="ScreenStart/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.898039, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "DataDrop"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="ScreenStart/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "CU-11: Clasificación de Tipos y Variables"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="ScreenStart/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Conecta los valores literales de la izquierda con su tipo de dato correspondiente (int, float, string, bool) usando cables."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="DiffLabel" type="Label" parent="ScreenStart/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Selecciona la Dificultad:"
+horizontal_alignment = 1
+
+[node name="DiffSelector" type="HBoxContainer" parent="ScreenStart/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnFacil" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Fácil"
+
+[node name="BtnNormal" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Normal"
+
+[node name="BtnIngeniero" type="Button" parent="ScreenStart/VBox/DiffSelector"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Ingeniero"
+
+[node name="DiffInfoLabel" type="Label" parent="ScreenStart/VBox"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 11
+text = "Información del modo"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnStartPlay" type="Button" parent="ScreenStart/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "CONECTAR TERMINAL"
+
+[node name="BtnStartBack" type="Button" parent="ScreenStart/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Volver al Aula 101"
+
+[node name="ScreenGame" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ScreenGame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="TopHUD" type="HBoxContainer" parent="ScreenGame/VBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnPause" type="Button" parent="ScreenGame/VBox/TopHUD"]
+custom_minimum_size = Vector2(34, 32)
+layout_mode = 2
+text = "⏸"
+
+[node name="PairsCounter" type="Label" parent="ScreenGame/VBox/TopHUD"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "PARES: 0 / 6"
+vertical_alignment = 1
+
+[node name="TimeBar" type="ProgressBar" parent="ScreenGame/VBox/TopHUD"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 100.0
+show_percentage = false
+
+[node name="TimeLabel" type="Label" parent="ScreenGame/VBox/TopHUD"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "75s"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HeartsLabel" type="Label" parent="ScreenGame/VBox/TopHUD"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "❤ ❤ ❤"
+vertical_alignment = 1
+
+[node name="StatusBanner" type="PanelContainer" parent="ScreenGame/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScreenGame/VBox/StatusBanner"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Arrastra un dato hacia su tipo correspondiente"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BoardSection" type="MarginContainer" parent="ScreenGame/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardPanel" type="Panel" parent="ScreenGame/VBox/BoardSection"]
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="ScreenGame/VBox/BoardSection/BoardPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 8.0
+offset_right = -6.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LeftScroll" type="ScrollContainer" parent="ScreenGame/VBox/BoardSection/BoardPanel/HBox"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="LeftColumn" type="VBoxContainer" parent="ScreenGame/VBox/BoardSection/BoardPanel/HBox/LeftScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="CenterSpace" type="Control" parent="ScreenGame/VBox/BoardSection/BoardPanel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="ScreenGame/VBox/BoardSection/BoardPanel/HBox"]
+custom_minimum_size = Vector2(115, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CableCanvas" type="Control" parent="ScreenGame/VBox/BoardSection/BoardPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ScreenPause" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ScreenPause"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="VBox" type="VBoxContainer" parent="ScreenPause"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -110.0
+offset_right = 140.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="ScreenPause/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "PAUSA"
+horizontal_alignment = 1
+
+[node name="BtnResume" type="Button" parent="ScreenPause/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Reanudar Conexión"
+
+[node name="BtnRestart" type="Button" parent="ScreenPause/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Reiniciar Nivel"
+
+[node name="BtnExit" type="Button" parent="ScreenPause/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Salir al Aula 101"
+
+[node name="ScreenVictory" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ScreenVictory"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.32, 0.16, 0.95)
+
+[node name="VBox" type="VBoxContainer" parent="ScreenVictory"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -140.0
+offset_right = 150.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="ScreenVictory/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "¡CONEXIONES EXITOSAS!"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="ScreenVictory/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Estadísticas finales"
+horizontal_alignment = 1
+
+[node name="BtnRetry" type="Button" parent="ScreenVictory/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Jugar de Nuevo"
+
+[node name="BtnExit" type="Button" parent="ScreenVictory/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Volver al Aula 101"
+
+[node name="ScreenGameOver" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="ScreenGameOver"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.38, 0.08, 0.08, 0.95)
+
+[node name="VBox" type="VBoxContainer" parent="ScreenGameOver"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -140.0
+offset_right = 150.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="ScreenGameOver/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "¡CIRCUITO SOBRECARGADO!"
+horizontal_alignment = 1
+
+[node name="ReasonLabel" type="Label" parent="ScreenGameOver/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Motivo del fin de partida"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnRetry" type="Button" parent="ScreenGameOver/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Reintentar Conexión"
+
+[node name="BtnExit" type="Button" parent="ScreenGameOver/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Volver al Aula 101"

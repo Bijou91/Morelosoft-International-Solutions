@@ -1,5 +1,10 @@
 # Documentación excluida del repositorio de código
 Morelosoft International Solutions-20260908T224219Z-1-001/
+Morelosoft International Solutions/
+morelosviejo/
+.agents/
+__pycache__/
+*.pyc
 *.docx
 *.pdf
 *.puml
