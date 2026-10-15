@@ -140,15 +140,15 @@ func _on_difficulty_chosen(diff: String) -> void:
 		"FACIL":
 			max_lives = 3
 			time_limit = 60.0
-			total_score = 250
+			total_score = 230
 		"NORMAL":
 			max_lives = 2
 			time_limit = 30.0
-			total_score = 500
+			total_score = 460
 		"INGENIERO":
 			max_lives = 1
 			time_limit = 40.0
-			total_score = 750
+			total_score = 690
 
 	current_lives = max_lives
 	_show_tutorial()
@@ -226,6 +226,7 @@ func _update_prompt_display() -> void:
 
 func _setup_command_buttons() -> void:
 	for child in commands_container.get_children():
+		commands_container.remove_child(child)
 		child.queue_free()
 
 	var cmds: Array = current_challenge.get("available_commands", ["ls", "cd", "cat", "pwd", "clear"])
@@ -332,8 +333,9 @@ func _open_cd_picker() -> void:
 	var subdirs: Array = dir_info.get("dirs", []).duplicate()
 
 	var options: Array[Dictionary] = []
-	# Opción de retroceder si no estamos en la raíz
-	if current_path != "/" and current_path != "/home":
+	var base_path: String = current_challenge.get("initial_path", "/home/user")
+	# Permitir retroceder con '..' solo si estamos dentro de una subcarpeta respecto a la base
+	if current_path != base_path and current_path.begins_with(base_path):
 		options.append({"label": ".. (Directorio anterior)", "target": ".."})
 
 	for d in subdirs:
@@ -350,18 +352,28 @@ func _open_cd_picker() -> void:
 
 func _do_cd(target: String) -> void:
 	_append_terminal_line("$ cd " + target)
+	var base_path: String = current_challenge.get("initial_path", "/home/user")
+
 	if target == "..":
-		var parts: Array = current_path.split("/", false)
-		if parts.size() > 1:
-			parts.pop_back()
-			current_path = "/" + "/".join(parts)
+		if current_path != base_path and current_path.begins_with(base_path):
+			var parts: Array = current_path.split("/", false)
+			if parts.size() > 1:
+				parts.pop_back()
+				var new_p: String = "/" + "/".join(parts)
+				if new_p.begins_with(base_path):
+					current_path = new_p
+				else:
+					current_path = base_path
+			else:
+				current_path = base_path
 		else:
-			current_path = "/"
+			_append_terminal_line("[color=#ffcc00]Ya te encuentras en el directorio base del desafío.[/color]")
 	else:
-		if current_path == "/":
-			current_path = "/" + target
+		var target_path: String = (current_path + "/" + target) if current_path != "/" else ("/" + target)
+		if simulated_fs.has(target_path):
+			current_path = target_path
 		else:
-			current_path = current_path + "/" + target
+			_append_terminal_line("[color=#ff8888]bash: cd: %s: No existe el archivo o el directorio[/color]" % target)
 
 	_update_prompt_display()
 
@@ -387,7 +399,10 @@ func _do_file_cmd(cmd: String, filename: String) -> void:
 	var files: Dictionary = dir_info.get("files", {})
 	var content: String = str(files.get(filename, ""))
 
-	_append_terminal_line("$ %s %s" % [cmd, filename])
+	if cmd == "grep":
+		_append_terminal_line("$ grep -i 'flag' %s" % filename)
+	else:
+		_append_terminal_line("$ %s %s" % [cmd, filename])
 
 	match cmd:
 		"cat":
@@ -407,7 +422,6 @@ func _do_file_cmd(cmd: String, filename: String) -> void:
 				tail_lines.append(lines[i])
 			_append_terminal_line("[color=#ffffff]" + "\n".join(tail_lines) + "[/color]")
 		"grep":
-			_append_terminal_line("$ grep -i 'flag' %s" % filename)
 			var matched_lines: Array = []
 			for line in content.split("\n"):
 				if "flag" in line.to_lower():
@@ -422,6 +436,7 @@ func _do_file_cmd(cmd: String, filename: String) -> void:
 func _show_picker(title: String, options: Array[Dictionary], callback: Callable) -> void:
 	picker_title.text = title
 	for child in picker_options_container.get_children():
+		picker_options_container.remove_child(child)
 		child.queue_free()
 
 	for opt in options:
@@ -493,6 +508,7 @@ func _handle_game_over(reason: String) -> void:
 	is_timer_active = false
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
+	finish_game(false, 0, 0, "Partida finalizada: " + reason)
 
 	game_over_desc.text = "Causa: %s.\nTe has quedado sin vidas en dificultad %s.\n(No se registrará puntuación según el reglamento)." % [reason, current_difficulty]
 	modal_game_over.visible = true
@@ -531,6 +547,7 @@ func _update_timer_display() -> void:
 
 func _update_lives_hud() -> void:
 	for child in hearts_container.get_children():
+		hearts_container.remove_child(child)
 		child.queue_free()
 
 	for i in range(max_lives):
