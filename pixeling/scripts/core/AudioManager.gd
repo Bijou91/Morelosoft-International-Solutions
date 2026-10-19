@@ -4,10 +4,37 @@
 extends Node
 
 var audio_player: AudioStreamPlayer
+var music_player: AudioStreamPlayer
+var sfx_volume: float = 1.0
+var music_volume: float = 1.0
 
 func _ready() -> void:
 	audio_player = AudioStreamPlayer.new()
+	audio_player.name = "SFXPlayer"
 	add_child(audio_player)
+	
+	music_player = AudioStreamPlayer.new()
+	music_player.name = "MusicPlayer"
+	add_child(music_player)
+	
+	set_sfx_volume(sfx_volume)
+	set_music_volume(music_volume)
+
+func set_sfx_volume(value: float) -> void:
+	sfx_volume = clampf(value, 0.0, 1.0)
+	if audio_player:
+		if sfx_volume <= 0.001:
+			audio_player.volume_db = -80.0
+		else:
+			audio_player.volume_db = linear_to_db(sfx_volume)
+
+func set_music_volume(value: float) -> void:
+	music_volume = clampf(value, 0.0, 1.0)
+	if music_player:
+		if music_volume <= 0.001:
+			music_player.volume_db = -80.0
+		else:
+			music_player.volume_db = linear_to_db(music_volume)
 
 ## Genera un tono de onda cuadrada (8-bit) programáticamente en memoria
 func _create_8bit_tone(freq: float, duration: float) -> AudioStreamWAV:

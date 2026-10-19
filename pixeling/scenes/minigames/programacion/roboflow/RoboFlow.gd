@@ -203,12 +203,13 @@ func build_board_ui() -> void:
 			lbl.name = "CellLabel"
 
 			var pos := Vector2i(x, y)
+			var is_acc: bool = StateManager.is_high_contrast_active() if StateManager else false
 			if pos in obstacles:
 				lbl.text = "[X]"
-				cell.modulate = Color(0.8, 0.3, 0.3)
+				cell.modulate = Color("#D55E00") if is_acc else Color(0.8, 0.3, 0.3)
 			elif pos == goal_pos:
 				lbl.text = "META"
-				cell.modulate = Color(0.3, 0.9, 0.4)
+				cell.modulate = Color("#0072B2") if is_acc else Color(0.3, 0.9, 0.4)
 			else:
 				lbl.text = "·"
 
@@ -218,20 +219,27 @@ func build_board_ui() -> void:
 
 	update_robot_display()
 
+func _apply_accessibility_mode(is_active: bool) -> void:
+	super._apply_accessibility_mode(is_active)
+	update_robot_display()
+
 func update_robot_display() -> void:
 	var arrows := { "N": "^", "E": ">", "S": "v", "O": "<" }
+	var is_acc: bool = StateManager.is_high_contrast_active() if StateManager else false
 	for cell in board_grid.get_children():
 		var pos: Vector2i = cell.get_meta("grid_pos", Vector2i(-1, -1))
-		var lbl: Label = cell.get_node("CellLabel")
+		var lbl: Label = cell.get_node_or_null("CellLabel")
+		if not lbl:
+			continue
 		if pos == current_pos:
 			lbl.text = "R" + arrows.get(current_dir, "v")
-			cell.modulate = Color(0.2, 0.8, 1.0)
+			cell.modulate = Color("#F0E442") if is_acc else Color(0.2, 0.8, 1.0)
 		elif pos in obstacles:
 			lbl.text = "[X]"
-			cell.modulate = Color(0.8, 0.3, 0.3)
+			cell.modulate = Color("#D55E00") if is_acc else Color(0.8, 0.3, 0.3)
 		elif pos == goal_pos:
 			lbl.text = "META"
-			cell.modulate = Color(0.3, 0.9, 0.4)
+			cell.modulate = Color("#0072B2") if is_acc else Color(0.3, 0.9, 0.4)
 		else:
 			lbl.text = "·"
 			cell.modulate = Color(1, 1, 1, 0.8)

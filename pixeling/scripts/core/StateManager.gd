@@ -6,6 +6,16 @@ extends Node
 
 const SAVE_PATH: String = "user://pixeling_save.json"
 
+const DEFAULT_SETTINGS := {
+	"sfx_volume": 1.0,
+	"music_volume": 1.0,
+	"blue_light_filter": false,
+	"high_contrast": false
+}
+
+var _contrast_canvas: CanvasLayer = null
+var _blue_light_canvas: CanvasLayer = null
+
 var player_data: Dictionary = {
 	"profile": {
 		"username": "Novato_UAZ",
@@ -15,8 +25,9 @@ var player_data: Dictionary = {
 		"points": 0
 	},
 	"settings": {
-		"sfx_volume": 0.8,
-		"music_volume": 0.6,
+		"sfx_volume": 1.0,
+		"music_volume": 1.0,
+		"blue_light_filter": false,
 		"high_contrast": false
 	},
 	"progress": {
@@ -36,8 +47,106 @@ var player_data: Dictionary = {
 }
 
 func _ready() -> void:
+	_setup_contrast_layer()
+	_setup_blue_light_layer()
 	load_data()
+	apply_settings_runtime(player_data.settings)
 	print("[StateManager] Datos del jugador cargados: ", player_data.profile.username)
+
+## Paleta Universal Segura para Daltónicos y Alto Contraste (Okabe-Ito / Paul Tol)
+## Diseñada con separación espectral y luminancia extrema para Deuteranopía, Protanopía y Tritanopía
+const COLORBLIND_PALETTE: Array[Color] = [
+	Color("#0072B2"), # 1. Azul cobalto puro (480nm, máxima distinción cromática)
+	Color("#E69F00"), # 2. Naranja ámbar cálido (600nm, altísimo contraste con azul)
+	Color("#56B4E9"), # 3. Celeste cielo brillante
+	Color("#F0E442"), # 4. Amarillo puro de alta luminancia
+	Color("#009E73"), # 5. Verde azulado / turquesa profundo (distinguible de rojo/naranja)
+	Color("#D55E00"), # 6. Bermellón rojizo oscuro
+	Color("#CC79A7"), # 7. Rosa malva suave
+	Color("#FFFFFF")  # 8. Blanco puro
+]
+
+var _preview_contrast_active: Variant = null
+
+func is_high_contrast_active() -> bool:
+	if _preview_contrast_active != null:
+		return bool(_preview_contrast_active)
+	return bool(player_data.settings.get("high_contrast", false))
+
+func is_colorblind_active() -> bool:
+	return is_high_contrast_active()
+
+func get_accessible_color(index: int, fallback_color: Color) -> Color:
+	if is_high_contrast_active():
+		return COLORBLIND_PALETTE[index % COLORBLIND_PALETTE.size()]
+	return fallback_color
+
+func _setup_contrast_layer() -> void:
+	# Sin contornos invasivos de pantalla; la accesibilidad visual se aplica
+	# de forma orgánica sobre los elementos del juego y botones interactivos.
+	pass
+
+func _setup_blue_light_layer() -> void:
+	if _blue_light_canvas != null:
+		return
+	_blue_light_canvas = CanvasLayer.new()
+	_blue_light_canvas.name = "BlueLightFilterOverlay"
+	_blue_light_canvas.layer = 120
+	
+	var tint_rect := ColorRect.new()
+	tint_rect.name = "WarmTint"
+	tint_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tint_rect.color = Color(1.0, 0.72, 0.25, 0.16)
+	tint_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_blue_light_canvas.add_child(tint_rect)
+	
+	_blue_light_canvas.visible = false
+	add_child(_blue_light_canvas)
+
+func apply_blue_light_filter(is_active: bool) -> void:
+	if _blue_light_canvas:
+		_blue_light_canvas.visible = is_active
+
+func apply_visual_contrast(is_high: bool) -> void:
+	if _contrast_canvas:
+		_contrast_canvas.visible = is_high
+	if is_high:
+		RenderingServer.set_default_clear_color(Color(0.0, 0.0, 0.0, 1.0))
+	else:
+		RenderingServer.set_default_clear_color(Color(0.0588235, 0.0666667, 0.101961, 1.0))
+
+func apply_settings_runtime(settings_dict: Dictionary) -> void:
+	var sfx: float = float(settings_dict.get("sfx_volume", DEFAULT_SETTINGS["sfx_volume"]))
+	var music: float = float(settings_dict.get("music_volume", DEFAULT_SETTINGS["music_volume"]))
+	var blue_light: bool = bool(settings_dict.get("blue_light_filter", DEFAULT_SETTINGS["blue_light_filter"]))
+	var contrast: bool = bool(settings_dict.get("high_contrast", DEFAULT_SETTINGS["high_contrast"]))
+	
+	_preview_contrast_active = contrast
+	
+	AudioManager.set_sfx_volume(sfx)
+	AudioManager.set_music_volume(music)
+	apply_blue_light_filter(blue_light)
+	apply_visual_contrast(contrast)
+
+func get_settings() -> Dictionary:
+	return player_data.settings.duplicate(true)
+
+func get_default_settings() -> Dictionary:
+	return DEFAULT_SETTINGS.duplicate(true)
+
+func preview_settings(temp_settings: Dictionary) -> void:
+	apply_settings_runtime(temp_settings)
+	EventBus.settings_changed.emit(temp_settings)
+	EventBus.settings_updated.emit(temp_settings)
+
+func save_settings(new_settings: Dictionary) -> void:
+	for k in DEFAULT_SETTINGS:
+		player_data.settings[k] = new_settings.get(k, DEFAULT_SETTINGS[k])
+	_preview_contrast_active = null
+	apply_settings_runtime(player_data.settings)
+	EventBus.settings_changed.emit(player_data.settings)
+	EventBus.settings_updated.emit(player_data.settings)
+	save_data()
 
 func save_data() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -57,7 +166,19 @@ func load_data() -> void:
 		file.close()
 		var parsed = JSON.parse_string(json_str)
 		if parsed is Dictionary:
-			player_data = parsed
+			if parsed.has("profile") and parsed.profile is Dictionary:
+				player_data.profile = parsed.profile
+			if parsed.has("economy") and parsed.economy is Dictionary:
+				player_data.economy = parsed.economy
+			if parsed.has("progress") and parsed.progress is Dictionary:
+				player_data.progress = parsed.progress
+			if parsed.has("settings") and parsed.settings is Dictionary:
+				player_data.settings = parsed.settings
+				for k in DEFAULT_SETTINGS:
+					if not player_data.settings.has(k):
+						player_data.settings[k] = DEFAULT_SETTINGS[k]
+			else:
+				player_data.settings = DEFAULT_SETTINGS.duplicate(true)
 
 func record_minigame_result(game_id: String, result: Dictionary) -> void:
 	var minigames: Dictionary = player_data.progress.minigames

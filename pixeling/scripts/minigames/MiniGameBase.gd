@@ -16,6 +16,58 @@ var start_time_ms: int = 0
 
 func _ready() -> void:
 	start_time_ms = Time.get_ticks_msec()
+	if EventBus and not EventBus.settings_changed.is_connected(_on_base_settings_changed):
+		EventBus.settings_changed.connect(_on_base_settings_changed)
+	
+	# Aplicar el estado inicial de accesibilidad
+	var high_contrast: bool = StateManager.is_high_contrast_active() if StateManager else false
+	_apply_accessibility_mode(high_contrast)
+
+func _exit_tree() -> void:
+	if EventBus and EventBus.settings_changed.is_connected(_on_base_settings_changed):
+		EventBus.settings_changed.disconnect(_on_base_settings_changed)
+
+func _on_base_settings_changed(new_settings: Dictionary) -> void:
+	var active: bool = new_settings.get("high_contrast", false)
+	_apply_accessibility_mode(active)
+
+## Método virtual para que cada minijuego reaccione al modo de alto contraste / daltónico.
+## Por defecto, resalta todos los botones interactivos del árbol del minijuego.
+func _apply_accessibility_mode(is_active: bool) -> void:
+	highlight_all_buttons(self, is_active)
+
+## Aplica recursivamente un estilo de alto contraste o restaura los botones interactivos
+func highlight_all_buttons(node: Node, is_active: bool) -> void:
+	if not is_instance_valid(node):
+		return
+	if node is Button:
+		highlight_button(node as Button, is_active)
+	for child in node.get_children():
+		highlight_all_buttons(child, is_active)
+
+## Resalta un botón individual con un borde nítido de alto contraste (amarillo dorado/blanco sobre fondo oscuro)
+func highlight_button(btn: Button, is_active: bool, border_color: Color = Color(1.0, 0.90, 0.20, 0.95)) -> void:
+	if not is_instance_valid(btn):
+		return
+	if is_active:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.10, 0.12, 0.18, 0.95)
+		sb.set_border_width_all(2)
+		sb.border_color = border_color
+		sb.set_corner_radius_all(4)
+		btn.add_theme_stylebox_override("normal", sb)
+		
+		var sb_focus := sb.duplicate()
+		sb_focus.bg_color = Color(0.16, 0.19, 0.26, 0.98)
+		sb_focus.border_color = Color(1.0, 1.0, 1.0, 1.0)
+		btn.add_theme_stylebox_override("focus", sb_focus)
+		btn.add_theme_stylebox_override("hover", sb_focus)
+		btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	else:
+		btn.remove_theme_stylebox_override("normal")
+		btn.remove_theme_stylebox_override("focus")
+		btn.remove_theme_stylebox_override("hover")
+		btn.remove_theme_color_override("font_color")
 
 ## Método virtual que cada minijuego debe sobreescribir para inicializar su lógica y dificultad
 func start_game(difficulty: String = "NORMAL") -> void:

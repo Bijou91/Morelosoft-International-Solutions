@@ -22,9 +22,17 @@ extends Control
 @onready var btn_center_to_right: Button = $VBox/RoomsContainer/RoomCenter/BtnToRight
 @onready var btn_right_to_center: Button = $VBox/RoomsContainer/RoomRight/BtnToCenter
 
+@onready var btn_ajustes: Button = $VBox/TopHUD/BtnAjustes
+@onready var btn_ajustes_center: Button = $VBox/RoomsContainer/RoomCenter/BtnAjustesCenter
+@onready var settings_modal: Control = $SettingsModal
+
 func _ready() -> void:
 	update_hud()
 	EventBus.points_updated.connect(func(_new_tot, _delta): update_hud())
+
+	# Modal de Ajustes (CU-01)
+	btn_ajustes.pressed.connect(_open_settings)
+	btn_ajustes_center.pressed.connect(_open_settings)
 
 	# Configuración inicial: Mostrar Centro (Lobby principal)
 	_show_room(room_center)
@@ -77,3 +85,9 @@ func _open_classroom(classroom_name: String, scene_path: String) -> void:
 		get_tree().change_scene_to_file(scene_path)
 	else:
 		npc_dialogue.text = "%s no se encuentra disponible en este momento." % classroom_name
+
+func _open_settings() -> void:
+	AudioManager.play_click()
+	if settings_modal:
+		settings_modal.open_modal()
+

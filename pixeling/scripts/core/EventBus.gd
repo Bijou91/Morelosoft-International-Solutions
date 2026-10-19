@@ -16,6 +16,7 @@ signal game_over(minigame_id: String)
 # Señales de Estado y Economía
 signal points_updated(new_total: int, delta: int)
 signal settings_updated(settings_dict: Dictionary)
+signal settings_changed(settings_dict: Dictionary)
 
 func _ready() -> void:
 	print("[EventBus] Sistema de señales globales inicializado.")

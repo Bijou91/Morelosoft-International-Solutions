@@ -18,6 +18,41 @@ const CABLE_COLORS: Array[Color] = [
 	Color("304ffe")  # Azul índigo
 ]
 
+func _get_cable_color(index: int) -> Color:
+	if StateManager.is_high_contrast_active():
+		return StateManager.COLORBLIND_PALETTE[index % StateManager.COLORBLIND_PALETTE.size()]
+	return CABLE_COLORS[index % CABLE_COLORS.size()]
+
+func _update_accessibility_styles() -> void:
+	var is_accessible: bool = StateManager.is_high_contrast_active()
+	for btn in left_buttons:
+		if is_instance_valid(btn):
+			_apply_button_contrast(btn, is_accessible)
+	for type_key in right_buttons:
+		var btn: Button = right_buttons[type_key]
+		if is_instance_valid(btn):
+			_apply_button_contrast(btn, is_accessible)
+	cable_canvas.queue_redraw()
+
+func _apply_button_contrast(btn: Button, is_accessible: bool) -> void:
+	if is_accessible:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.10, 0.12, 0.18, 1.0)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_color = Color(1.0, 0.90, 0.20, 0.95) # Resaltado dorado / blanco
+		style.corner_radius_top_left = 5
+		style.corner_radius_top_right = 5
+		style.corner_radius_bottom_left = 5
+		style.corner_radius_bottom_right = 5
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	else:
+		btn.remove_theme_stylebox_override("normal")
+		btn.remove_theme_color_override("font_color")
+
 # Estado de partida
 var round_pairs: Array[Dictionary] = [] # [{literal, type, desc}]
 var completed_connections: Array[Dictionary] = [] # [{left_index, target_type, color, from_node, to_node}]
@@ -96,6 +131,10 @@ func _ready() -> void:
 	cable_canvas.draw.connect(_on_cable_canvas_draw)
 	_show_screen(screen_start)
 	_select_difficulty("NORMAL")
+
+func _apply_accessibility_mode(is_active: bool) -> void:
+	super._apply_accessibility_mode(is_active)
+	_update_accessibility_styles()
 
 func _process(delta: float) -> void:
 	if is_timer_active and not is_game_paused:
@@ -266,7 +305,7 @@ func _build_board_ui() -> void:
 		right_buttons[type_info.type] = btn
 
 	left_scroll.scroll_vertical = 0
-	cable_canvas.queue_redraw()
+	_update_accessibility_styles()
 
 func _on_left_port_down(index: int) -> void:
 	if is_game_paused or not is_timer_active or _is_left_completed(index):
@@ -353,7 +392,7 @@ func _verify_connection(left_index: int, target_type: String) -> void:
 	if is_correct:
 		# FN-04: Conexión Correcta (Fija cable, sonido de éxito, actualiza puntos en pantalla)
 		AudioManager.play_success()
-		var cable_color: Color = CABLE_COLORS[completed_connections.size() % CABLE_COLORS.size()]
+		var cable_color: Color = _get_cable_color(completed_connections.size())
 
 		completed_connections.append({
 			"left_index": left_index,
@@ -428,13 +467,16 @@ func _get_left_port_pos(index: int) -> Vector2:
 ## Renderizado de cables garantizado sobre CableCanvas
 func _on_cable_canvas_draw() -> void:
 	# 1. Dibujar todos los cables conectados y completados (FN-04)
-	for conn in completed_connections:
+	for i in range(completed_connections.size()):
+		var conn: Dictionary = completed_connections[i]
 		var l_node: Button = conn.get("from_node", null)
 		var r_node: Button = conn.get("to_node", null)
 		if is_instance_valid(l_node) and is_instance_valid(r_node):
 			var from_p := _to_canvas_local(l_node.global_position + Vector2(l_node.size.x, l_node.size.y * 0.5))
 			var to_p := _to_canvas_local(r_node.global_position + Vector2(0, r_node.size.y * 0.5))
-			_draw_cable_with_border(from_p, to_p, conn.color, 6.0)
+			var cable_color: Color = _get_cable_color(i)
+			var w: float = 8.0 if StateManager.is_high_contrast_active() else 6.0
+			_draw_cable_with_border(from_p, to_p, cable_color, w)
 
 	# 2. Dibujar chispa de cortocircuito en error (FA-02.01)
 	if error_flash_timer > 0.0:
@@ -448,7 +490,9 @@ func _on_cable_canvas_draw() -> void:
 		var from_p := _get_left_port_pos(selected_source_index)
 		var to_p := drag_current_pos
 		if from_p != Vector2.ZERO and to_p != Vector2.ZERO:
-			_draw_cable_with_border(from_p, to_p, Color("00e5ff"), 5.0)
+			var active_color: Color = _get_cable_color(completed_connections.size())
+			var w: float = 7.0 if StateManager.is_high_contrast_active() else 5.0
+			_draw_cable_with_border(from_p, to_p, active_color, w)
 
 func _draw_cable_with_border(from_pos: Vector2, to_pos: Vector2, color: Color, width: float) -> void:
 	var mid_x: float = (from_pos.x + to_pos.x) * 0.5
@@ -463,14 +507,17 @@ func _draw_cable_with_border(from_pos: Vector2, to_pos: Vector2, color: Color, w
 		points.append(p)
 
 	# Borde exterior oscuro para contraste de cable físico
-	cable_canvas.draw_polyline(points, Color(0.04, 0.05, 0.07, 0.9), width + 3.0, true)
-	cable_canvas.draw_circle(from_pos, width + 2.5, Color(0.04, 0.05, 0.07, 1.0))
-	cable_canvas.draw_circle(to_pos, width + 2.5, Color(0.04, 0.05, 0.07, 1.0))
+	var is_hc: bool = StateManager.is_high_contrast_active()
+	var border_w: float = width + (5.0 if is_hc else 3.0)
+	var border_col: Color = Color(0.0, 0.0, 0.0, 1.0) if is_hc else Color(0.04, 0.05, 0.07, 0.9)
+	cable_canvas.draw_polyline(points, border_col, border_w, true)
+	cable_canvas.draw_circle(from_pos, border_w * 0.5 + 1.0, border_col)
+	cable_canvas.draw_circle(to_pos, border_w * 0.5 + 1.0, border_col)
 
 	# Línea interior de color brillante
 	cable_canvas.draw_polyline(points, color, width, true)
-	cable_canvas.draw_circle(from_pos, width * 0.85, color)
-	cable_canvas.draw_circle(to_pos, width * 0.85, color)
+	cable_canvas.draw_circle(from_pos, width * 0.5, color)
+	cable_canvas.draw_circle(to_pos, width * 0.5, color)
 
 func _update_hud() -> void:
 	pairs_counter_label.text = "PARES: %d / %d" % [completed_connections.size(), round_pairs.size()]

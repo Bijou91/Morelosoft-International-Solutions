@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b0xlobbyua001"]
 
 [ext_resource type="Script" uid="uid://dtcviy1y1kqnm" path="res://scenes/campus/Lobby.gd" id="1_lob01"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsModal.tscn" id="2_settings"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -47,6 +48,11 @@ text = "Novato_UAZ"
 [node name="Spacer" type="Control" parent="VBox/TopHUD"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="BtnAjustes" type="Button" parent="VBox/TopHUD"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "⚙ Ajustes"
 
 [node name="PointsBadge" type="PanelContainer" parent="VBox/TopHUD"]
 layout_mode = 2
@@ -225,6 +231,19 @@ theme_override_font_sizes/font_size = 9
 text = "Maquina\nExpendedora"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="BtnAjustesCenter" type="Button" parent="VBox/RoomsContainer/RoomCenter"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 15.0
+offset_top = -100.0
+offset_right = 105.0
+offset_bottom = -50.0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 10
+text = "⚙ Ajustes\n(Entorno)"
 
 [node name="Sillas1" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
 layout_mode = 1
@@ -437,3 +456,7 @@ offset_bottom = 25.0
 grow_vertical = 2
 theme_override_font_sizes/font_size = 20
 text = "<-"
+
+[node name="SettingsModal" parent="." instance=ExtResource("2_settings")]
+visible = false
+layout_mode = 1

@@ -134,6 +134,21 @@ func _ready() -> void:
 	_build_ui()
 	_show_difficulty_selector()
 
+func _apply_accessibility_mode(is_active: bool) -> void:
+	super._apply_accessibility_mode(is_active)
+	for req_node in active_requirements:
+		if is_instance_valid(req_node) and req_node is PanelContainer:
+			var is_func: bool = req_node.get_meta("is_functional", false)
+			var bg_col: Color
+			var bdr_col: Color
+			if is_func:
+				bg_col = Color("#0072B2") if is_active else Color(0.18, 0.52, 0.18)
+				bdr_col = Color("#56B4E9") if is_active else Color(0.12, 0.38, 0.12)
+			else:
+				bg_col = Color("#D55E00") if is_active else Color(0.65, 0.14, 0.14)
+				bdr_col = Color("#E69F00") if is_active else Color(0.48, 0.10, 0.10)
+			var bdr_w: int = 3 if is_active else 2
+			req_node.add_theme_stylebox_override("panel", _make_stylebox(bg_col, 5, bdr_w, bdr_col))
 
 func _process(delta: float) -> void:
 	if not is_game_active or is_paused:
@@ -730,16 +745,18 @@ func _spawn_requirement() -> void:
 	var bg_color: Color
 	var border_color: Color
 	var type_text: String
+	var is_acc: bool = StateManager.is_high_contrast_active() if StateManager else false
 	if is_functional:
-		bg_color = Color(0.18, 0.52, 0.18)
-		border_color = Color(0.12, 0.38, 0.12)
+		bg_color = Color("#0072B2") if is_acc else Color(0.18, 0.52, 0.18)
+		border_color = Color("#56B4E9") if is_acc else Color(0.12, 0.38, 0.12)
 		type_text = "✓ REQ FUN"
 	else:
-		bg_color = Color(0.65, 0.14, 0.14)
-		border_color = Color(0.48, 0.10, 0.10)
+		bg_color = Color("#D55E00") if is_acc else Color(0.65, 0.14, 0.14)
+		border_color = Color("#E69F00") if is_acc else Color(0.48, 0.10, 0.10)
 		type_text = "✗ REQ NO FUN"
 
-	req_node.add_theme_stylebox_override("panel", _make_stylebox(bg_color, 5, 2, border_color))
+	var border_width: int = 3 if is_acc else 2
+	req_node.add_theme_stylebox_override("panel", _make_stylebox(bg_color, 5, border_width, border_color))
 
 	# Contenido del cofre
 	var vbox := VBoxContainer.new()
