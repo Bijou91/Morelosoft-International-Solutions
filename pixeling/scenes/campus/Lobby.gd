@@ -23,7 +23,6 @@ extends Control
 @onready var btn_right_to_center: Button = $VBox/RoomsContainer/RoomRight/BtnToCenter
 
 @onready var btn_ajustes: Button = $VBox/TopHUD/BtnAjustes
-@onready var btn_ajustes_center: Button = $VBox/RoomsContainer/RoomCenter/BtnAjustesCenter
 @onready var settings_modal: Control = $SettingsModal
 
 func _ready() -> void:
@@ -32,7 +31,6 @@ func _ready() -> void:
 
 	# Modal de Ajustes (CU-01)
 	btn_ajustes.pressed.connect(_open_settings)
-	btn_ajustes_center.pressed.connect(_open_settings)
 
 	# Configuración inicial: Mostrar Centro (Lobby principal)
 	_show_room(room_center)

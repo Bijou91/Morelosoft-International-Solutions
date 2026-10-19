@@ -90,3 +90,45 @@ func finish_game(success: bool, score: int, stars: int, message: String = "") ->
 	
 	StateManager.record_minigame_result(active_id, result)
 	game_finished.emit(result)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		# F8 o Ctrl+W: Victoria instantánea en el minijuego actual (Modo QA / Documentación)
+		if event.keycode == KEY_F8 or (event.keycode == KEY_W and event.ctrl_pressed):
+			_trigger_debug_win()
+
+## Método de depuración para forzar la victoria con 3 estrellas en el minijuego activo
+func _trigger_debug_win() -> void:
+	print("[DEBUG QA] Forzando victoria instantánea en: ", minigame_id)
+	# Asegurar métricas altas para cálculo de 3 estrellas
+	if "score" in self and get("score") == 0:
+		set("score", 1000)
+	if "total_score" in self and get("total_score") == 0:
+		set("total_score", 1000)
+	if "total_correct" in self and get("total_correct") == 0:
+		set("total_correct", 10)
+	if "total_answered" in self and get("total_answered") == 0:
+		set("total_answered", 10)
+	if "current_lives" in self and "max_lives" in self:
+		if get("max_lives") == 0:
+			set("max_lives", 3)
+		set("current_lives", get("max_lives"))
+	if "instructions" in self:
+		set("instructions", [])
+
+	if has_method("_handle_victory"):
+		call("_handle_victory")
+	elif has_method("handle_victory"):
+		call("handle_victory")
+	elif has_method("_handle_win"):
+		call("_handle_win")
+	elif has_method("finish_level"):
+		call("finish_level")
+	elif has_method("_on_all_pairs_connected"):
+		call("_on_all_pairs_connected")
+	elif has_method("_handle_game_over"):
+		set("total_correct", 10)
+		set("total_score", 1500)
+		call("_handle_game_over", "¡Derby Superado con Éxito (Modo Debug QA)!")
+	else:
+		finish_game(true, 1000, 3, "Victoria Debug QA")

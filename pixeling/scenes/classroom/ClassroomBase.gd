@@ -25,6 +25,10 @@ func _ready() -> void:
 	if btn_back:
 		btn_back.pressed.connect(_on_back_to_lobby)
 	
+	if EventBus:
+		EventBus.minigame_completed.connect(func(_id, _res): _populate_minigames())
+		EventBus.points_updated.connect(func(_tot, _delta): _populate_minigames())
+
 	_populate_minigames()
 
 func _populate_minigames() -> void:

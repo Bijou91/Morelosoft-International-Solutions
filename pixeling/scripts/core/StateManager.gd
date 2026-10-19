@@ -212,3 +212,54 @@ func get_points() -> int:
 
 func get_username() -> String:
 	return player_data.profile.username
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		# F9 o Ctrl+Shift+W: Desbloquear y completar todos los minijuegos con 3 estrellas
+		if event.keycode == KEY_F9 or (event.keycode == KEY_W and event.ctrl_pressed and event.shift_pressed):
+			debug_unlock_all_minigames()
+		# F12 o Ctrl+Shift+R: Resetear progreso para pruebas limpias
+		elif event.keycode == KEY_F12 or (event.keycode == KEY_R and event.ctrl_pressed and event.shift_pressed):
+			debug_reset_progress()
+
+## Atajo de depuración: Marca todos los minijuegos como completados con 3 estrellas y otorga puntos
+func debug_unlock_all_minigames() -> void:
+	var all_games := [
+		"lluvia_requerimientos",
+		"include_extend",
+		"roboflow",
+		"datadrop",
+		"derby_de_bateo",
+		"mansion_escape",
+		"terminal_linux",
+		"exploracion_archivos"
+	]
+	var minigames: Dictionary = player_data.progress.minigames
+	for g in all_games:
+		minigames[g] = {
+			"completed": true,
+			"score": 1000,
+			"stars": 3
+		}
+	player_data.economy.points = 8000
+	save_data()
+	EventBus.points_updated.emit(player_data.economy.points, 8000)
+	for g in all_games:
+		EventBus.minigame_completed.emit(g, minigames[g])
+	print("[DEBUG QA] ¡Todos los minijuegos desbloqueados con 3 estrellas (⭐⭐⭐) y 8,000 puntos!")
+
+## Atajo de depuración: Resetea el progreso a 0
+func debug_reset_progress() -> void:
+	var minigames: Dictionary = player_data.progress.minigames
+	for g in minigames:
+		minigames[g] = {
+			"completed": false,
+			"score": 0,
+			"stars": 0
+		}
+	player_data.economy.points = 0
+	save_data()
+	EventBus.points_updated.emit(0, 0)
+	for g in minigames:
+		EventBus.minigame_completed.emit(g, minigames[g])
+	print("[DEBUG QA] Progreso reseteado a 0.")

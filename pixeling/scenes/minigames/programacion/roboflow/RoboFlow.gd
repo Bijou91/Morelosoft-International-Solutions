@@ -115,8 +115,12 @@ func select_difficulty_ui(diff: String) -> void:
 func _on_iniciar_pressed() -> void:
 	if AudioManager.has_method("play_click"):
 		AudioManager.play_click()
-	
-	current_difficulty = selected_diff
+	start_game(selected_diff)
+
+func start_game(diff: String = "NORMAL") -> void:
+	super.start_game(diff)
+	current_difficulty = diff
+	selected_diff = diff
 	setup_level(current_difficulty)
 	_show_screen(screen_game)
 
