@@ -160,6 +160,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	super._unhandled_input(event)
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 	match event.keycode:

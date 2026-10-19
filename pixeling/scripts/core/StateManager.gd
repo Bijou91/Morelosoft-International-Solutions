@@ -215,8 +215,13 @@ func get_username() -> String:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
+		# F8 o Ctrl+W: Victoria instantánea en el minijuego activo
+		if event.keycode == KEY_F8 or (event.keycode == KEY_W and event.ctrl_pressed and not event.shift_pressed):
+			var current = get_tree().current_scene
+			if current and current.has_method("_trigger_debug_win"):
+				current._trigger_debug_win()
 		# F9 o Ctrl+Shift+W: Desbloquear y completar todos los minijuegos con 3 estrellas
-		if event.keycode == KEY_F9 or (event.keycode == KEY_W and event.ctrl_pressed and event.shift_pressed):
+		elif event.keycode == KEY_F9 or (event.keycode == KEY_W and event.ctrl_pressed and event.shift_pressed):
 			debug_unlock_all_minigames()
 		# F12 o Ctrl+Shift+R: Resetear progreso para pruebas limpias
 		elif event.keycode == KEY_F12 or (event.keycode == KEY_R and event.ctrl_pressed and event.shift_pressed):

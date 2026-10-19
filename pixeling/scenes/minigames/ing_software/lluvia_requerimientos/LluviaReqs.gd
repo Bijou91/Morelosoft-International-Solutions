@@ -181,6 +181,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	super._unhandled_input(event)
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_ESCAPE:
 			if is_game_active and not is_paused:

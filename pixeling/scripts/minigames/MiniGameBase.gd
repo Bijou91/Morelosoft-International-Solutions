@@ -99,12 +99,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Método de depuración para forzar la victoria con 3 estrellas en el minijuego activo
 func _trigger_debug_win() -> void:
-	print("[DEBUG QA] Forzando victoria instantánea en: ", minigame_id)
+	# Ocultar modales de dificultad o tutorial previos si existen
+	if has_method("_hide_all_modals"):
+		call("_hide_all_modals")
+
 	# Asegurar métricas altas para cálculo de 3 estrellas
 	if "score" in self and get("score") == 0:
 		set("score", 1000)
 	if "total_score" in self and get("total_score") == 0:
 		set("total_score", 1000)
+	if "correct_answers_count" in self:
+		set("correct_answers_count", 5)
 	if "total_correct" in self and get("total_correct") == 0:
 		set("total_correct", 10)
 	if "total_answered" in self and get("total_answered") == 0:

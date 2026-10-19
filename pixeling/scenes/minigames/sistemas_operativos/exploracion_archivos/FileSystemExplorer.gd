@@ -514,6 +514,7 @@ func _handle_game_over(reason: String) -> void:
 	modal_game_over.visible = true
 
 func _handle_victory() -> void:
+	_hide_all_modals()
 	is_timer_active = false
 	AudioManager.play_success()
 

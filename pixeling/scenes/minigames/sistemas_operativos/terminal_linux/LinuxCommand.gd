@@ -225,6 +225,7 @@ func _process(delta: float) -> void:
 	_update_timer_display()
 
 func _unhandled_input(event: InputEvent) -> void:
+	super._unhandled_input(event)
 	if not is_timer_active or is_game_paused or is_waiting_next:
 		return
 
@@ -703,6 +704,7 @@ func _handle_game_over(reason: String) -> void:
 	modal_game_over.visible = true
 
 func _handle_victory() -> void:
+	_hide_all_modals()
 	is_timer_active = false
 	is_waiting_next = false
 	AudioManager.play_success()
