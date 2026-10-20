@@ -35,7 +35,6 @@ var player_data: Dictionary = {
 		"minigames": {
 			"roboflow": { "completed": false, "score": 0, "stars": 0 },
 			"lluvia_requerimientos": { "completed": false, "score": 0, "stars": 0 },
-			"tablas_verdad": { "completed": false, "score": 0, "stars": 0 },
 			"terminal_linux": { "completed": false, "score": 0, "stars": 0 },
 			"exploracion_archivos": { "completed": false, "score": 0, "stars": 0 },
 			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0 },
@@ -190,18 +189,18 @@ func record_minigame_result(game_id: String, result: Dictionary) -> void:
 	var stars: int = result.get("stars", 0)
 	var success: bool = result.get("success", false)
 
-	if score > current.score:
-		current.score = score
-	if stars > current.stars:
-		current.stars = stars
 	if success:
 		current.completed = true
+		if score > current.score:
+			current.score = score
+		if stars > current.stars:
+			current.stars = stars
 
-	# Sumar puntos ganados
-	player_data.economy.points += score
-	save_data()
+		# Sumar puntos ganados a la economía y persistir (RF-65)
+		player_data.economy.points += score
+		save_data()
+		EventBus.points_updated.emit(player_data.economy.points, score)
 
-	EventBus.points_updated.emit(player_data.economy.points, score)
 	EventBus.minigame_completed.emit(game_id, result)
 
 func get_minigame_data(game_id: String) -> Dictionary:

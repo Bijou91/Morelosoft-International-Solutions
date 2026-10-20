@@ -405,11 +405,11 @@ func _verify_connection(left_index: int, target_type: String) -> void:
 		left_btn.disabled = true
 		left_btn.modulate = Color(0.4, 0.4, 0.4)
 
-		# Suma de puntaje según dificultad y tiempo restante
-		var pair_score: int = int(float(base_score) / float(round_pairs.size())) + int(time_remaining * 3.0)
+		# Suma de puntaje según dificultad (acumulado únicamente en total_score)
+		var pair_score: int = int(float(base_score) / float(round_pairs.size()))
+		if completed_connections.size() >= round_pairs.size():
+			pair_score = base_score - total_score
 		total_score += pair_score
-		StateManager.player_data.economy.points += pair_score
-		EventBus.points_updated.emit(StateManager.player_data.economy.points, pair_score)
 
 		status_banner_label.text = "✓ ¡Correcto! %s corresponde a %s (+%d pts)" % [item.literal, target_type, pair_score]
 		status_banner_label.modulate = Color("76ff03")
@@ -556,6 +556,7 @@ func _on_game_over_lives() -> void:
 func _on_all_pairs_connected() -> void:
 	is_timer_active = false
 	AudioManager.play_success()
+	total_score = base_score
 
 	# Cálculo de estrellas según tiempo sobrante y vidas conservadas
 	var stars: int = 1

@@ -301,7 +301,7 @@ func _handle_game_over(reason: String) -> void:
 	elif total_correct >= 2:
 		stars = 1
 
-	var final_score: int = total_correct * SCORE_BASE.get(current_difficulty, 100)
+	var final_score: int = total_score
 	
 	# Mostrar mensaje rápido en el banner
 	set_status("GAME OVER. Revisa tus resultados.")

@@ -10,7 +10,7 @@ const CHALLENGES := {
 			"available_commands": ["ls", "cd", "cat", "pwd", "clear"],
 			"prompt_user": "user@is-pixelverse:~$",
 			"initial_path": "/home/user",
-			"flag": "Flag{linux_rookie_explorer}",
+			"flag": "Flag{rookie}",
 			"files": {
 				"/home/user": {
 					"dirs": ["documentos", "descargas"],
@@ -18,7 +18,7 @@ const CHALLENGES := {
 				},
 				"/home/user/documentos": {
 					"dirs": [],
-					"files": {"secreto.txt": "¡Felicidades! Tu flag es: Flag{linux_rookie_explorer}"}
+					"files": {"secreto.txt": "¡Felicidades! Tu flag es: Flag{rookie}"}
 				},
 				"/home/user/descargas": {
 					"dirs": [],
@@ -32,7 +32,7 @@ const CHALLENGES := {
 			"available_commands": ["ls", "cd", "cat", "pwd", "clear"],
 			"prompt_user": "user@is-pixelverse:~$",
 			"initial_path": "/home/user",
-			"flag": "Flag{cat_files_master}",
+			"flag": "Flag{cat}",
 			"files": {
 				"/home/user": {
 					"dirs": ["proyectos", "publico"],
@@ -40,7 +40,7 @@ const CHALLENGES := {
 				},
 				"/home/user/proyectos": {
 					"dirs": [],
-					"files": {"flag.txt": "Flag{cat_files_master}"}
+					"files": {"flag.txt": "Flag{cat}"}
 				},
 				"/home/user/publico": {
 					"dirs": [],
@@ -56,12 +56,12 @@ const CHALLENGES := {
 			"available_commands": ["ls", "ls -a", "cd", "cat", "head", "tail", "pwd", "clear"],
 			"prompt_user": "user@is-pixelverse:~$",
 			"initial_path": "/home/user",
-			"flag": "Flag{hidden_files_found}",
+			"flag": "Flag{hidden}",
 			"files": {
 				"/home/user": {
 					"dirs": ["tareas", ".config"],
 					"files": {
-						".flag_oculta.txt": "¡Excelente ojo! La flag es: Flag{hidden_files_found}",
+						".flag_oculta.txt": "¡Excelente ojo! La flag es: Flag{hidden}",
 						"historial.log": "Registro del sistema:\nlinea 1\nlinea 2\nlinea 3\nlinea 4\nlinea 5\nlinea 6\nlinea 7\nlinea 8\nlinea 9\nlinea 10\nlinea 11"
 					}
 				},
@@ -77,11 +77,11 @@ const CHALLENGES := {
 		},
 		{
 			"id": "normal_2",
-			"situation": "Un archivo de bitácora muy largo en '/var/log' contiene la flag registrada al final de los eventos del servidor. Usa 'cd', 'ls' y 'tail' para extraerla.",
+			"situation": "Un archivo de bitácora muy largo en '/home/user/logs_backup' contiene la flag registrada al final de los eventos del servidor. Usa 'cd', 'ls' y 'tail' para extraerla.",
 			"available_commands": ["ls", "ls -a", "cd", "cat", "head", "tail", "pwd", "clear"],
 			"prompt_user": "user@is-pixelverse:~$",
 			"initial_path": "/home/user",
-			"flag": "Flag{tail_the_logs}",
+			"flag": "Flag{tail}",
 			"files": {
 				"/home/user": {
 					"dirs": ["logs_backup"],
@@ -90,7 +90,7 @@ const CHALLENGES := {
 				"/home/user/logs_backup": {
 					"dirs": [],
 					"files": {
-						"server.log": "Evento 1: Servidor iniciado\nEvento 2: Conexión aceptada\nEvento 3: Autenticación exitosa\nEvento 4: Servicio activo\nEvento 5: Flag registrada: Flag{tail_the_logs}"
+						"server.log": "Evento 1: Servidor iniciado\nEvento 2: Conexión aceptada\nEvento 3: Autenticación exitosa\nEvento 4: Servicio activo\nEvento 5: Flag registrada: Flag{tail}"
 					}
 				}
 			}
@@ -103,7 +103,7 @@ const CHALLENGES := {
 			"available_commands": ["ls", "ls -a", "cd", "cat", "grep", "find", "pwd", "clear"],
 			"prompt_user": "root@is-pixelverse:/#",
 			"initial_path": "/etc",
-			"flag": "Flag{grep_sysadmin_pro}",
+			"flag": "Flag{grep}",
 			"files": {
 				"/etc": {
 					"dirs": ["security", "network"],
@@ -115,7 +115,7 @@ const CHALLENGES := {
 				"/etc/security": {
 					"dirs": [],
 					"files": {
-						"access.log": "INFO: user admin ok\nWARN: failed attempt\nKEY: token=4819\nFLAG: Encontraste la flag definitiva -> Flag{grep_sysadmin_pro}\nDEBUG: finished dump"
+						"access.log": "INFO: user admin ok\nWARN: failed attempt\nKEY: token=4819\nFLAG: Encontraste la flag definitiva -> Flag{grep}\nDEBUG: finished dump"
 					}
 				},
 				"/etc/network": {
@@ -130,7 +130,7 @@ const CHALLENGES := {
 			"available_commands": ["ls", "ls -a", "cd", "cat", "grep", "find", "pwd", "clear"],
 			"prompt_user": "root@is-pixelverse:/#",
 			"initial_path": "/var",
-			"flag": "Flag{find_root_privilege}",
+			"flag": "Flag{find}",
 			"files": {
 				"/var": {
 					"dirs": ["audit", "crash"],
@@ -139,7 +139,7 @@ const CHALLENGES := {
 				"/var/audit": {
 					"dirs": [],
 					"files": {
-						"flag_secured.txt": "Permisos verificados. Flag{find_root_privilege}",
+						"flag_secured.txt": "Permisos verificados. Flag{find}",
 						"sysdump.bin": "DUMP_EMPTY"
 					}
 				},

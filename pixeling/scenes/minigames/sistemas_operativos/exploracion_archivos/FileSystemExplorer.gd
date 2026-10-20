@@ -140,15 +140,15 @@ func _on_difficulty_chosen(diff: String) -> void:
 		"FACIL":
 			max_lives = 3
 			time_limit = 60.0
-			total_score = 230
+			total_score = 250
 		"NORMAL":
 			max_lives = 2
 			time_limit = 30.0
-			total_score = 460
+			total_score = 500
 		"INGENIERO":
 			max_lives = 1
 			time_limit = 40.0
-			total_score = 690
+			total_score = 750
 
 	current_lives = max_lives
 	_show_tutorial()
