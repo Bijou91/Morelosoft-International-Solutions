@@ -86,33 +86,16 @@ func _setup_contrast_layer() -> void:
 	pass
 
 func _setup_blue_light_layer() -> void:
-	if _blue_light_canvas != null:
-		return
-	_blue_light_canvas = CanvasLayer.new()
-	_blue_light_canvas.name = "BlueLightFilterOverlay"
-	_blue_light_canvas.layer = 120
-	
-	var tint_rect := ColorRect.new()
-	tint_rect.name = "WarmTint"
-	tint_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	tint_rect.color = Color(1.0, 0.72, 0.25, 0.16)
-	tint_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_blue_light_canvas.add_child(tint_rect)
-	
-	_blue_light_canvas.visible = false
-	add_child(_blue_light_canvas)
+	# No invasivo: no superpone capas de color sobre los menús ni altera la UI
+	pass
 
-func apply_blue_light_filter(is_active: bool) -> void:
-	if _blue_light_canvas:
-		_blue_light_canvas.visible = is_active
+func apply_blue_light_filter(_is_active: bool) -> void:
+	# No altera la interfaz de usuario global
+	pass
 
-func apply_visual_contrast(is_high: bool) -> void:
-	if _contrast_canvas:
-		_contrast_canvas.visible = is_high
-	if is_high:
-		RenderingServer.set_default_clear_color(Color(0.0, 0.0, 0.0, 1.0))
-	else:
-		RenderingServer.set_default_clear_color(Color(0.0588235, 0.0666667, 0.101961, 1.0))
+func apply_visual_contrast(_is_high: bool) -> void:
+	# Mantiene el fondo limpio y consistente sin alterar el clear color de la ventana de UI
+	pass
 
 func apply_settings_runtime(settings_dict: Dictionary) -> void:
 	var sfx: float = float(settings_dict.get("sfx_volume", DEFAULT_SETTINGS["sfx_volume"]))

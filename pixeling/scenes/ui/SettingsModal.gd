@@ -8,23 +8,23 @@ extends Control
 @onready var btn_tab_visual: Button = $Center/ModalPanel/Margin/VBox/TabsHeader/BtnTabVisual
 @onready var btn_tab_access: Button = $Center/ModalPanel/Margin/VBox/TabsHeader/BtnTabAccess
 
-@onready var tab_audio: VBoxContainer = $Center/ModalPanel/Margin/VBox/TabContent/TabAudio
-@onready var tab_visual: VBoxContainer = $Center/ModalPanel/Margin/VBox/TabContent/TabVisual
-@onready var tab_access: VBoxContainer = $Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility
+@onready var tab_audio: VBoxContainer = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio
+@onready var tab_visual: VBoxContainer = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual
+@onready var tab_access: VBoxContainer = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility
 
 # Controles Audio
-@onready var slider_sfx: HSlider = $Center/ModalPanel/Margin/VBox/TabContent/TabAudio/SFXRow/SliderSFX
-@onready var label_sfx_val: Label = $Center/ModalPanel/Margin/VBox/TabContent/TabAudio/SFXRow/LabelSFXVal
-@onready var slider_music: HSlider = $Center/ModalPanel/Margin/VBox/TabContent/TabAudio/MusicRow/SliderMusic
-@onready var label_music_val: Label = $Center/ModalPanel/Margin/VBox/TabContent/TabAudio/MusicRow/LabelMusicVal
+@onready var slider_sfx: HSlider = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/SFXRow/SliderSFX
+@onready var label_sfx_val: Label = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/SFXRow/LabelSFXVal
+@onready var slider_music: HSlider = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/MusicRow/SliderMusic
+@onready var label_music_val: Label = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/MusicRow/LabelMusicVal
 
 # Controles Visual (Filtro de Luz Azul)
-@onready var check_blue_light: CheckButton = $Center/ModalPanel/Margin/VBox/TabContent/TabVisual/RowBlueLight/CheckBlueLight
-@onready var label_blue_light_hint: Label = $Center/ModalPanel/Margin/VBox/TabContent/TabVisual/LabelBlueLightHint
+@onready var check_blue_light: Button = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual/RowBlueLight/CheckBlueLight
+@onready var label_blue_light_hint: Label = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual/LabelBlueLightHint
 
 # Controles Accesibilidad (Modo Daltónico / Alto Contraste)
-@onready var check_contrast: CheckButton = $Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility/RowContrast/CheckContrast
-@onready var label_contrast_hint: Label = $Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility/LabelContrastHint
+@onready var check_contrast: Button = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility/RowContrast/CheckContrast
+@onready var label_contrast_hint: Label = $Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility/LabelContrastHint
 
 # Botones Inferiores
 @onready var btn_reset: Button = $Center/ModalPanel/Margin/VBox/ActionsHBox/BtnReset
@@ -81,9 +81,34 @@ func _select_tab(target_tab: Tab) -> void:
 
 func _style_tab_button(btn: Button, is_active: bool) -> void:
 	if is_active:
-		btn.add_theme_color_override("font_color", Color(1.0, 0.95, 0.2, 1.0))
+		btn.add_theme_stylebox_override("normal", preload("res://scenes/ui/theme/btn_blue_normal.tres"))
+		btn.add_theme_stylebox_override("hover", preload("res://scenes/ui/theme/btn_blue_hover.tres"))
+		btn.add_theme_stylebox_override("pressed", preload("res://scenes/ui/theme/btn_blue_pressed.tres"))
+		btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 1.0))
 	else:
-		btn.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8, 1.0))
+		btn.add_theme_stylebox_override("normal", preload("res://scenes/ui/theme/btn_neutral_normal.tres"))
+		btn.add_theme_stylebox_override("hover", preload("res://scenes/ui/theme/btn_neutral_hover.tres"))
+		btn.add_theme_stylebox_override("pressed", preload("res://scenes/ui/theme/btn_neutral_pressed.tres"))
+		btn.add_theme_color_override("font_color", Color(0.18, 0.22, 0.3, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(0.1, 0.12, 0.2, 1.0))
+
+func _update_toggle_button(btn: Button, is_active: bool) -> void:
+	btn.button_pressed = is_active
+	if is_active:
+		btn.text = "🟢 ACTIVADO"
+		btn.add_theme_stylebox_override("normal", preload("res://scenes/ui/theme/btn_green_normal.tres"))
+		btn.add_theme_stylebox_override("hover", preload("res://scenes/ui/theme/btn_green_hover.tres"))
+		btn.add_theme_stylebox_override("pressed", preload("res://scenes/ui/theme/btn_green_pressed.tres"))
+		btn.add_theme_color_override("font_color", Color(0.04, 0.25, 0.08, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(0.02, 0.32, 0.05, 1.0))
+	else:
+		btn.text = "⚪ DESACTIVADO"
+		btn.add_theme_stylebox_override("normal", preload("res://scenes/ui/theme/btn_neutral_normal.tres"))
+		btn.add_theme_stylebox_override("hover", preload("res://scenes/ui/theme/btn_neutral_hover.tres"))
+		btn.add_theme_stylebox_override("pressed", preload("res://scenes/ui/theme/btn_neutral_pressed.tres"))
+		btn.add_theme_color_override("font_color", Color(0.22, 0.26, 0.35, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(0.12, 0.15, 0.22, 1.0))
 
 func _sync_ui_from_working() -> void:
 	_is_updating_ui = true
@@ -98,10 +123,10 @@ func _sync_ui_from_working() -> void:
 	slider_music.value = music
 	label_music_val.text = "%d%%" % int(round(music * 100.0))
 	
-	check_blue_light.button_pressed = blue_light
+	_update_toggle_button(check_blue_light, blue_light)
 	label_blue_light_hint.text = "Filtro cálido: Activado" if blue_light else "Filtro cálido: Desactivado"
 	
-	check_contrast.button_pressed = contrast
+	_update_toggle_button(check_contrast, contrast)
 	label_contrast_hint.text = "Alto contraste: Activado" if contrast else "Alto contraste: Desactivado"
 	
 	_is_updating_ui = false
@@ -125,16 +150,16 @@ func _on_blue_light_toggled(toggled_on: bool) -> void:
 	if _is_updating_ui:
 		return
 	_working_settings["blue_light_filter"] = toggled_on
+	_update_toggle_button(check_blue_light, toggled_on)
 	label_blue_light_hint.text = "Filtro cálido: Activado" if toggled_on else "Filtro cálido: Desactivado"
-	StateManager.preview_settings(_working_settings)
 	AudioManager.play_click()
 
 func _on_contrast_toggled(toggled_on: bool) -> void:
 	if _is_updating_ui:
 		return
 	_working_settings["high_contrast"] = toggled_on
+	_update_toggle_button(check_contrast, toggled_on)
 	label_contrast_hint.text = "Alto contraste: Activado" if toggled_on else "Alto contraste: Desactivado"
-	StateManager.preview_settings(_working_settings)
 	AudioManager.play_click()
 
 func _on_reset_pressed() -> void:
@@ -142,8 +167,6 @@ func _on_reset_pressed() -> void:
 	# FA-03.01: Restablecer a valores de fábrica en memoria de trabajo
 	_working_settings = StateManager.get_default_settings().duplicate(true)
 	_sync_ui_from_working()
-	# Previsualizar en tiempo real sin guardar en disco ni cerrar modal
-	StateManager.preview_settings(_working_settings)
 
 func _on_cancel_pressed() -> void:
 	AudioManager.play_click()
