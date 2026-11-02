@@ -34,6 +34,16 @@ var selected_diff: String = "NORMAL"
 @onready var btn_diff_normal = $ScreenStart/VBox/DiffSelector/BtnDiffNormal
 @onready var btn_diff_ing = $ScreenStart/VBox/DiffSelector/BtnDiffIng
 @onready var btn_iniciar = $ScreenStart/VBox/BtnIniciar
+@onready var diff_label: Label = $ScreenStart/VBox/DiffLabel
+@onready var diff_selector: HBoxContainer = $ScreenStart/VBox/DiffSelector
+
+# Nodos creados por código para el flujo de 2 pasos
+var instructions_box: VBoxContainer
+var lbl_diff_info: Label
+var btn_to_diff: Button
+var btn_inst_back: Button
+var btn_to_inst: Button
+var btn_diff_back: Button
 
 # Nodos - Pantalla de Juego
 @onready var status_label: Label = $ScreenGame/Margin/VBox/StatusBanner/Label
@@ -65,6 +75,8 @@ func _ready() -> void:
 	minigame_title = "RoboFlow"
 	subject_name = "Introducción a la Programación"
 
+	_init_start_flow_ui()
+
 	# Conexiones: Pantalla de Inicio
 	btn_diff_facil.pressed.connect(func(): select_difficulty_ui("FACIL"))
 	btn_diff_normal.pressed.connect(func(): select_difficulty_ui("NORMAL"))
@@ -95,6 +107,129 @@ func _ready() -> void:
 
 	_show_screen(screen_start)
 	select_difficulty_ui("NORMAL")
+	_show_instructions_step()
+
+func _init_start_flow_ui() -> void:
+	var vbox: VBoxContainer = $ScreenStart/VBox
+	vbox.offset_left = -160.0
+	vbox.offset_right = 160.0
+	vbox.offset_top = -240.0
+	vbox.offset_bottom = 240.0
+	vbox.add_theme_constant_override("separation", 10)
+
+	# 1. Contenedor del Paso 1: Instrucciones
+	instructions_box = VBoxContainer.new()
+	instructions_box.name = "InstructionsBox"
+	instructions_box.add_theme_constant_override("separation", 12)
+
+	var inst_label := Label.new()
+	inst_label.name = "InstructionsLabel"
+	inst_label.text = "🎯 Objetivo: Guía al robot desde su posición inicial hasta la casilla META.\n\n• Usa los botones AVANZAR, GIRAR IZQUIERDA y GIRAR DERECHA para armar tu rutina sin exceder el límite de pasos.\n• Puedes borrar el último paso o limpiar la rutina antes de ejecutar.\n• Si el robot choca contra un obstáculo [X], sale del tablero o termina sin llegar a la META, pierdes 1 vida."
+	inst_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	inst_label.add_theme_font_size_override("font_size", 11)
+	inst_label.add_theme_color_override("font_color", Color(0.85, 0.90, 0.98, 1.0))
+	instructions_box.add_child(inst_label)
+
+	btn_to_diff = Button.new()
+	btn_to_diff.name = "BtnToDiff"
+	btn_to_diff.text = "Siguiente: Elegir Dificultad →"
+	btn_to_diff.custom_minimum_size = Vector2(0, 42)
+	btn_to_diff.add_theme_font_size_override("font_size", 12)
+	btn_to_diff.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
+	btn_to_diff.pressed.connect(func():
+		if AudioManager.has_method("play_click"):
+			AudioManager.play_click()
+		_show_difficulty_step()
+	)
+	instructions_box.add_child(btn_to_diff)
+
+	btn_inst_back = Button.new()
+	btn_inst_back.name = "BtnInstBack"
+	btn_inst_back.text = "← Volver al Salón"
+	btn_inst_back.custom_minimum_size = Vector2(0, 36)
+	btn_inst_back.add_theme_font_size_override("font_size", 11)
+	btn_inst_back.pressed.connect(_on_back_pressed)
+	instructions_box.add_child(btn_inst_back)
+
+	vbox.add_child(instructions_box)
+	vbox.move_child(instructions_box, 1)
+
+	# 2. Elementos del Paso 2: Información de dificultad y botones de navegación
+	lbl_diff_info = Label.new()
+	lbl_diff_info.name = "DiffInfoLabel"
+	lbl_diff_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_diff_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl_diff_info.add_theme_font_size_override("font_size", 11)
+	lbl_diff_info.add_theme_color_override("font_color", Color(0.95, 0.95, 0.5, 1.0))
+	vbox.add_child(lbl_diff_info)
+	vbox.move_child(lbl_diff_info, diff_selector.get_index() + 1)
+
+	btn_iniciar.text = "▶ ¡COMENZAR!"
+	btn_iniciar.custom_minimum_size = Vector2(0, 44)
+	btn_iniciar.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
+
+	btn_to_inst = Button.new()
+	btn_to_inst.name = "BtnToInst"
+	btn_to_inst.text = "← Ver Instrucciones"
+	btn_to_inst.custom_minimum_size = Vector2(0, 36)
+	btn_to_inst.add_theme_font_size_override("font_size", 11)
+	btn_to_inst.pressed.connect(func():
+		if AudioManager.has_method("play_click"):
+			AudioManager.play_click()
+		_show_instructions_step()
+	)
+	vbox.add_child(btn_to_inst)
+	vbox.move_child(btn_to_inst, btn_iniciar.get_index() + 1)
+
+	btn_diff_back = Button.new()
+	btn_diff_back.name = "BtnDiffBack"
+	btn_diff_back.text = "← Volver al Salón"
+	btn_diff_back.custom_minimum_size = Vector2(0, 36)
+	btn_diff_back.add_theme_font_size_override("font_size", 11)
+	btn_diff_back.pressed.connect(_on_back_pressed)
+	vbox.add_child(btn_diff_back)
+	vbox.move_child(btn_diff_back, btn_to_inst.get_index() + 1)
+
+## PASO 1 (Pantalla de Instrucciones): Lo primero que ve el alumno
+func _show_instructions_step() -> void:
+	if instructions_box:
+		instructions_box.visible = true
+	diff_label.visible = false
+	diff_selector.visible = false
+	if lbl_diff_info:
+		lbl_diff_info.visible = false
+	btn_iniciar.visible = false
+	if btn_to_inst:
+		btn_to_inst.visible = false
+	if btn_diff_back:
+		btn_diff_back.visible = false
+
+## PASO 2 (Pantalla de Selección de Dificultad)
+func _show_difficulty_step() -> void:
+	if instructions_box:
+		instructions_box.visible = false
+	diff_label.visible = true
+	diff_selector.visible = true
+	if lbl_diff_info:
+		lbl_diff_info.visible = true
+		_update_diff_info_label()
+	btn_iniciar.text = "▶ ¡COMENZAR!"
+	btn_iniciar.visible = true
+	if btn_to_inst:
+		btn_to_inst.visible = true
+	if btn_diff_back:
+		btn_diff_back.visible = true
+
+func _update_diff_info_label() -> void:
+	if not is_instance_valid(lbl_diff_info):
+		return
+	match selected_diff:
+		"FACIL":
+			lbl_diff_info.text = "Fácil: 3 vidas, máx. 15 pasos, 245 pts\nTablero 5x5 • Ruta guiada"
+		"NORMAL":
+			lbl_diff_info.text = "Normal: 3 vidas, máx. 25 pasos, 490 pts\nTablero 6x6 • Ruta en 'S'"
+		"INGENIERO":
+			lbl_diff_info.text = "Ingeniero: 1 vida, máx. 45 pasos, 735 pts\nTablero 7x7 • Ruta serpiente estricta"
 
 func _show_screen(screen: Control) -> void:
 	screen_start.visible = false
@@ -111,6 +246,7 @@ func select_difficulty_ui(diff: String) -> void:
 	btn_diff_ing.modulate = Color(1,1,1) if diff != "INGENIERO" else Color(0.3, 0.9, 0.3)
 	if AudioManager.has_method("play_click"):
 		AudioManager.play_click()
+	_update_diff_info_label()
 
 func _on_iniciar_pressed() -> void:
 	if AudioManager.has_method("play_click"):

@@ -106,6 +106,13 @@ var error_spark_to: Vector2 = Vector2.ZERO
 @onready var btn_start_play: Button = $ScreenStart/VBox/BtnStartPlay
 @onready var btn_start_back: Button = $ScreenStart/VBox/BtnStartBack
 @onready var lbl_diff_info: Label = $ScreenStart/VBox/DiffInfoLabel
+@onready var lbl_desc: Label = $ScreenStart/VBox/Desc
+@onready var lbl_diff_label: Label = $ScreenStart/VBox/DiffLabel
+@onready var diff_selector: HBoxContainer = $ScreenStart/VBox/DiffSelector
+
+# Botones creados dinámicamente para el flujo de 2 pasos
+var btn_to_diff: Button
+var btn_to_inst: Button
 
 # Referencias Pantallas Finales y Pausa
 @onready var btn_pause_resume: Button = $ScreenPause/VBox/BtnResume
@@ -127,10 +134,82 @@ func _ready() -> void:
 	minigame_title = "DataDrop"
 	subject_name = "Introducción a la Programación"
 
+	_init_start_flow_ui()
 	_connect_ui_signals()
 	cable_canvas.draw.connect(_on_cable_canvas_draw)
 	_show_screen(screen_start)
 	_select_difficulty("NORMAL")
+	_show_instructions_step()
+
+func _init_start_flow_ui() -> void:
+	var vbox: VBoxContainer = $ScreenStart/VBox
+
+	# Botón para pasar al Paso 2 desde las Instrucciones
+	btn_to_diff = Button.new()
+	btn_to_diff.name = "BtnToDiff"
+	btn_to_diff.text = "Siguiente: Elegir Dificultad →"
+	btn_to_diff.custom_minimum_size = Vector2(0, 42)
+	btn_to_diff.add_theme_font_size_override("font_size", 12)
+	btn_to_diff.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
+	btn_to_diff.pressed.connect(func():
+		AudioManager.play_click()
+		_show_difficulty_step()
+	)
+	vbox.add_child(btn_to_diff)
+	vbox.move_child(btn_to_diff, lbl_desc.get_index() + 1)
+
+	# Botón para regresar al Paso 1 desde el Selector de Dificultad
+	btn_to_inst = Button.new()
+	btn_to_inst.name = "BtnToInst"
+	btn_to_inst.text = "← Ver Instrucciones"
+	btn_to_inst.custom_minimum_size = Vector2(0, 36)
+	btn_to_inst.add_theme_font_size_override("font_size", 11)
+	btn_to_inst.pressed.connect(func():
+		AudioManager.play_click()
+		_show_instructions_step()
+	)
+	vbox.add_child(btn_to_inst)
+	vbox.move_child(btn_to_inst, btn_start_play.get_index() + 1)
+
+## PASO 1 (Pantalla de Instrucciones): Lo primero que ve el alumno al entrar
+func _show_instructions_step() -> void:
+	lbl_desc.text = "🎯 Objetivo: Clasifica los valores sueltos conectándolos con su tipo de variable.\n\n• Toca o arrastra un valor de la columna izquierda hacia uno de los 6 tipos de datos a la derecha (int, float, string, bool, char, list).\n• Si aciertas, el cable queda fijo y el emisor se inhabilita.\n• Si conectas un tipo incorrecto, ocurrirá un cortocircuito y perderás 1 vida.\n• Si sueltas el cable en el centro vacío, se retrae sin penalización."
+	lbl_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_desc.visible = true
+
+	if btn_to_diff:
+		btn_to_diff.visible = true
+
+	btn_start_back.text = "← Volver al Salón"
+	btn_start_back.visible = true
+
+	lbl_diff_label.visible = false
+	diff_selector.visible = false
+	lbl_diff_info.visible = false
+	btn_start_play.visible = false
+	if btn_to_inst:
+		btn_to_inst.visible = false
+
+## PASO 2 (Pantalla de Selección de Dificultad)
+func _show_difficulty_step() -> void:
+	lbl_desc.visible = false
+	if btn_to_diff:
+		btn_to_diff.visible = false
+
+	lbl_diff_label.visible = true
+	diff_selector.visible = true
+	lbl_diff_info.visible = true
+
+	btn_start_play.text = "▶ ¡COMENZAR!"
+	btn_start_play.custom_minimum_size = Vector2(0, 44)
+	btn_start_play.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
+	btn_start_play.visible = true
+
+	if btn_to_inst:
+		btn_to_inst.visible = true
+
+	btn_start_back.text = "← Volver al Salón"
+	btn_start_back.visible = true
 
 func _apply_accessibility_mode(is_active: bool) -> void:
 	super._apply_accessibility_mode(is_active)
