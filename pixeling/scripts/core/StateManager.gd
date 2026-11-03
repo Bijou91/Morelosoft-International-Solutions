@@ -15,6 +15,9 @@ const DEFAULT_SETTINGS := {
 
 var _contrast_canvas: CanvasLayer = null
 var _blue_light_canvas: CanvasLayer = null
+var _perf_hud_canvas: CanvasLayer = null
+var _perf_hud_label: Label = null
+var _perf_hud_timer: Timer = null
 
 var player_data: Dictionary = {
 	"profile": {
@@ -48,6 +51,7 @@ var player_data: Dictionary = {
 func _ready() -> void:
 	_setup_contrast_layer()
 	_setup_blue_light_layer()
+	_setup_perf_hud()
 	load_data()
 	apply_settings_runtime(player_data.settings)
 	print("[StateManager] Datos del jugador cargados: ", player_data.profile.username)
@@ -225,6 +229,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		# F12 o Ctrl+Shift+R: Resetear progreso para pruebas limpias
 		elif event.keycode == KEY_F12 or (event.keycode == KEY_R and event.ctrl_pressed and event.shift_pressed):
 			debug_reset_progress()
+		# F3 o Ctrl+M: Alternar HUD de Rendimiento y Memoria RAM en tiempo real
+		elif event.keycode == KEY_F3 or (event.keycode == KEY_M and event.ctrl_pressed):
+			toggle_memory_hud()
 
 ## Atajo de depuración: Marca todos los minijuegos como completados con 3 estrellas y otorga puntos
 func debug_unlock_all_minigames() -> void:
@@ -250,7 +257,7 @@ func debug_unlock_all_minigames() -> void:
 	EventBus.points_updated.emit(player_data.economy.points, 8000)
 	for g in all_games:
 		EventBus.minigame_completed.emit(g, minigames[g])
-	print("[DEBUG QA] ¡Todos los minijuegos desbloqueados con 3 estrellas (⭐⭐⭐) y 8,000 puntos!")
+	print("[DEBUG QA] ¡Todos los minijuegos desbloqueados con 3 estrellas (★★★) y 8,000 puntos!")
 
 ## Atajo de depuración: Resetea el progreso a 0
 func debug_reset_progress() -> void:
@@ -267,3 +274,116 @@ func debug_reset_progress() -> void:
 	for g in minigames:
 		EventBus.minigame_completed.emit(g, minigames[g])
 	print("[DEBUG QA] Progreso reseteado a 0.")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MONITOR DE RENDIMIENTO Y TELEMETRÍA DE RECURSOS (RAM / CPU / NODOS)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _setup_perf_hud() -> void:
+	if _perf_hud_canvas != null:
+		return
+	_perf_hud_canvas = CanvasLayer.new()
+	_perf_hud_canvas.name = "PerformanceHUD"
+	_perf_hud_canvas.layer = 128
+
+	var panel := PanelContainer.new()
+	panel.name = "HUDPanel"
+	panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	panel.offset_left = -230
+	panel.offset_top = 4
+	panel.offset_right = -4
+	panel.offset_bottom = 26
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.08, 0.12, 0.90)
+	sb.border_color = Color(0.20, 0.80, 0.45, 0.95)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	panel.add_theme_stylebox_override("panel", sb)
+
+	_perf_hud_label = Label.new()
+	_perf_hud_label.name = "MetricsLabel"
+	_perf_hud_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_perf_hud_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_perf_hud_label.add_theme_font_size_override("font_size", 9)
+	_perf_hud_label.add_theme_color_override("font_color", Color(0.92, 0.96, 0.92))
+	_perf_hud_label.text = "RAM: -- MB | FPS: --"
+	panel.add_child(_perf_hud_label)
+
+	_perf_hud_canvas.add_child(panel)
+	_perf_hud_canvas.visible = false
+	add_child(_perf_hud_canvas)
+
+	_perf_hud_timer = Timer.new()
+	_perf_hud_timer.wait_time = 0.5
+	_perf_hud_timer.autostart = true
+	_perf_hud_timer.timeout.connect(_update_perf_hud)
+	add_child(_perf_hud_timer)
+
+## Alterna la visibilidad del HUD de telemetría de memoria en pantalla
+func toggle_memory_hud() -> void:
+	if _perf_hud_canvas:
+		_perf_hud_canvas.visible = not _perf_hud_canvas.visible
+		if _perf_hud_canvas.visible:
+			_update_perf_hud()
+			print("[TELEMETRÍA] HUD de Rendimiento y Memoria activado (F3 / Ctrl+M).")
+		else:
+			print("[TELEMETRÍA] HUD de Rendimiento y Memoria desactivado.")
+
+func _update_perf_hud() -> void:
+	if not _perf_hud_canvas or not _perf_hud_canvas.visible or not _perf_hud_label:
+		return
+	var p := get_memory_profile()
+	_perf_hud_label.text = "RAM: %.1f MB (Max: %.1f) | N:%d (H:%d) | %d FPS" % [
+		p.static_ram_mb, p.peak_ram_mb, p.nodes_count, p.orphan_nodes, p.fps
+	]
+
+## Obtiene un diccionario estructurado con las métricas de memoria y rendimiento del motor
+func get_memory_profile() -> Dictionary:
+	var static_mem_mb: float = OS.get_static_memory_usage() / (1024.0 * 1024.0)
+	var peak_mem_mb: float = OS.get_static_memory_peak_usage() / (1024.0 * 1024.0)
+	var vram_mb: float = Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / (1024.0 * 1024.0)
+	var nodes: int = int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
+	var orphans: int = int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
+	var fps: int = int(Performance.get_monitor(Performance.TIME_FPS))
+
+	var rss_mb: float = 0.0
+	if FileAccess.file_exists("/proc/self/status"):
+		var f := FileAccess.open("/proc/self/status", FileAccess.READ)
+		while f and not f.eof_reached():
+			var line := f.get_line()
+			if line.begins_with("VmRSS:"):
+				var parts := line.split(" ")
+				for pt in parts:
+					if pt.is_valid_int():
+						rss_mb = pt.to_int() / 1024.0
+						break
+				break
+		if f:
+			f.close()
+
+	return {
+		"static_ram_mb": snapped(static_mem_mb, 0.01),
+		"peak_ram_mb": snapped(peak_mem_mb, 0.01),
+		"vram_mb": snapped(vram_mb, 0.01),
+		"nodes_count": nodes,
+		"orphan_nodes": orphans,
+		"fps": fps,
+		"os_rss_mb": snapped(rss_mb, 0.1)
+	}
+
+## Imprime un informe de diagnóstico de memoria formateado a la consola
+func print_memory_diagnostics() -> void:
+	var p := get_memory_profile()
+	print("══════════════════════════════════════════════════════")
+	print("📊 DIAGNÓSTICO DE RECURSOS Y MEMORIA (PixelIng Core)")
+	print("• RAM Estática (Heap Godot): %7.2f MB" % p.static_ram_mb)
+	print("• RAM Pico Máximo:           %7.2f MB" % p.peak_ram_mb)
+	print("• Memoria VRAM (Texturas):   %7.2f MB" % p.vram_mb)
+	print("• Nodos Activos en Árbol:    %7d" % p.nodes_count)
+	print("• Nodos Huérfanos (Fugas):   %7d" % p.orphan_nodes)
+	if p.os_rss_mb > 0.0:
+		print("• Memoria Total SO (RSS):    %7.1f MB" % p.os_rss_mb)
+	print("• Cuadros por Segundo (FPS): %7d" % p.fps)
+	print("══════════════════════════════════════════════════════")

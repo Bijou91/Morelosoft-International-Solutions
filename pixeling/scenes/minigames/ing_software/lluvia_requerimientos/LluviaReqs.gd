@@ -256,8 +256,8 @@ func _build_top_hud() -> void:
 
 	# Vidas
 	var heart_lbl := Label.new()
-	heart_lbl.text = "❤"
-	heart_lbl.add_theme_font_size_override("font_size", 13)
+	heart_lbl.text = "♥"
+	heart_lbl.add_theme_font_size_override("font_size", 14)
 	heart_lbl.add_theme_color_override("font_color", Color(0.85, 0.15, 0.15))
 	hud.add_child(heart_lbl)
 
@@ -273,12 +273,13 @@ func _build_top_hud() -> void:
 
 	# Puntos
 	var coin_lbl := Label.new()
-	coin_lbl.text = "🪙"
-	coin_lbl.add_theme_font_size_override("font_size", 13)
+	coin_lbl.text = "PTS:"
+	coin_lbl.add_theme_font_size_override("font_size", 11)
+	coin_lbl.add_theme_color_override("font_color", Color(0.70, 0.50, 0.10))
 	hud.add_child(coin_lbl)
 
 	score_label = Label.new()
-	score_label.text = "PUNTOS: 0"
+	score_label.text = "0"
 	score_label.add_theme_font_size_override("font_size", 11)
 	score_label.add_theme_color_override("font_color", Color(0.2, 0.15, 0.1))
 	hud.add_child(score_label)
@@ -309,9 +310,9 @@ func _build_game_area() -> void:
 	cloud_panel.custom_minimum_size = Vector2(200, 38)
 	cloud_panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.78, 0.82, 0.88, 0.85), 16))
 	var cloud_lbl := Label.new()
-	cloud_lbl.text = "☁  ☁  ☁  ☁  ☁"
-	cloud_lbl.add_theme_font_size_override("font_size", 14)
-	cloud_lbl.add_theme_color_override("font_color", Color(0.6, 0.65, 0.72))
+	cloud_lbl.text = "~ ~ ~ NUBES ~ ~ ~"
+	cloud_lbl.add_theme_font_size_override("font_size", 12)
+	cloud_lbl.add_theme_color_override("font_color", Color(0.55, 0.62, 0.70))
 	cloud_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cloud_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	cloud_panel.add_child(cloud_lbl)
@@ -324,7 +325,7 @@ func _build_game_area() -> void:
 	var cart_style := _make_stylebox(Color(0.40, 0.26, 0.13), 5, 2, Color(0.28, 0.18, 0.08))
 	player_cart.add_theme_stylebox_override("panel", cart_style)
 	var cart_lbl := Label.new()
-	cart_lbl.text = "⛏ CART"
+	cart_lbl.text = "[ VAGONETA ]"
 	cart_lbl.add_theme_font_size_override("font_size", 11)
 	cart_lbl.add_theme_color_override("font_color", Color(0.95, 0.90, 0.75))
 	cart_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -408,7 +409,7 @@ func _build_overlay_difficulty() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "🌧  Lluvia de Requerimientos"
+	title.text = "Lluvia de Requerimientos"
 	title.add_theme_font_size_override("font_size", 15)
 	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -432,21 +433,21 @@ func _build_overlay_difficulty() -> void:
 	vbox.add_child(lbl_diff)
 
 	var btn_facil := Button.new()
-	btn_facil.text = "🟢  Fácil  (10 vidas)"
+	btn_facil.text = "[FÁCIL]  10 vidas"
 	btn_facil.add_theme_font_size_override("font_size", 12)
 	btn_facil.custom_minimum_size = Vector2(0, 38)
 	btn_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
 	vbox.add_child(btn_facil)
 
 	var btn_normal := Button.new()
-	btn_normal.text = "🟡  Normal  (5 vidas)"
+	btn_normal.text = "[NORMAL]  5 vidas"
 	btn_normal.add_theme_font_size_override("font_size", 12)
 	btn_normal.custom_minimum_size = Vector2(0, 38)
 	btn_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
 	vbox.add_child(btn_normal)
 
 	var btn_ing := Button.new()
-	btn_ing.text = "🔴  Ingeniero  (3 vidas)"
+	btn_ing.text = "[INGENIERO]  3 vidas"
 	btn_ing.add_theme_font_size_override("font_size", 12)
 	btn_ing.custom_minimum_size = Vector2(0, 38)
 	btn_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
@@ -466,7 +467,7 @@ func _build_overlay_instructions() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "📋  INSTRUCCIONES"
+	title.text = "INSTRUCCIONES"
 	title.add_theme_font_size_override("font_size", 15)
 	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -483,10 +484,10 @@ func _build_overlay_instructions() -> void:
 	vbox.add_child(sep)
 
 	var rules: Array[String] = [
-		"🟢  Atrapa cofres VERDES\n     (Req. Funcionales) = +Puntos",
-		"🔴  Esquiva cofres ROJOS\n     (Req. No Funcionales) = -1 Vida",
-		"⚠️  Si un Req. Funcional se\n     escapa por abajo = -1 Vida",
-		"⏱  Sobrevive hasta que el\n     tiempo termine para ganar",
+		"[+] Atrapa cofres VERDES\n     (Req. Funcionales) = +Puntos",
+		"[-] Esquiva cofres ROJOS\n     (Req. No Funcionales) = -1 Vida",
+		"[!] Si un Req. Funcional se\n     escapa por abajo = -1 Vida",
+		"[T] Sobrevive hasta que el\n     tiempo termine para ganar",
 	]
 	for rule_text in rules:
 		var rule_lbl := Label.new()
@@ -549,7 +550,7 @@ func _build_overlay_game_over() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "💀  GAME OVER"
+	title.text = "GAME OVER"
 	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -563,7 +564,7 @@ func _build_overlay_game_over() -> void:
 	vbox.add_child(final_score_label)
 
 	var btn_retry := Button.new()
-	btn_retry.text = "🔄  Reiniciar Actividad"
+	btn_retry.text = "Reiniciar Actividad"
 	btn_retry.add_theme_font_size_override("font_size", 13)
 	btn_retry.custom_minimum_size = Vector2(0, 40)
 	btn_retry.pressed.connect(_on_retry_pressed)
@@ -583,15 +584,16 @@ func _build_overlay_victory() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "🏆  ¡COMPLETADO!"
+	title.text = "¡COMPLETADO!"
 	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
 	stars_label = Label.new()
-	stars_label.text = "⭐⭐⭐"
+	stars_label.text = "★ ★ ★"
 	stars_label.add_theme_font_size_override("font_size", 22)
+	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 	stars_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(stars_label)
 
@@ -604,14 +606,14 @@ func _build_overlay_victory() -> void:
 
 	# Opciones de salida al finalizar la actividad
 	var btn_salon := Button.new()
-	btn_salon.text = "📚  Volver al Salón"
+	btn_salon.text = "←  Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 13)
 	btn_salon.custom_minimum_size = Vector2(0, 40)
 	btn_salon.pressed.connect(_on_back_pressed)
 	vbox.add_child(btn_salon)
 
 	var btn_campus := Button.new()
-	btn_campus.text = "🚪  Salir al Campus"
+	btn_campus.text = "←  Salir al Campus"
 	btn_campus.add_theme_font_size_override("font_size", 13)
 	btn_campus.custom_minimum_size = Vector2(0, 40)
 	btn_campus.pressed.connect(_on_exit_to_campus)
@@ -893,7 +895,7 @@ func _handle_victory() -> void:
 	# Mostrar overlay de victoria
 	_clear_active_requirements()
 	victory_score_label.text = "Puntaje: %d" % score
-	stars_label.text = "⭐".repeat(earned_stars) + "☆".repeat(3 - earned_stars)
+	stars_label.text = "★".repeat(earned_stars) + "☆".repeat(3 - earned_stars)
 	victory_overlay.visible = true
 
 

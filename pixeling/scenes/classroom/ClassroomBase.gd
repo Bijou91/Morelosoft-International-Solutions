@@ -46,7 +46,7 @@ func _populate_minigames() -> void:
 		
 		var saved_data: Dictionary = StateManager.get_minigame_data(cu_id)
 		var stars_count: int = saved_data.get("stars", 0)
-		var stars_str: String = "⭐".repeat(stars_count) + "☆".repeat(3 - stars_count)
+		var stars_str: String = "★".repeat(stars_count) + "☆".repeat(3 - stars_count)
 		btn.text = "%s\n%s (%d/3)  •  Récord: %d pts" % [title, stars_str, stars_count, saved_data.get("score", 0)]
 		btn.custom_minimum_size = Vector2(0, 54)
 		btn.add_theme_font_size_override("font_size", 12)
