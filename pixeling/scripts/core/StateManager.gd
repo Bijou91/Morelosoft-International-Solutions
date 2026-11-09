@@ -43,7 +43,8 @@ var player_data: Dictionary = {
 			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0 },
 			"mansion_escape": { "completed": false, "score": 0, "stars": 0 },
 			"include_extend": { "completed": false, "score": 0, "stars": 0 },
-			"datadrop": { "completed": false, "score": 0, "stars": 0 }
+			"datadrop": { "completed": false, "score": 0, "stars": 0 },
+			"heroforge": { "completed": false, "score": 0, "stars": 0 }
 		}
 	}
 }
@@ -240,6 +241,7 @@ func debug_unlock_all_minigames() -> void:
 		"include_extend",
 		"roboflow",
 		"datadrop",
+		"heroforge",
 		"derby_de_bateo",
 		"mansion_escape",
 		"terminal_linux",

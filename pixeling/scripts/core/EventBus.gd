@@ -12,6 +12,9 @@ signal minigame_started(cu_id: String, difficulty: String)
 signal minigame_completed(cu_id: String, result: Dictionary)
 signal life_lost(lives_remaining: int)
 signal game_over(minigame_id: String)
+signal session_started(lives: int, total_score: int)
+signal score_changed(total_score: int)
+signal progress_saved(total_score: int)
 
 # Señales de Estado y Economía
 signal points_updated(new_total: int, delta: int)

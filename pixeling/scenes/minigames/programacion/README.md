@@ -6,6 +6,7 @@ Esta carpeta aloja los minijuegos didácticos asociados a los contenidos curricu
 ## Minijuegos del Módulo:
 * `roboflow/`: **RoboFlow (CU-10 - Control de Flujos)** - El estudiante estructura secuencias algorítmicas de comandos para guiar un robot a la meta en el tablero del laberinto.
 * `datadrop/`: **DataDrop (CU-11 - Tipos de Datos y Variables)** - El estudiante clasifica y asocia mediante cables valores literales con sus tipos de datos primitivos (int, float, string, bool).
+* `heroforge/`: **HeroForge (CU-12 - Clases, Objetos y Atributos)** - El estudiante forja personajes ligando correctamente sus atributos y métodos a la plantilla de clase para instanciar objetos en memoria.
 * *(Futuro Sprint 2)* `condicionales/`: Práctica de ramificaciones lógicas if/else con semáforos o sensores.
 * *(Futuro Sprint 3)* `bucles_repeticion/`: Optimización de algoritmos reduciendo instrucciones repetitivas con bucles for/while.
 * *(Futuro)* `arreglos_matrices/`: Manipulación de listas e indexación matricial.

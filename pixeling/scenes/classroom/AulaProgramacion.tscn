@@ -15,4 +15,8 @@ minigames_list = [{
 "id": "datadrop",
 "name": "DataDrop (Tipos de Datos y Variables)",
 "scene": "res://scenes/minigames/programacion/datadrop/DataDrop.tscn"
+}, {
+"id": "heroforge",
+"name": "HeroForge (Clases, Objetos y Atributos)",
+"scene": "res://scenes/minigames/programacion/heroforge/HeroForge.tscn"
 }]
