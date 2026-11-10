@@ -208,6 +208,14 @@ func record_minigame_result(game_id: String, result: Dictionary) -> void:
 
 	EventBus.minigame_completed.emit(game_id, result)
 
+## Actualiza y persiste el progreso de un minijuego de forma atómica
+func update_minigame_progress(game_id: String, score: int, stars: int) -> void:
+	record_minigame_result(game_id, {
+		"success": true,
+		"score": score,
+		"stars": stars
+	})
+
 func get_minigame_data(game_id: String) -> Dictionary:
 	return player_data.progress.minigames.get(game_id, { "completed": false, "score": 0, "stars": 0 })
 

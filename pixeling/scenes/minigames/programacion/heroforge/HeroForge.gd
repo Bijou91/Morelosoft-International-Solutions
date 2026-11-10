@@ -92,6 +92,10 @@ var btn_gameover_restart: Button
 var btn_gameover_back: Button
 
 func _ready() -> void:
+	minigame_id = "heroforge"
+	cu_id = "CU-12"
+	minigame_title = "HeroForge"
+	subject_name = "Programación"
 	super._ready()
 	_build_ui()
 	_show_screen(screen_start)
@@ -650,7 +654,7 @@ func _build_screen_victory() -> void:
 	add_child(screen_victory)
 
 	var vic_bg := ColorRect.new()
-	vic_bg.color = Color(0.03, 0.08, 0.05, 0.94)
+	vic_bg.color = Color(0.04, 0.07, 0.12, 1.0)
 	vic_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen_victory.add_child(vic_bg)
 
@@ -658,15 +662,31 @@ func _build_screen_victory() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen_victory.add_child(center)
 
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(280, 270)
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color("141c2b")
+	card_style.border_color = Color("69f0ae")
+	card_style.set_border_width_all(2)
+	card_style.set_corner_radius_all(10)
+	card.add_theme_stylebox_override("panel", card_style)
+	center.add_child(card)
+
+	var card_margin := MarginContainer.new()
+	card_margin.add_theme_constant_override("margin_left", 14)
+	card_margin.add_theme_constant_override("margin_right", 14)
+	card_margin.add_theme_constant_override("margin_top", 14)
+	card_margin.add_theme_constant_override("margin_bottom", 14)
+	card.add_child(card_margin)
+
 	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(260, 260)
 	box.add_theme_constant_override("separation", 12)
-	center.add_child(box)
+	card_margin.add_child(box)
 
 	var title := Label.new()
 	title.text = "🎉 ¡Mesa de Forja Superada!"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_font_size_override("font_size", 16)
 	title.add_theme_color_override("font_color", Color("69f0ae"))
 	box.add_child(title)
 
@@ -859,6 +879,10 @@ func _load_class_challenge(index: int) -> void:
 
 	btn_instantiate.disabled = false
 	btn_instantiate.text = "🔨 ¡Instanciar Objeto! (Validar Clase)"
+	if btn_instantiate.pressed.is_connected(_handle_victory):
+		btn_instantiate.pressed.disconnect(_handle_victory)
+	if not btn_instantiate.pressed.is_connected(_on_instantiate_pressed):
+		btn_instantiate.pressed.connect(_on_instantiate_pressed)
 	_set_status("Asigna %d Atributo(s) a la izquierda y %d Método(s) a la derecha." % [required_slots, required_slots], Color("90a4ae"))
 	_update_hud()
 
@@ -1120,13 +1144,18 @@ func _on_hero_instantiated_success() -> void:
 	var is_last_hero: bool = (current_hero_index + 1 >= hero_classes_queue.size())
 
 	if is_last_hero:
-		btn_instantiate.disabled = true
-		btn_instantiate.text = "🎉 ¡Mesa de Forja Superada!"
+		btn_instantiate.disabled = false
+		btn_instantiate.text = "🎉 ¡Mesa de Forja Superada! (Toca para ver resultados)"
+		if btn_instantiate.pressed.is_connected(_on_instantiate_pressed):
+			btn_instantiate.pressed.disconnect(_on_instantiate_pressed)
+		if not btn_instantiate.pressed.is_connected(_handle_victory):
+			btn_instantiate.pressed.connect(_handle_victory)
 		_set_status("🏆 ¡%s forjado! Completaste todos los personajes (+%d pts)." % [current_hero.class_name, points_per_char], Color("ffd54f"))
 
 		# Pausa breve para celebrar y mostrar la Pantalla Final de Victoria
 		await get_tree().create_timer(0.6).timeout
-		_handle_victory()
+		if screen_game.visible:
+			_handle_victory()
 	else:
 		btn_instantiate.disabled = true
 		btn_instantiate.text = "✨ ¡%s Instanciado! (+%d pts)" % [current_hero.class_name, points_per_char]
@@ -1202,12 +1231,6 @@ func _handle_victory() -> void:
 	is_timer_running = false
 	_set_game_paused(false)
 
-	if AudioManager:
-		if AudioManager.has_method("play_sfx"):
-			AudioManager.play_sfx("victory")
-		elif AudioManager.has_method("play_success"):
-			AudioManager.play_success()
-
 	var stars: int = target_stars
 	if current_lives == max_lives:
 		stars = mini(3, stars + 1)
@@ -1216,33 +1239,44 @@ func _handle_victory() -> void:
 	var final_score: int = total_score + lives_bonus
 
 	var diff_name: String = diff_config.get("name", selected_diff)
-	btn_victory_restart.text = "🔄 Volver a Jugar (%s)" % diff_name
+	if btn_victory_restart:
+		btn_victory_restart.text = "🔄 Volver a Jugar (%s)" % diff_name
 
-	lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d (+%d bonus vidas)\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
-		diff_name,
-		hero_classes_queue.size(),
-		hero_classes_queue.size(),
-		final_score,
-		lives_bonus,
-		"⭐".repeat(stars),
-		current_lives
-	]
+	if lbl_victory_stats:
+		lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d (+%d bonus vidas)\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
+			diff_name,
+			hero_classes_queue.size(),
+			hero_classes_queue.size(),
+			final_score,
+			lives_bonus,
+			"⭐".repeat(stars),
+			current_lives
+		]
 
-	# Persistir progreso en StateManager
-	if StateManager:
-		StateManager.update_minigame_progress("heroforge", final_score, stars)
-
-	if EventBus.has_signal("progress_saved"):
-		EventBus.emit_signal("progress_saved", final_score)
-
-	if EventBus.has_signal("minigame_completed"):
-		EventBus.emit_signal("minigame_completed", "heroforge", {
-			"completed": true,
-			"score": final_score,
-			"stars": stars
-		})
-
+	# Mostrar la pantalla de victoria INMEDIATAMENTE
 	_show_screen(screen_victory)
+
+	if AudioManager:
+		if AudioManager.has_method("play_sfx"):
+			AudioManager.play_sfx("victory")
+		elif AudioManager.has_method("play_success"):
+			AudioManager.play_success()
+
+	# Persistir progreso de forma resiliente
+	if has_method("finish_game"):
+		finish_game(true, final_score, stars, "¡Mesa de Forja Superada con Éxito!")
+	elif StateManager:
+		if StateManager.has_method("record_minigame_result"):
+			StateManager.record_minigame_result("heroforge", {
+				"success": true,
+				"score": final_score,
+				"stars": stars
+			})
+		elif StateManager.has_method("update_minigame_progress"):
+			StateManager.update_minigame_progress("heroforge", final_score, stars)
+
+	if EventBus and EventBus.has_signal("progress_saved"):
+		EventBus.emit_signal("progress_saved", final_score)
 
 # Salida al Aula 101
 func _on_back_pressed() -> void:
