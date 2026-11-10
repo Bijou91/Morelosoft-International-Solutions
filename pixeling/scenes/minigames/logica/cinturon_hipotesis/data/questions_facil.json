@@ -1,0 +1,602 @@
+[
+  {
+    "id": "FACIL-01",
+    "hypothesis": "Hipótesis #1: Probar que 1 + 2 + ... + n = n(n+1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1 = 1(2)/2 = 1",
+      "Paso 2: Formular hipótesis para n = k: 1+2+...+k = k(k+1)/2",
+      "Paso 3: Probar para k+1: k(k+1)/2 + (k+1) = (k+1)(k+2)/2"
+    ],
+    "distractors": [
+      "Probar base en n = 0 y decir que 0/0 es indeterminado",
+      "Asumir P(k+1) para deducir P(k)",
+      "Restar k+1 en vez de sumarlo",
+      "Dividir ambos lados entre k",
+      "Afirmar que 1+2+...+n = n^2",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-02",
+    "hypothesis": "Hipótesis #2: Probar que 1 + 3 + ... + (2n-1) = n^2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 2(1)-1 = 1 y 1^2 = 1",
+      "Paso 2: Hipótesis para n = k: 1+3+...+(2k-1) = k^2",
+      "Paso 3: Probar k+1 sumando 2(k+1)-1: k^2 + 2k+1 = (k+1)^2"
+    ],
+    "distractors": [
+      "Caso base falso: 2(1)-1 = 3",
+      "Sumar (2k+1)^2 erróneamente",
+      "Afirmar n^2 = (n-1)^2 + 1",
+      "Evaluar n=-1 para números naturales",
+      "Multiplicar por 2 en vez de sumar",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-03",
+    "hypothesis": "Hipótesis #3: Probar que 2^n > n para todo entero n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^1 = 2 > 1 (Verdadero)",
+      "Paso 2: Hipótesis para n = k: 2^k > k (con k >= 1)",
+      "Paso 3: Para k+1: 2^(k+1) = 2*2^k > 2k >= k+1"
+    ],
+    "distractors": [
+      "Caso base falso: 2^1 < 1",
+      "Restar 1 a 2^k en el paso inductivo",
+      "Afirmar que 2k < k+1 para todo k natural",
+      "Dividir entre 0 en la desigualdad",
+      "Invertir desigualdad sin multiplicar por negativo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-04",
+    "hypothesis": "Hipótesis #4: Probar que 3 divide a n^3 - n para todo n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1^3 - 1 = 0, y 3 divide a 0",
+      "Paso 2: Hipótesis para k: k^3 - k = 3m para algún entero m",
+      "Paso 3: Para k+1: (k+1)^3 - (k+1) = (k^3 - k) + 3(k^2 + k) = 3(m + k^2 + k)"
+    ],
+    "distractors": [
+      "Caso base: 1^3 - 1 = 1 que no es múltiplo de 3",
+      "Asumir que si 3 divide a n^3 divide a n directamente",
+      "Desarrollo falso: (k+1)^3 = k^3 + 1",
+      "Restar 3m arbitrariamente",
+      "Afirmar que k^3-k siempre es primo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-05",
+    "hypothesis": "Hipótesis #5: Probar que 1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^(1-1) = 1 y 2^1 - 1 = 1",
+      "Paso 2: Hipótesis para n = k: 1+2+...+2^(k-1) = 2^k - 1",
+      "Paso 3: Para k+1: (2^k - 1) + 2^k = 2*(2^k) - 1 = 2^(k+1) - 1"
+    ],
+    "distractors": [
+      "Caso base erróneo: 2^0 = 0",
+      "Sumar 2^(k+1) en lugar de 2^k",
+      "Afirmar 2^k + 2^k = 4^k",
+      "Multiplicar por 2 sin sumar términos",
+      "Reducir erróneamente 2^(k+1)-1 = 2^k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-06",
+    "hypothesis": "Hipótesis #6: Probar que Suma de potencias de 3: 1 + 3 + 3^2 + ... + 3^(n-1) = (3^n - 1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 3^0 = 1 y (3^1 - 1)/2 = 1",
+      "Paso 2: Hipótesis para n = k: sum(3^i) = (3^k - 1)/2",
+      "Paso 3: Para k+1: (3^k - 1)/2 + 3^k = (3*3^k - 1)/2 = (3^(k+1) - 1)/2"
+    ],
+    "distractors": [
+      "Caso base: 3^0 = 3",
+      "Sumar 3^(k+1) antes de tiempo",
+      "Afirmar que (3^k - 1)/2 + 3^k = (3^k + 3^k)/2",
+      "Dividir entre 3 en vez de sumar",
+      "Factorizar 3^k como 3*k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-07",
+    "hypothesis": "Hipótesis #7: Probar que 1 + 2 + ... + n = n(n+1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1 = 1(2)/2 = 1",
+      "Paso 2: Formular hipótesis para n = k: 1+2+...+k = k(k+1)/2",
+      "Paso 3: Probar para k+1: k(k+1)/2 + (k+1) = (k+1)(k+2)/2"
+    ],
+    "distractors": [
+      "Probar base en n = 0 y decir que 0/0 es indeterminado",
+      "Asumir P(k+1) para deducir P(k)",
+      "Restar k+1 en vez de sumarlo",
+      "Dividir ambos lados entre k",
+      "Afirmar que 1+2+...+n = n^2",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-08",
+    "hypothesis": "Hipótesis #8: Probar que 1 + 3 + ... + (2n-1) = n^2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 2(1)-1 = 1 y 1^2 = 1",
+      "Paso 2: Hipótesis para n = k: 1+3+...+(2k-1) = k^2",
+      "Paso 3: Probar k+1 sumando 2(k+1)-1: k^2 + 2k+1 = (k+1)^2"
+    ],
+    "distractors": [
+      "Caso base falso: 2(1)-1 = 3",
+      "Sumar (2k+1)^2 erróneamente",
+      "Afirmar n^2 = (n-1)^2 + 1",
+      "Evaluar n=-1 para números naturales",
+      "Multiplicar por 2 en vez de sumar",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-09",
+    "hypothesis": "Hipótesis #9: Probar que 2^n > n para todo entero n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^1 = 2 > 1 (Verdadero)",
+      "Paso 2: Hipótesis para n = k: 2^k > k (con k >= 1)",
+      "Paso 3: Para k+1: 2^(k+1) = 2*2^k > 2k >= k+1"
+    ],
+    "distractors": [
+      "Caso base falso: 2^1 < 1",
+      "Restar 1 a 2^k en el paso inductivo",
+      "Afirmar que 2k < k+1 para todo k natural",
+      "Dividir entre 0 en la desigualdad",
+      "Invertir desigualdad sin multiplicar por negativo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-10",
+    "hypothesis": "Hipótesis #10: Probar que 3 divide a n^3 - n para todo n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1^3 - 1 = 0, y 3 divide a 0",
+      "Paso 2: Hipótesis para k: k^3 - k = 3m para algún entero m",
+      "Paso 3: Para k+1: (k+1)^3 - (k+1) = (k^3 - k) + 3(k^2 + k) = 3(m + k^2 + k)"
+    ],
+    "distractors": [
+      "Caso base: 1^3 - 1 = 1 que no es múltiplo de 3",
+      "Asumir que si 3 divide a n^3 divide a n directamente",
+      "Desarrollo falso: (k+1)^3 = k^3 + 1",
+      "Restar 3m arbitrariamente",
+      "Afirmar que k^3-k siempre es primo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-11",
+    "hypothesis": "Hipótesis #11: Probar que 1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^(1-1) = 1 y 2^1 - 1 = 1",
+      "Paso 2: Hipótesis para n = k: 1+2+...+2^(k-1) = 2^k - 1",
+      "Paso 3: Para k+1: (2^k - 1) + 2^k = 2*(2^k) - 1 = 2^(k+1) - 1"
+    ],
+    "distractors": [
+      "Caso base erróneo: 2^0 = 0",
+      "Sumar 2^(k+1) en lugar de 2^k",
+      "Afirmar 2^k + 2^k = 4^k",
+      "Multiplicar por 2 sin sumar términos",
+      "Reducir erróneamente 2^(k+1)-1 = 2^k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-12",
+    "hypothesis": "Hipótesis #12: Probar que Suma de potencias de 3: 1 + 3 + 3^2 + ... + 3^(n-1) = (3^n - 1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 3^0 = 1 y (3^1 - 1)/2 = 1",
+      "Paso 2: Hipótesis para n = k: sum(3^i) = (3^k - 1)/2",
+      "Paso 3: Para k+1: (3^k - 1)/2 + 3^k = (3*3^k - 1)/2 = (3^(k+1) - 1)/2"
+    ],
+    "distractors": [
+      "Caso base: 3^0 = 3",
+      "Sumar 3^(k+1) antes de tiempo",
+      "Afirmar que (3^k - 1)/2 + 3^k = (3^k + 3^k)/2",
+      "Dividir entre 3 en vez de sumar",
+      "Factorizar 3^k como 3*k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-13",
+    "hypothesis": "Hipótesis #13: Probar que 1 + 2 + ... + n = n(n+1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1 = 1(2)/2 = 1",
+      "Paso 2: Formular hipótesis para n = k: 1+2+...+k = k(k+1)/2",
+      "Paso 3: Probar para k+1: k(k+1)/2 + (k+1) = (k+1)(k+2)/2"
+    ],
+    "distractors": [
+      "Probar base en n = 0 y decir que 0/0 es indeterminado",
+      "Asumir P(k+1) para deducir P(k)",
+      "Restar k+1 en vez de sumarlo",
+      "Dividir ambos lados entre k",
+      "Afirmar que 1+2+...+n = n^2",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-14",
+    "hypothesis": "Hipótesis #14: Probar que 1 + 3 + ... + (2n-1) = n^2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 2(1)-1 = 1 y 1^2 = 1",
+      "Paso 2: Hipótesis para n = k: 1+3+...+(2k-1) = k^2",
+      "Paso 3: Probar k+1 sumando 2(k+1)-1: k^2 + 2k+1 = (k+1)^2"
+    ],
+    "distractors": [
+      "Caso base falso: 2(1)-1 = 3",
+      "Sumar (2k+1)^2 erróneamente",
+      "Afirmar n^2 = (n-1)^2 + 1",
+      "Evaluar n=-1 para números naturales",
+      "Multiplicar por 2 en vez de sumar",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-15",
+    "hypothesis": "Hipótesis #15: Probar que 2^n > n para todo entero n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^1 = 2 > 1 (Verdadero)",
+      "Paso 2: Hipótesis para n = k: 2^k > k (con k >= 1)",
+      "Paso 3: Para k+1: 2^(k+1) = 2*2^k > 2k >= k+1"
+    ],
+    "distractors": [
+      "Caso base falso: 2^1 < 1",
+      "Restar 1 a 2^k en el paso inductivo",
+      "Afirmar que 2k < k+1 para todo k natural",
+      "Dividir entre 0 en la desigualdad",
+      "Invertir desigualdad sin multiplicar por negativo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-16",
+    "hypothesis": "Hipótesis #16: Probar que 3 divide a n^3 - n para todo n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1^3 - 1 = 0, y 3 divide a 0",
+      "Paso 2: Hipótesis para k: k^3 - k = 3m para algún entero m",
+      "Paso 3: Para k+1: (k+1)^3 - (k+1) = (k^3 - k) + 3(k^2 + k) = 3(m + k^2 + k)"
+    ],
+    "distractors": [
+      "Caso base: 1^3 - 1 = 1 que no es múltiplo de 3",
+      "Asumir que si 3 divide a n^3 divide a n directamente",
+      "Desarrollo falso: (k+1)^3 = k^3 + 1",
+      "Restar 3m arbitrariamente",
+      "Afirmar que k^3-k siempre es primo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-17",
+    "hypothesis": "Hipótesis #17: Probar que 1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^(1-1) = 1 y 2^1 - 1 = 1",
+      "Paso 2: Hipótesis para n = k: 1+2+...+2^(k-1) = 2^k - 1",
+      "Paso 3: Para k+1: (2^k - 1) + 2^k = 2*(2^k) - 1 = 2^(k+1) - 1"
+    ],
+    "distractors": [
+      "Caso base erróneo: 2^0 = 0",
+      "Sumar 2^(k+1) en lugar de 2^k",
+      "Afirmar 2^k + 2^k = 4^k",
+      "Multiplicar por 2 sin sumar términos",
+      "Reducir erróneamente 2^(k+1)-1 = 2^k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-18",
+    "hypothesis": "Hipótesis #18: Probar que Suma de potencias de 3: 1 + 3 + 3^2 + ... + 3^(n-1) = (3^n - 1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 3^0 = 1 y (3^1 - 1)/2 = 1",
+      "Paso 2: Hipótesis para n = k: sum(3^i) = (3^k - 1)/2",
+      "Paso 3: Para k+1: (3^k - 1)/2 + 3^k = (3*3^k - 1)/2 = (3^(k+1) - 1)/2"
+    ],
+    "distractors": [
+      "Caso base: 3^0 = 3",
+      "Sumar 3^(k+1) antes de tiempo",
+      "Afirmar que (3^k - 1)/2 + 3^k = (3^k + 3^k)/2",
+      "Dividir entre 3 en vez de sumar",
+      "Factorizar 3^k como 3*k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-19",
+    "hypothesis": "Hipótesis #19: Probar que 1 + 2 + ... + n = n(n+1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1 = 1(2)/2 = 1",
+      "Paso 2: Formular hipótesis para n = k: 1+2+...+k = k(k+1)/2",
+      "Paso 3: Probar para k+1: k(k+1)/2 + (k+1) = (k+1)(k+2)/2"
+    ],
+    "distractors": [
+      "Probar base en n = 0 y decir que 0/0 es indeterminado",
+      "Asumir P(k+1) para deducir P(k)",
+      "Restar k+1 en vez de sumarlo",
+      "Dividir ambos lados entre k",
+      "Afirmar que 1+2+...+n = n^2",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-20",
+    "hypothesis": "Hipótesis #20: Probar que 1 + 3 + ... + (2n-1) = n^2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 2(1)-1 = 1 y 1^2 = 1",
+      "Paso 2: Hipótesis para n = k: 1+3+...+(2k-1) = k^2",
+      "Paso 3: Probar k+1 sumando 2(k+1)-1: k^2 + 2k+1 = (k+1)^2"
+    ],
+    "distractors": [
+      "Caso base falso: 2(1)-1 = 3",
+      "Sumar (2k+1)^2 erróneamente",
+      "Afirmar n^2 = (n-1)^2 + 1",
+      "Evaluar n=-1 para números naturales",
+      "Multiplicar por 2 en vez de sumar",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-21",
+    "hypothesis": "Hipótesis #21: Probar que 2^n > n para todo entero n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^1 = 2 > 1 (Verdadero)",
+      "Paso 2: Hipótesis para n = k: 2^k > k (con k >= 1)",
+      "Paso 3: Para k+1: 2^(k+1) = 2*2^k > 2k >= k+1"
+    ],
+    "distractors": [
+      "Caso base falso: 2^1 < 1",
+      "Restar 1 a 2^k en el paso inductivo",
+      "Afirmar que 2k < k+1 para todo k natural",
+      "Dividir entre 0 en la desigualdad",
+      "Invertir desigualdad sin multiplicar por negativo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-22",
+    "hypothesis": "Hipótesis #22: Probar que 3 divide a n^3 - n para todo n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1^3 - 1 = 0, y 3 divide a 0",
+      "Paso 2: Hipótesis para k: k^3 - k = 3m para algún entero m",
+      "Paso 3: Para k+1: (k+1)^3 - (k+1) = (k^3 - k) + 3(k^2 + k) = 3(m + k^2 + k)"
+    ],
+    "distractors": [
+      "Caso base: 1^3 - 1 = 1 que no es múltiplo de 3",
+      "Asumir que si 3 divide a n^3 divide a n directamente",
+      "Desarrollo falso: (k+1)^3 = k^3 + 1",
+      "Restar 3m arbitrariamente",
+      "Afirmar que k^3-k siempre es primo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-23",
+    "hypothesis": "Hipótesis #23: Probar que 1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^(1-1) = 1 y 2^1 - 1 = 1",
+      "Paso 2: Hipótesis para n = k: 1+2+...+2^(k-1) = 2^k - 1",
+      "Paso 3: Para k+1: (2^k - 1) + 2^k = 2*(2^k) - 1 = 2^(k+1) - 1"
+    ],
+    "distractors": [
+      "Caso base erróneo: 2^0 = 0",
+      "Sumar 2^(k+1) en lugar de 2^k",
+      "Afirmar 2^k + 2^k = 4^k",
+      "Multiplicar por 2 sin sumar términos",
+      "Reducir erróneamente 2^(k+1)-1 = 2^k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-24",
+    "hypothesis": "Hipótesis #24: Probar que Suma de potencias de 3: 1 + 3 + 3^2 + ... + 3^(n-1) = (3^n - 1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 3^0 = 1 y (3^1 - 1)/2 = 1",
+      "Paso 2: Hipótesis para n = k: sum(3^i) = (3^k - 1)/2",
+      "Paso 3: Para k+1: (3^k - 1)/2 + 3^k = (3*3^k - 1)/2 = (3^(k+1) - 1)/2"
+    ],
+    "distractors": [
+      "Caso base: 3^0 = 3",
+      "Sumar 3^(k+1) antes de tiempo",
+      "Afirmar que (3^k - 1)/2 + 3^k = (3^k + 3^k)/2",
+      "Dividir entre 3 en vez de sumar",
+      "Factorizar 3^k como 3*k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-25",
+    "hypothesis": "Hipótesis #25: Probar que 1 + 2 + ... + n = n(n+1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1 = 1(2)/2 = 1",
+      "Paso 2: Formular hipótesis para n = k: 1+2+...+k = k(k+1)/2",
+      "Paso 3: Probar para k+1: k(k+1)/2 + (k+1) = (k+1)(k+2)/2"
+    ],
+    "distractors": [
+      "Probar base en n = 0 y decir que 0/0 es indeterminado",
+      "Asumir P(k+1) para deducir P(k)",
+      "Restar k+1 en vez de sumarlo",
+      "Dividir ambos lados entre k",
+      "Afirmar que 1+2+...+n = n^2",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-26",
+    "hypothesis": "Hipótesis #26: Probar que 1 + 3 + ... + (2n-1) = n^2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 2(1)-1 = 1 y 1^2 = 1",
+      "Paso 2: Hipótesis para n = k: 1+3+...+(2k-1) = k^2",
+      "Paso 3: Probar k+1 sumando 2(k+1)-1: k^2 + 2k+1 = (k+1)^2"
+    ],
+    "distractors": [
+      "Caso base falso: 2(1)-1 = 3",
+      "Sumar (2k+1)^2 erróneamente",
+      "Afirmar n^2 = (n-1)^2 + 1",
+      "Evaluar n=-1 para números naturales",
+      "Multiplicar por 2 en vez de sumar",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-27",
+    "hypothesis": "Hipótesis #27: Probar que 2^n > n para todo entero n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^1 = 2 > 1 (Verdadero)",
+      "Paso 2: Hipótesis para n = k: 2^k > k (con k >= 1)",
+      "Paso 3: Para k+1: 2^(k+1) = 2*2^k > 2k >= k+1"
+    ],
+    "distractors": [
+      "Caso base falso: 2^1 < 1",
+      "Restar 1 a 2^k en el paso inductivo",
+      "Afirmar que 2k < k+1 para todo k natural",
+      "Dividir entre 0 en la desigualdad",
+      "Invertir desigualdad sin multiplicar por negativo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-28",
+    "hypothesis": "Hipótesis #28: Probar que 3 divide a n^3 - n para todo n >= 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1^3 - 1 = 0, y 3 divide a 0",
+      "Paso 2: Hipótesis para k: k^3 - k = 3m para algún entero m",
+      "Paso 3: Para k+1: (k+1)^3 - (k+1) = (k^3 - k) + 3(k^2 + k) = 3(m + k^2 + k)"
+    ],
+    "distractors": [
+      "Caso base: 1^3 - 1 = 1 que no es múltiplo de 3",
+      "Asumir que si 3 divide a n^3 divide a n directamente",
+      "Desarrollo falso: (k+1)^3 = k^3 + 1",
+      "Restar 3m arbitrariamente",
+      "Afirmar que k^3-k siempre es primo",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-29",
+    "hypothesis": "Hipótesis #29: Probar que 1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 2^(1-1) = 1 y 2^1 - 1 = 1",
+      "Paso 2: Hipótesis para n = k: 1+2+...+2^(k-1) = 2^k - 1",
+      "Paso 3: Para k+1: (2^k - 1) + 2^k = 2*(2^k) - 1 = 2^(k+1) - 1"
+    ],
+    "distractors": [
+      "Caso base erróneo: 2^0 = 0",
+      "Sumar 2^(k+1) en lugar de 2^k",
+      "Afirmar 2^k + 2^k = 4^k",
+      "Multiplicar por 2 sin sumar términos",
+      "Reducir erróneamente 2^(k+1)-1 = 2^k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  },
+  {
+    "id": "FACIL-30",
+    "hypothesis": "Hipótesis #30: Probar que Suma de potencias de 3: 1 + 3 + 3^2 + ... + 3^(n-1) = (3^n - 1)/2",
+    "description": "Pilota la nave y destruye los asteroides que contienen los pasos lógicos en el orden exacto:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 3^0 = 1 y (3^1 - 1)/2 = 1",
+      "Paso 2: Hipótesis para n = k: sum(3^i) = (3^k - 1)/2",
+      "Paso 3: Para k+1: (3^k - 1)/2 + 3^k = (3*3^k - 1)/2 = (3^(k+1) - 1)/2"
+    ],
+    "distractors": [
+      "Caso base: 3^0 = 3",
+      "Sumar 3^(k+1) antes de tiempo",
+      "Afirmar que (3^k - 1)/2 + 3^k = (3^k + 3^k)/2",
+      "Dividir entre 3 en vez de sumar",
+      "Factorizar 3^k como 3*k",
+      "Falacia de afirmación del consecuente",
+      "Anulación por división entre cero",
+      "Contraejemplo espurio en los números reales"
+    ]
+  }
+]

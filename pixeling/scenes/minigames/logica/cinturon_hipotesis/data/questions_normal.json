@@ -1,0 +1,632 @@
+[
+  {
+    "id": "NORMAL-01",
+    "hypothesis": "Hipótesis #1: Probar que Suma de cuadrados: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1^2 = 1*(2)*(3)/6 = 1",
+      "Paso 2: Establecer hipótesis para n = k: 1^2+...+k^2 = k(k+1)(2k+1)/6",
+      "Paso 3: Sumar (k+1)^2 a la hipótesis: k(k+1)(2k+1)/6 + (k+1)^2",
+      "Paso 4: Factorizar término (k+1) y obtener (k+1)(k+2)(2k+3)/6"
+    ],
+    "distractors": [
+      "Caso base falso: 1^2 = 1*2*3 = 6",
+      "Sumar k^2 en vez de (k+1)^2 en el paso 3",
+      "Multiplicar denominadores por 6^2",
+      "Afirmar que (k+1)(2k+1) = 2k^2 + 1",
+      "Concluir sin factorizar que se cumple para todo n",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-02",
+    "hypothesis": "Hipótesis #2: Probar que Divisibilidad por 4: 5^n - 1 es divisible por 4 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Evaluar caso base n = 1: 5^1 - 1 = 4, que es múltiplo de 4",
+      "Paso 2: Hipótesis de inducción: 5^k - 1 = 4m para algún entero m",
+      "Paso 3: Para n = k+1: 5^(k+1) - 1 = 5*(5^k) - 1 = 5*(4m + 1) - 1",
+      "Paso 4: Simplificar: 20m + 4 = 4(5m + 1), que es divisible por 4"
+    ],
+    "distractors": [
+      "Evaluar caso base en n=0 y afirmar que 5^0 - 1 = 4",
+      "Desarrollar 5^(k+1) como 5^k + 5",
+      "Restar 4m en lugar de sustituir 5^k",
+      "Afirmar que 5^n siempre termina en 0",
+      "Sustituir k por m arbitrariamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-03",
+    "hypothesis": "Hipótesis #3: Probar que Desigualdad de Bernoulli: (1 + x)^n >= 1 + nx para x > -1 y n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Comprobar base n = 1: (1 + x)^1 = 1 + 1*x (Igualdad se cumple)",
+      "Paso 2: Hipótesis inductiva: Asumir que (1 + x)^k >= 1 + kx",
+      "Paso 3: Multiplicar por (1 + x): (1 + x)^(k+1) >= (1 + kx)(1 + x)",
+      "Paso 4: Desarrollar: 1 + (k+1)x + k*x^2 >= 1 + (k+1)x pues k*x^2 >= 0"
+    ],
+    "distractors": [
+      "Multiplicar por negativo e invertir sentido indebidamente",
+      "Asumir que x^2 < 0 para números reales",
+      "Caso base con x = -2 fuera de dominio",
+      "Descartar el término lineal en vez del cuadrático",
+      "Afirmar que (1+x)^k = 1 + x^k",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-04",
+    "hypothesis": "Hipótesis #4: Probar que Suma de cubos: 1^3 + 2^3 + ... + n^3 = (n(n+1)/2)^2",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Verificar caso base n = 1: 1^3 = 1 y (1*2/2)^2 = 1^2 = 1",
+      "Paso 2: Plantear hipótesis para n = k: 1^3+...+k^3 = [k(k+1)/2]^2",
+      "Paso 3: Sumar (k+1)^3: [k(k+1)/2]^2 + (k+1)^3 = (k+1)^2 * [k^2/4 + k + 1]",
+      "Paso 4: Simplificar corchete a (k+2)^2/4 dando [(k+1)(k+2)/2]^2"
+    ],
+    "distractors": [
+      "Elevar al cubo el caso base obteniendo 1 = 3",
+      "Sumar (k+1)^2 en lugar de (k+1)^3",
+      "Distribuir el cuadrado como (k^2 + (k+1)^2)/4",
+      "Olvidar el denominador 4 en la factorización",
+      "Afirmar que la suma de cubos diverge",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-05",
+    "hypothesis": "Hipótesis #5: Probar que Divisibilidad por 6: n(n+1)(n+2) es múltiplo de 6 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1*(2)*(3) = 6, el cual es divisible por 6",
+      "Paso 2: Hipótesis: k(k+1)(k+2) = 6m para algún entero m",
+      "Paso 3: Para k+1: (k+1)(k+2)(k+3) = k(k+1)(k+2) + 3(k+1)(k+2)",
+      "Paso 4: Como 3(k+1)(k+2) tiene producto de dos consecutivos, es múltiplo de 6"
+    ],
+    "distractors": [
+      "Caso base: 1*2*3 = 5 (error aritmético)",
+      "Desarrollar como k^3 + 3k^2 + 2k sin relacionar con la hipótesis",
+      "Afirmar que dos números consecutivos no pueden ser pares",
+      "Dividir entre k+1 sin verificar si es cero",
+      "Sustituir k = k+2 directamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-06",
+    "hypothesis": "Hipótesis #6: Probar que Suma de cuadrados: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1^2 = 1*(2)*(3)/6 = 1",
+      "Paso 2: Establecer hipótesis para n = k: 1^2+...+k^2 = k(k+1)(2k+1)/6",
+      "Paso 3: Sumar (k+1)^2 a la hipótesis: k(k+1)(2k+1)/6 + (k+1)^2",
+      "Paso 4: Factorizar término (k+1) y obtener (k+1)(k+2)(2k+3)/6"
+    ],
+    "distractors": [
+      "Caso base falso: 1^2 = 1*2*3 = 6",
+      "Sumar k^2 en vez de (k+1)^2 en el paso 3",
+      "Multiplicar denominadores por 6^2",
+      "Afirmar que (k+1)(2k+1) = 2k^2 + 1",
+      "Concluir sin factorizar que se cumple para todo n",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-07",
+    "hypothesis": "Hipótesis #7: Probar que Divisibilidad por 4: 5^n - 1 es divisible por 4 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Evaluar caso base n = 1: 5^1 - 1 = 4, que es múltiplo de 4",
+      "Paso 2: Hipótesis de inducción: 5^k - 1 = 4m para algún entero m",
+      "Paso 3: Para n = k+1: 5^(k+1) - 1 = 5*(5^k) - 1 = 5*(4m + 1) - 1",
+      "Paso 4: Simplificar: 20m + 4 = 4(5m + 1), que es divisible por 4"
+    ],
+    "distractors": [
+      "Evaluar caso base en n=0 y afirmar que 5^0 - 1 = 4",
+      "Desarrollar 5^(k+1) como 5^k + 5",
+      "Restar 4m en lugar de sustituir 5^k",
+      "Afirmar que 5^n siempre termina en 0",
+      "Sustituir k por m arbitrariamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-08",
+    "hypothesis": "Hipótesis #8: Probar que Desigualdad de Bernoulli: (1 + x)^n >= 1 + nx para x > -1 y n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Comprobar base n = 1: (1 + x)^1 = 1 + 1*x (Igualdad se cumple)",
+      "Paso 2: Hipótesis inductiva: Asumir que (1 + x)^k >= 1 + kx",
+      "Paso 3: Multiplicar por (1 + x): (1 + x)^(k+1) >= (1 + kx)(1 + x)",
+      "Paso 4: Desarrollar: 1 + (k+1)x + k*x^2 >= 1 + (k+1)x pues k*x^2 >= 0"
+    ],
+    "distractors": [
+      "Multiplicar por negativo e invertir sentido indebidamente",
+      "Asumir que x^2 < 0 para números reales",
+      "Caso base con x = -2 fuera de dominio",
+      "Descartar el término lineal en vez del cuadrático",
+      "Afirmar que (1+x)^k = 1 + x^k",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-09",
+    "hypothesis": "Hipótesis #9: Probar que Suma de cubos: 1^3 + 2^3 + ... + n^3 = (n(n+1)/2)^2",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Verificar caso base n = 1: 1^3 = 1 y (1*2/2)^2 = 1^2 = 1",
+      "Paso 2: Plantear hipótesis para n = k: 1^3+...+k^3 = [k(k+1)/2]^2",
+      "Paso 3: Sumar (k+1)^3: [k(k+1)/2]^2 + (k+1)^3 = (k+1)^2 * [k^2/4 + k + 1]",
+      "Paso 4: Simplificar corchete a (k+2)^2/4 dando [(k+1)(k+2)/2]^2"
+    ],
+    "distractors": [
+      "Elevar al cubo el caso base obteniendo 1 = 3",
+      "Sumar (k+1)^2 en lugar de (k+1)^3",
+      "Distribuir el cuadrado como (k^2 + (k+1)^2)/4",
+      "Olvidar el denominador 4 en la factorización",
+      "Afirmar que la suma de cubos diverge",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-10",
+    "hypothesis": "Hipótesis #10: Probar que Divisibilidad por 6: n(n+1)(n+2) es múltiplo de 6 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1*(2)*(3) = 6, el cual es divisible por 6",
+      "Paso 2: Hipótesis: k(k+1)(k+2) = 6m para algún entero m",
+      "Paso 3: Para k+1: (k+1)(k+2)(k+3) = k(k+1)(k+2) + 3(k+1)(k+2)",
+      "Paso 4: Como 3(k+1)(k+2) tiene producto de dos consecutivos, es múltiplo de 6"
+    ],
+    "distractors": [
+      "Caso base: 1*2*3 = 5 (error aritmético)",
+      "Desarrollar como k^3 + 3k^2 + 2k sin relacionar con la hipótesis",
+      "Afirmar que dos números consecutivos no pueden ser pares",
+      "Dividir entre k+1 sin verificar si es cero",
+      "Sustituir k = k+2 directamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-11",
+    "hypothesis": "Hipótesis #11: Probar que Suma de cuadrados: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1^2 = 1*(2)*(3)/6 = 1",
+      "Paso 2: Establecer hipótesis para n = k: 1^2+...+k^2 = k(k+1)(2k+1)/6",
+      "Paso 3: Sumar (k+1)^2 a la hipótesis: k(k+1)(2k+1)/6 + (k+1)^2",
+      "Paso 4: Factorizar término (k+1) y obtener (k+1)(k+2)(2k+3)/6"
+    ],
+    "distractors": [
+      "Caso base falso: 1^2 = 1*2*3 = 6",
+      "Sumar k^2 en vez de (k+1)^2 en el paso 3",
+      "Multiplicar denominadores por 6^2",
+      "Afirmar que (k+1)(2k+1) = 2k^2 + 1",
+      "Concluir sin factorizar que se cumple para todo n",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-12",
+    "hypothesis": "Hipótesis #12: Probar que Divisibilidad por 4: 5^n - 1 es divisible por 4 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Evaluar caso base n = 1: 5^1 - 1 = 4, que es múltiplo de 4",
+      "Paso 2: Hipótesis de inducción: 5^k - 1 = 4m para algún entero m",
+      "Paso 3: Para n = k+1: 5^(k+1) - 1 = 5*(5^k) - 1 = 5*(4m + 1) - 1",
+      "Paso 4: Simplificar: 20m + 4 = 4(5m + 1), que es divisible por 4"
+    ],
+    "distractors": [
+      "Evaluar caso base en n=0 y afirmar que 5^0 - 1 = 4",
+      "Desarrollar 5^(k+1) como 5^k + 5",
+      "Restar 4m en lugar de sustituir 5^k",
+      "Afirmar que 5^n siempre termina en 0",
+      "Sustituir k por m arbitrariamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-13",
+    "hypothesis": "Hipótesis #13: Probar que Desigualdad de Bernoulli: (1 + x)^n >= 1 + nx para x > -1 y n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Comprobar base n = 1: (1 + x)^1 = 1 + 1*x (Igualdad se cumple)",
+      "Paso 2: Hipótesis inductiva: Asumir que (1 + x)^k >= 1 + kx",
+      "Paso 3: Multiplicar por (1 + x): (1 + x)^(k+1) >= (1 + kx)(1 + x)",
+      "Paso 4: Desarrollar: 1 + (k+1)x + k*x^2 >= 1 + (k+1)x pues k*x^2 >= 0"
+    ],
+    "distractors": [
+      "Multiplicar por negativo e invertir sentido indebidamente",
+      "Asumir que x^2 < 0 para números reales",
+      "Caso base con x = -2 fuera de dominio",
+      "Descartar el término lineal en vez del cuadrático",
+      "Afirmar que (1+x)^k = 1 + x^k",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-14",
+    "hypothesis": "Hipótesis #14: Probar que Suma de cubos: 1^3 + 2^3 + ... + n^3 = (n(n+1)/2)^2",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Verificar caso base n = 1: 1^3 = 1 y (1*2/2)^2 = 1^2 = 1",
+      "Paso 2: Plantear hipótesis para n = k: 1^3+...+k^3 = [k(k+1)/2]^2",
+      "Paso 3: Sumar (k+1)^3: [k(k+1)/2]^2 + (k+1)^3 = (k+1)^2 * [k^2/4 + k + 1]",
+      "Paso 4: Simplificar corchete a (k+2)^2/4 dando [(k+1)(k+2)/2]^2"
+    ],
+    "distractors": [
+      "Elevar al cubo el caso base obteniendo 1 = 3",
+      "Sumar (k+1)^2 en lugar de (k+1)^3",
+      "Distribuir el cuadrado como (k^2 + (k+1)^2)/4",
+      "Olvidar el denominador 4 en la factorización",
+      "Afirmar que la suma de cubos diverge",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-15",
+    "hypothesis": "Hipótesis #15: Probar que Divisibilidad por 6: n(n+1)(n+2) es múltiplo de 6 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1*(2)*(3) = 6, el cual es divisible por 6",
+      "Paso 2: Hipótesis: k(k+1)(k+2) = 6m para algún entero m",
+      "Paso 3: Para k+1: (k+1)(k+2)(k+3) = k(k+1)(k+2) + 3(k+1)(k+2)",
+      "Paso 4: Como 3(k+1)(k+2) tiene producto de dos consecutivos, es múltiplo de 6"
+    ],
+    "distractors": [
+      "Caso base: 1*2*3 = 5 (error aritmético)",
+      "Desarrollar como k^3 + 3k^2 + 2k sin relacionar con la hipótesis",
+      "Afirmar que dos números consecutivos no pueden ser pares",
+      "Dividir entre k+1 sin verificar si es cero",
+      "Sustituir k = k+2 directamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-16",
+    "hypothesis": "Hipótesis #16: Probar que Suma de cuadrados: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1^2 = 1*(2)*(3)/6 = 1",
+      "Paso 2: Establecer hipótesis para n = k: 1^2+...+k^2 = k(k+1)(2k+1)/6",
+      "Paso 3: Sumar (k+1)^2 a la hipótesis: k(k+1)(2k+1)/6 + (k+1)^2",
+      "Paso 4: Factorizar término (k+1) y obtener (k+1)(k+2)(2k+3)/6"
+    ],
+    "distractors": [
+      "Caso base falso: 1^2 = 1*2*3 = 6",
+      "Sumar k^2 en vez de (k+1)^2 en el paso 3",
+      "Multiplicar denominadores por 6^2",
+      "Afirmar que (k+1)(2k+1) = 2k^2 + 1",
+      "Concluir sin factorizar que se cumple para todo n",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-17",
+    "hypothesis": "Hipótesis #17: Probar que Divisibilidad por 4: 5^n - 1 es divisible por 4 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Evaluar caso base n = 1: 5^1 - 1 = 4, que es múltiplo de 4",
+      "Paso 2: Hipótesis de inducción: 5^k - 1 = 4m para algún entero m",
+      "Paso 3: Para n = k+1: 5^(k+1) - 1 = 5*(5^k) - 1 = 5*(4m + 1) - 1",
+      "Paso 4: Simplificar: 20m + 4 = 4(5m + 1), que es divisible por 4"
+    ],
+    "distractors": [
+      "Evaluar caso base en n=0 y afirmar que 5^0 - 1 = 4",
+      "Desarrollar 5^(k+1) como 5^k + 5",
+      "Restar 4m en lugar de sustituir 5^k",
+      "Afirmar que 5^n siempre termina en 0",
+      "Sustituir k por m arbitrariamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-18",
+    "hypothesis": "Hipótesis #18: Probar que Desigualdad de Bernoulli: (1 + x)^n >= 1 + nx para x > -1 y n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Comprobar base n = 1: (1 + x)^1 = 1 + 1*x (Igualdad se cumple)",
+      "Paso 2: Hipótesis inductiva: Asumir que (1 + x)^k >= 1 + kx",
+      "Paso 3: Multiplicar por (1 + x): (1 + x)^(k+1) >= (1 + kx)(1 + x)",
+      "Paso 4: Desarrollar: 1 + (k+1)x + k*x^2 >= 1 + (k+1)x pues k*x^2 >= 0"
+    ],
+    "distractors": [
+      "Multiplicar por negativo e invertir sentido indebidamente",
+      "Asumir que x^2 < 0 para números reales",
+      "Caso base con x = -2 fuera de dominio",
+      "Descartar el término lineal en vez del cuadrático",
+      "Afirmar que (1+x)^k = 1 + x^k",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-19",
+    "hypothesis": "Hipótesis #19: Probar que Suma de cubos: 1^3 + 2^3 + ... + n^3 = (n(n+1)/2)^2",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Verificar caso base n = 1: 1^3 = 1 y (1*2/2)^2 = 1^2 = 1",
+      "Paso 2: Plantear hipótesis para n = k: 1^3+...+k^3 = [k(k+1)/2]^2",
+      "Paso 3: Sumar (k+1)^3: [k(k+1)/2]^2 + (k+1)^3 = (k+1)^2 * [k^2/4 + k + 1]",
+      "Paso 4: Simplificar corchete a (k+2)^2/4 dando [(k+1)(k+2)/2]^2"
+    ],
+    "distractors": [
+      "Elevar al cubo el caso base obteniendo 1 = 3",
+      "Sumar (k+1)^2 en lugar de (k+1)^3",
+      "Distribuir el cuadrado como (k^2 + (k+1)^2)/4",
+      "Olvidar el denominador 4 en la factorización",
+      "Afirmar que la suma de cubos diverge",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-20",
+    "hypothesis": "Hipótesis #20: Probar que Divisibilidad por 6: n(n+1)(n+2) es múltiplo de 6 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1*(2)*(3) = 6, el cual es divisible por 6",
+      "Paso 2: Hipótesis: k(k+1)(k+2) = 6m para algún entero m",
+      "Paso 3: Para k+1: (k+1)(k+2)(k+3) = k(k+1)(k+2) + 3(k+1)(k+2)",
+      "Paso 4: Como 3(k+1)(k+2) tiene producto de dos consecutivos, es múltiplo de 6"
+    ],
+    "distractors": [
+      "Caso base: 1*2*3 = 5 (error aritmético)",
+      "Desarrollar como k^3 + 3k^2 + 2k sin relacionar con la hipótesis",
+      "Afirmar que dos números consecutivos no pueden ser pares",
+      "Dividir entre k+1 sin verificar si es cero",
+      "Sustituir k = k+2 directamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-21",
+    "hypothesis": "Hipótesis #21: Probar que Suma de cuadrados: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1^2 = 1*(2)*(3)/6 = 1",
+      "Paso 2: Establecer hipótesis para n = k: 1^2+...+k^2 = k(k+1)(2k+1)/6",
+      "Paso 3: Sumar (k+1)^2 a la hipótesis: k(k+1)(2k+1)/6 + (k+1)^2",
+      "Paso 4: Factorizar término (k+1) y obtener (k+1)(k+2)(2k+3)/6"
+    ],
+    "distractors": [
+      "Caso base falso: 1^2 = 1*2*3 = 6",
+      "Sumar k^2 en vez de (k+1)^2 en el paso 3",
+      "Multiplicar denominadores por 6^2",
+      "Afirmar que (k+1)(2k+1) = 2k^2 + 1",
+      "Concluir sin factorizar que se cumple para todo n",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-22",
+    "hypothesis": "Hipótesis #22: Probar que Divisibilidad por 4: 5^n - 1 es divisible por 4 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Evaluar caso base n = 1: 5^1 - 1 = 4, que es múltiplo de 4",
+      "Paso 2: Hipótesis de inducción: 5^k - 1 = 4m para algún entero m",
+      "Paso 3: Para n = k+1: 5^(k+1) - 1 = 5*(5^k) - 1 = 5*(4m + 1) - 1",
+      "Paso 4: Simplificar: 20m + 4 = 4(5m + 1), que es divisible por 4"
+    ],
+    "distractors": [
+      "Evaluar caso base en n=0 y afirmar que 5^0 - 1 = 4",
+      "Desarrollar 5^(k+1) como 5^k + 5",
+      "Restar 4m en lugar de sustituir 5^k",
+      "Afirmar que 5^n siempre termina en 0",
+      "Sustituir k por m arbitrariamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-23",
+    "hypothesis": "Hipótesis #23: Probar que Desigualdad de Bernoulli: (1 + x)^n >= 1 + nx para x > -1 y n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Comprobar base n = 1: (1 + x)^1 = 1 + 1*x (Igualdad se cumple)",
+      "Paso 2: Hipótesis inductiva: Asumir que (1 + x)^k >= 1 + kx",
+      "Paso 3: Multiplicar por (1 + x): (1 + x)^(k+1) >= (1 + kx)(1 + x)",
+      "Paso 4: Desarrollar: 1 + (k+1)x + k*x^2 >= 1 + (k+1)x pues k*x^2 >= 0"
+    ],
+    "distractors": [
+      "Multiplicar por negativo e invertir sentido indebidamente",
+      "Asumir que x^2 < 0 para números reales",
+      "Caso base con x = -2 fuera de dominio",
+      "Descartar el término lineal en vez del cuadrático",
+      "Afirmar que (1+x)^k = 1 + x^k",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-24",
+    "hypothesis": "Hipótesis #24: Probar que Suma de cubos: 1^3 + 2^3 + ... + n^3 = (n(n+1)/2)^2",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Verificar caso base n = 1: 1^3 = 1 y (1*2/2)^2 = 1^2 = 1",
+      "Paso 2: Plantear hipótesis para n = k: 1^3+...+k^3 = [k(k+1)/2]^2",
+      "Paso 3: Sumar (k+1)^3: [k(k+1)/2]^2 + (k+1)^3 = (k+1)^2 * [k^2/4 + k + 1]",
+      "Paso 4: Simplificar corchete a (k+2)^2/4 dando [(k+1)(k+2)/2]^2"
+    ],
+    "distractors": [
+      "Elevar al cubo el caso base obteniendo 1 = 3",
+      "Sumar (k+1)^2 en lugar de (k+1)^3",
+      "Distribuir el cuadrado como (k^2 + (k+1)^2)/4",
+      "Olvidar el denominador 4 en la factorización",
+      "Afirmar que la suma de cubos diverge",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-25",
+    "hypothesis": "Hipótesis #25: Probar que Divisibilidad por 6: n(n+1)(n+2) es múltiplo de 6 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1*(2)*(3) = 6, el cual es divisible por 6",
+      "Paso 2: Hipótesis: k(k+1)(k+2) = 6m para algún entero m",
+      "Paso 3: Para k+1: (k+1)(k+2)(k+3) = k(k+1)(k+2) + 3(k+1)(k+2)",
+      "Paso 4: Como 3(k+1)(k+2) tiene producto de dos consecutivos, es múltiplo de 6"
+    ],
+    "distractors": [
+      "Caso base: 1*2*3 = 5 (error aritmético)",
+      "Desarrollar como k^3 + 3k^2 + 2k sin relacionar con la hipótesis",
+      "Afirmar que dos números consecutivos no pueden ser pares",
+      "Dividir entre k+1 sin verificar si es cero",
+      "Sustituir k = k+2 directamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-26",
+    "hypothesis": "Hipótesis #26: Probar que Suma de cuadrados: 1^2 + 2^2 + ... + n^2 = n(n+1)(2n+1)/6",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1^2 = 1*(2)*(3)/6 = 1",
+      "Paso 2: Establecer hipótesis para n = k: 1^2+...+k^2 = k(k+1)(2k+1)/6",
+      "Paso 3: Sumar (k+1)^2 a la hipótesis: k(k+1)(2k+1)/6 + (k+1)^2",
+      "Paso 4: Factorizar término (k+1) y obtener (k+1)(k+2)(2k+3)/6"
+    ],
+    "distractors": [
+      "Caso base falso: 1^2 = 1*2*3 = 6",
+      "Sumar k^2 en vez de (k+1)^2 en el paso 3",
+      "Multiplicar denominadores por 6^2",
+      "Afirmar que (k+1)(2k+1) = 2k^2 + 1",
+      "Concluir sin factorizar que se cumple para todo n",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-27",
+    "hypothesis": "Hipótesis #27: Probar que Divisibilidad por 4: 5^n - 1 es divisible por 4 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Evaluar caso base n = 1: 5^1 - 1 = 4, que es múltiplo de 4",
+      "Paso 2: Hipótesis de inducción: 5^k - 1 = 4m para algún entero m",
+      "Paso 3: Para n = k+1: 5^(k+1) - 1 = 5*(5^k) - 1 = 5*(4m + 1) - 1",
+      "Paso 4: Simplificar: 20m + 4 = 4(5m + 1), que es divisible por 4"
+    ],
+    "distractors": [
+      "Evaluar caso base en n=0 y afirmar que 5^0 - 1 = 4",
+      "Desarrollar 5^(k+1) como 5^k + 5",
+      "Restar 4m en lugar de sustituir 5^k",
+      "Afirmar que 5^n siempre termina en 0",
+      "Sustituir k por m arbitrariamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-28",
+    "hypothesis": "Hipótesis #28: Probar que Desigualdad de Bernoulli: (1 + x)^n >= 1 + nx para x > -1 y n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Comprobar base n = 1: (1 + x)^1 = 1 + 1*x (Igualdad se cumple)",
+      "Paso 2: Hipótesis inductiva: Asumir que (1 + x)^k >= 1 + kx",
+      "Paso 3: Multiplicar por (1 + x): (1 + x)^(k+1) >= (1 + kx)(1 + x)",
+      "Paso 4: Desarrollar: 1 + (k+1)x + k*x^2 >= 1 + (k+1)x pues k*x^2 >= 0"
+    ],
+    "distractors": [
+      "Multiplicar por negativo e invertir sentido indebidamente",
+      "Asumir que x^2 < 0 para números reales",
+      "Caso base con x = -2 fuera de dominio",
+      "Descartar el término lineal en vez del cuadrático",
+      "Afirmar que (1+x)^k = 1 + x^k",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-29",
+    "hypothesis": "Hipótesis #29: Probar que Suma de cubos: 1^3 + 2^3 + ... + n^3 = (n(n+1)/2)^2",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Verificar caso base n = 1: 1^3 = 1 y (1*2/2)^2 = 1^2 = 1",
+      "Paso 2: Plantear hipótesis para n = k: 1^3+...+k^3 = [k(k+1)/2]^2",
+      "Paso 3: Sumar (k+1)^3: [k(k+1)/2]^2 + (k+1)^3 = (k+1)^2 * [k^2/4 + k + 1]",
+      "Paso 4: Simplificar corchete a (k+2)^2/4 dando [(k+1)(k+2)/2]^2"
+    ],
+    "distractors": [
+      "Elevar al cubo el caso base obteniendo 1 = 3",
+      "Sumar (k+1)^2 en lugar de (k+1)^3",
+      "Distribuir el cuadrado como (k^2 + (k+1)^2)/4",
+      "Olvidar el denominador 4 en la factorización",
+      "Afirmar que la suma de cubos diverge",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  },
+  {
+    "id": "NORMAL-30",
+    "hypothesis": "Hipótesis #30: Probar que Divisibilidad por 6: n(n+1)(n+2) es múltiplo de 6 para todo n >= 1",
+    "description": "Completa los 4 pasos ordenados de la demostración inductiva destruyendo los asteroides correspondientes:",
+    "steps": [
+      "Paso 1: Caso base n = 1: 1*(2)*(3) = 6, el cual es divisible por 6",
+      "Paso 2: Hipótesis: k(k+1)(k+2) = 6m para algún entero m",
+      "Paso 3: Para k+1: (k+1)(k+2)(k+3) = k(k+1)(k+2) + 3(k+1)(k+2)",
+      "Paso 4: Como 3(k+1)(k+2) tiene producto de dos consecutivos, es múltiplo de 6"
+    ],
+    "distractors": [
+      "Caso base: 1*2*3 = 5 (error aritmético)",
+      "Desarrollar como k^3 + 3k^2 + 2k sin relacionar con la hipótesis",
+      "Afirmar que dos números consecutivos no pueden ser pares",
+      "Dividir entre k+1 sin verificar si es cero",
+      "Sustituir k = k+2 directamente",
+      "Paso fuera de secuencia temporal",
+      "Violación de la regla de inferencia modus ponens",
+      "Generalización precipitada sin paso inductivo"
+    ]
+  }
+]

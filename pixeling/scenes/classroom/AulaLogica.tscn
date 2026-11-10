@@ -15,4 +15,8 @@ minigames_list = Array[Dictionary]([{
 "id": "mansion_escape",
 "name": "Mansión del escape (Diagramas de Venn)",
 "scene": "res://scenes/minigames/logica/mansion_escape/MansionEscape.tscn"
+}, {
+"id": "cinturon_hipotesis",
+"name": "Cinturón de hipótesis (Hipótesis de inducción)",
+"scene": "res://scenes/minigames/logica/cinturon_hipotesis/CinturonHipotesis.tscn"
 }])

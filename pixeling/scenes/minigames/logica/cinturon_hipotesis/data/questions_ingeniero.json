@@ -1,0 +1,662 @@
+[
+  {
+    "id": "INGENIERO-01",
+    "hypothesis": "Hipótesis #1: Probar que Suma de fracciones telecópicas: 1/(1*2) + 1/(2*3) + ... + 1/(n(n+1)) = n/(n+1)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1/(1*2) = 1/2 y 1/(1+1) = 1/2",
+      "Paso 2: Asumir hipótesis inductiva para n = k: sum(1/(i(i+1))) = k/(k+1)",
+      "Paso 3: Sumar término k+1: k/(k+1) + 1/((k+1)(k+2))",
+      "Paso 4: Denominador común (k+1)(k+2): [k(k+2) + 1]/((k+1)(k+2)) = (k+1)^2/((k+1)(k+2))",
+      "Paso 5: Cancelar factor (k+1): (k+1)/(k+2) completando la inducción"
+    ],
+    "distractors": [
+      "Caso base falso: 1/2 = 1/3",
+      "Sumar 1/(k(k+1)) en lugar del término k+1",
+      "Sumar numeradores directamente sin común denominador",
+      "Afirmar que k(k+2)+1 = k^2 + 2",
+      "Invertir la fracción resultante a (k+2)/(k+1)",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-02",
+    "hypothesis": "Hipótesis #2: Probar que Divisibilidad: 7^n - 1 es divisible por 6 para todo entero n >= 1",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 7^1 - 1 = 6, divisible por 6 (6 = 6*1)",
+      "Paso 2: Formular hipótesis para n = k: 7^k - 1 = 6m con m entero",
+      "Paso 3: Analizar n = k+1: 7^(k+1) - 1 = 7*(7^k) - 1",
+      "Paso 4: Descomponer 7 como (6 + 1): (6 + 1)*7^k - 1 = 6*7^k + (7^k - 1)",
+      "Paso 5: Sustituir hipótesis: 6*7^k + 6m = 6(7^k + m), confirmando divisibilidad"
+    ],
+    "distractors": [
+      "Evaluar caso base: 7^1 - 1 = 7 (error)",
+      "Descomponer 7 como 5 + 2",
+      "Afirmar que 7^(k+1) - 1 = (7^k - 1)^2",
+      "Dividir entre 7 a ambos miembros",
+      "Concluir que 7^n siempre es un número par",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-03",
+    "hypothesis": "Hipótesis #3: Probar que Desigualdad de potencias: 2^n >= n^2 para todo n >= 4",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Verificar caso base en n = 4: 2^4 = 16 y 4^2 = 16 (16 >= 16 Verdadero)",
+      "Paso 2: Hipótesis inductiva: 2^k >= k^2 para k >= 4",
+      "Paso 3: Evaluar k+1 en potencia: 2^(k+1) = 2 * 2^k >= 2*k^2 = k^2 + k^2",
+      "Paso 4: Demostrar lema: Para k >= 4 se cumple k^2 >= 2k + 1",
+      "Paso 5: Sustituir lema: k^2 + k^2 >= k^2 + 2k + 1 = (k+1)^2 (QED)"
+    ],
+    "distractors": [
+      "Tomar como caso base n = 1 donde la desigualdad falla (2 < 4)",
+      "Afirmar que 2k^2 = (2k)^2",
+      "Restar k^2 de ambos lados sin conservar la desigualdad",
+      "Usar el lema para k < 2",
+      "Declarar que la hipótesis es falsa para todo n",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-04",
+    "hypothesis": "Hipótesis #4: Probar que Propiedad de conjuntos: Un conjunto de n elementos tiene 2^n subconjuntos",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 0: Conjunto vacío tiene 1 subconjunto (2^0 = 1)",
+      "Paso 2: Hipótesis de inducción: Todo conjunto con k elementos tiene 2^k subconjuntos",
+      "Paso 3: Considerar un conjunto S con k+1 elementos: S = S_k union {x}",
+      "Paso 4: Clasificar subconjuntos: Aquellos sin x (2^k) y aquellos con x (otros 2^k)",
+      "Paso 5: Totalizar: 2^k + 2^k = 2 * 2^k = 2^(k+1) subconjuntos"
+    ],
+    "distractors": [
+      "Caso base falso: conjunto vacío tiene 0 subconjuntos",
+      "Multiplicar 2^k * 2^k obteniendo 2^(2k)",
+      "Ignorar los subconjuntos que contienen el elemento x",
+      "Afirmar que el conjunto potencia es finito sólo para n=0",
+      "Restar 1 por el conjunto vacío en el conteo total",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-05",
+    "hypothesis": "Hipótesis #5: Probar que Fórmula de sumatoria aritmética general: sum(a + (i-1)d) = n/2 * (2a + (n-1)d)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Caso base n = 1: Término inicial a y 1/2*(2a + 0*d) = a",
+      "Paso 2: Hipótesis inductiva para n = k: S_k = k/2 * [2a + (k-1)d]",
+      "Paso 3: Para n = k+1: Sumar término (k+1)-ésimo: S_k + [a + kd]",
+      "Paso 4: Agrupar con común denominador 2: [2ka + k(k-1)d + 2a + 2kd] / 2",
+      "Paso 5: Factorizar en [(k+1)(2a + kd)] / 2, que coincide con la fórmula evaluada en k+1"
+    ],
+    "distractors": [
+      "Caso base: evaluar n=1 da 2a+d",
+      "Sumar d en lugar de (a + kd)",
+      "Desarrollar k(k-1)d como k^2*d",
+      "Factorizar erróneamente omitiendo el factor a",
+      "Cambiar el signo de la diferencia común d",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-06",
+    "hypothesis": "Hipótesis #6: Probar que Suma de fracciones telecópicas: 1/(1*2) + 1/(2*3) + ... + 1/(n(n+1)) = n/(n+1)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1/(1*2) = 1/2 y 1/(1+1) = 1/2",
+      "Paso 2: Asumir hipótesis inductiva para n = k: sum(1/(i(i+1))) = k/(k+1)",
+      "Paso 3: Sumar término k+1: k/(k+1) + 1/((k+1)(k+2))",
+      "Paso 4: Denominador común (k+1)(k+2): [k(k+2) + 1]/((k+1)(k+2)) = (k+1)^2/((k+1)(k+2))",
+      "Paso 5: Cancelar factor (k+1): (k+1)/(k+2) completando la inducción"
+    ],
+    "distractors": [
+      "Caso base falso: 1/2 = 1/3",
+      "Sumar 1/(k(k+1)) en lugar del término k+1",
+      "Sumar numeradores directamente sin común denominador",
+      "Afirmar que k(k+2)+1 = k^2 + 2",
+      "Invertir la fracción resultante a (k+2)/(k+1)",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-07",
+    "hypothesis": "Hipótesis #7: Probar que Divisibilidad: 7^n - 1 es divisible por 6 para todo entero n >= 1",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 7^1 - 1 = 6, divisible por 6 (6 = 6*1)",
+      "Paso 2: Formular hipótesis para n = k: 7^k - 1 = 6m con m entero",
+      "Paso 3: Analizar n = k+1: 7^(k+1) - 1 = 7*(7^k) - 1",
+      "Paso 4: Descomponer 7 como (6 + 1): (6 + 1)*7^k - 1 = 6*7^k + (7^k - 1)",
+      "Paso 5: Sustituir hipótesis: 6*7^k + 6m = 6(7^k + m), confirmando divisibilidad"
+    ],
+    "distractors": [
+      "Evaluar caso base: 7^1 - 1 = 7 (error)",
+      "Descomponer 7 como 5 + 2",
+      "Afirmar que 7^(k+1) - 1 = (7^k - 1)^2",
+      "Dividir entre 7 a ambos miembros",
+      "Concluir que 7^n siempre es un número par",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-08",
+    "hypothesis": "Hipótesis #8: Probar que Desigualdad de potencias: 2^n >= n^2 para todo n >= 4",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Verificar caso base en n = 4: 2^4 = 16 y 4^2 = 16 (16 >= 16 Verdadero)",
+      "Paso 2: Hipótesis inductiva: 2^k >= k^2 para k >= 4",
+      "Paso 3: Evaluar k+1 en potencia: 2^(k+1) = 2 * 2^k >= 2*k^2 = k^2 + k^2",
+      "Paso 4: Demostrar lema: Para k >= 4 se cumple k^2 >= 2k + 1",
+      "Paso 5: Sustituir lema: k^2 + k^2 >= k^2 + 2k + 1 = (k+1)^2 (QED)"
+    ],
+    "distractors": [
+      "Tomar como caso base n = 1 donde la desigualdad falla (2 < 4)",
+      "Afirmar que 2k^2 = (2k)^2",
+      "Restar k^2 de ambos lados sin conservar la desigualdad",
+      "Usar el lema para k < 2",
+      "Declarar que la hipótesis es falsa para todo n",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-09",
+    "hypothesis": "Hipótesis #9: Probar que Propiedad de conjuntos: Un conjunto de n elementos tiene 2^n subconjuntos",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 0: Conjunto vacío tiene 1 subconjunto (2^0 = 1)",
+      "Paso 2: Hipótesis de inducción: Todo conjunto con k elementos tiene 2^k subconjuntos",
+      "Paso 3: Considerar un conjunto S con k+1 elementos: S = S_k union {x}",
+      "Paso 4: Clasificar subconjuntos: Aquellos sin x (2^k) y aquellos con x (otros 2^k)",
+      "Paso 5: Totalizar: 2^k + 2^k = 2 * 2^k = 2^(k+1) subconjuntos"
+    ],
+    "distractors": [
+      "Caso base falso: conjunto vacío tiene 0 subconjuntos",
+      "Multiplicar 2^k * 2^k obteniendo 2^(2k)",
+      "Ignorar los subconjuntos que contienen el elemento x",
+      "Afirmar que el conjunto potencia es finito sólo para n=0",
+      "Restar 1 por el conjunto vacío en el conteo total",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-10",
+    "hypothesis": "Hipótesis #10: Probar que Fórmula de sumatoria aritmética general: sum(a + (i-1)d) = n/2 * (2a + (n-1)d)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Caso base n = 1: Término inicial a y 1/2*(2a + 0*d) = a",
+      "Paso 2: Hipótesis inductiva para n = k: S_k = k/2 * [2a + (k-1)d]",
+      "Paso 3: Para n = k+1: Sumar término (k+1)-ésimo: S_k + [a + kd]",
+      "Paso 4: Agrupar con común denominador 2: [2ka + k(k-1)d + 2a + 2kd] / 2",
+      "Paso 5: Factorizar en [(k+1)(2a + kd)] / 2, que coincide con la fórmula evaluada en k+1"
+    ],
+    "distractors": [
+      "Caso base: evaluar n=1 da 2a+d",
+      "Sumar d en lugar de (a + kd)",
+      "Desarrollar k(k-1)d como k^2*d",
+      "Factorizar erróneamente omitiendo el factor a",
+      "Cambiar el signo de la diferencia común d",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-11",
+    "hypothesis": "Hipótesis #11: Probar que Suma de fracciones telecópicas: 1/(1*2) + 1/(2*3) + ... + 1/(n(n+1)) = n/(n+1)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1/(1*2) = 1/2 y 1/(1+1) = 1/2",
+      "Paso 2: Asumir hipótesis inductiva para n = k: sum(1/(i(i+1))) = k/(k+1)",
+      "Paso 3: Sumar término k+1: k/(k+1) + 1/((k+1)(k+2))",
+      "Paso 4: Denominador común (k+1)(k+2): [k(k+2) + 1]/((k+1)(k+2)) = (k+1)^2/((k+1)(k+2))",
+      "Paso 5: Cancelar factor (k+1): (k+1)/(k+2) completando la inducción"
+    ],
+    "distractors": [
+      "Caso base falso: 1/2 = 1/3",
+      "Sumar 1/(k(k+1)) en lugar del término k+1",
+      "Sumar numeradores directamente sin común denominador",
+      "Afirmar que k(k+2)+1 = k^2 + 2",
+      "Invertir la fracción resultante a (k+2)/(k+1)",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-12",
+    "hypothesis": "Hipótesis #12: Probar que Divisibilidad: 7^n - 1 es divisible por 6 para todo entero n >= 1",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 7^1 - 1 = 6, divisible por 6 (6 = 6*1)",
+      "Paso 2: Formular hipótesis para n = k: 7^k - 1 = 6m con m entero",
+      "Paso 3: Analizar n = k+1: 7^(k+1) - 1 = 7*(7^k) - 1",
+      "Paso 4: Descomponer 7 como (6 + 1): (6 + 1)*7^k - 1 = 6*7^k + (7^k - 1)",
+      "Paso 5: Sustituir hipótesis: 6*7^k + 6m = 6(7^k + m), confirmando divisibilidad"
+    ],
+    "distractors": [
+      "Evaluar caso base: 7^1 - 1 = 7 (error)",
+      "Descomponer 7 como 5 + 2",
+      "Afirmar que 7^(k+1) - 1 = (7^k - 1)^2",
+      "Dividir entre 7 a ambos miembros",
+      "Concluir que 7^n siempre es un número par",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-13",
+    "hypothesis": "Hipótesis #13: Probar que Desigualdad de potencias: 2^n >= n^2 para todo n >= 4",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Verificar caso base en n = 4: 2^4 = 16 y 4^2 = 16 (16 >= 16 Verdadero)",
+      "Paso 2: Hipótesis inductiva: 2^k >= k^2 para k >= 4",
+      "Paso 3: Evaluar k+1 en potencia: 2^(k+1) = 2 * 2^k >= 2*k^2 = k^2 + k^2",
+      "Paso 4: Demostrar lema: Para k >= 4 se cumple k^2 >= 2k + 1",
+      "Paso 5: Sustituir lema: k^2 + k^2 >= k^2 + 2k + 1 = (k+1)^2 (QED)"
+    ],
+    "distractors": [
+      "Tomar como caso base n = 1 donde la desigualdad falla (2 < 4)",
+      "Afirmar que 2k^2 = (2k)^2",
+      "Restar k^2 de ambos lados sin conservar la desigualdad",
+      "Usar el lema para k < 2",
+      "Declarar que la hipótesis es falsa para todo n",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-14",
+    "hypothesis": "Hipótesis #14: Probar que Propiedad de conjuntos: Un conjunto de n elementos tiene 2^n subconjuntos",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 0: Conjunto vacío tiene 1 subconjunto (2^0 = 1)",
+      "Paso 2: Hipótesis de inducción: Todo conjunto con k elementos tiene 2^k subconjuntos",
+      "Paso 3: Considerar un conjunto S con k+1 elementos: S = S_k union {x}",
+      "Paso 4: Clasificar subconjuntos: Aquellos sin x (2^k) y aquellos con x (otros 2^k)",
+      "Paso 5: Totalizar: 2^k + 2^k = 2 * 2^k = 2^(k+1) subconjuntos"
+    ],
+    "distractors": [
+      "Caso base falso: conjunto vacío tiene 0 subconjuntos",
+      "Multiplicar 2^k * 2^k obteniendo 2^(2k)",
+      "Ignorar los subconjuntos que contienen el elemento x",
+      "Afirmar que el conjunto potencia es finito sólo para n=0",
+      "Restar 1 por el conjunto vacío en el conteo total",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-15",
+    "hypothesis": "Hipótesis #15: Probar que Fórmula de sumatoria aritmética general: sum(a + (i-1)d) = n/2 * (2a + (n-1)d)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Caso base n = 1: Término inicial a y 1/2*(2a + 0*d) = a",
+      "Paso 2: Hipótesis inductiva para n = k: S_k = k/2 * [2a + (k-1)d]",
+      "Paso 3: Para n = k+1: Sumar término (k+1)-ésimo: S_k + [a + kd]",
+      "Paso 4: Agrupar con común denominador 2: [2ka + k(k-1)d + 2a + 2kd] / 2",
+      "Paso 5: Factorizar en [(k+1)(2a + kd)] / 2, que coincide con la fórmula evaluada en k+1"
+    ],
+    "distractors": [
+      "Caso base: evaluar n=1 da 2a+d",
+      "Sumar d en lugar de (a + kd)",
+      "Desarrollar k(k-1)d como k^2*d",
+      "Factorizar erróneamente omitiendo el factor a",
+      "Cambiar el signo de la diferencia común d",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-16",
+    "hypothesis": "Hipótesis #16: Probar que Suma de fracciones telecópicas: 1/(1*2) + 1/(2*3) + ... + 1/(n(n+1)) = n/(n+1)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1/(1*2) = 1/2 y 1/(1+1) = 1/2",
+      "Paso 2: Asumir hipótesis inductiva para n = k: sum(1/(i(i+1))) = k/(k+1)",
+      "Paso 3: Sumar término k+1: k/(k+1) + 1/((k+1)(k+2))",
+      "Paso 4: Denominador común (k+1)(k+2): [k(k+2) + 1]/((k+1)(k+2)) = (k+1)^2/((k+1)(k+2))",
+      "Paso 5: Cancelar factor (k+1): (k+1)/(k+2) completando la inducción"
+    ],
+    "distractors": [
+      "Caso base falso: 1/2 = 1/3",
+      "Sumar 1/(k(k+1)) en lugar del término k+1",
+      "Sumar numeradores directamente sin común denominador",
+      "Afirmar que k(k+2)+1 = k^2 + 2",
+      "Invertir la fracción resultante a (k+2)/(k+1)",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-17",
+    "hypothesis": "Hipótesis #17: Probar que Divisibilidad: 7^n - 1 es divisible por 6 para todo entero n >= 1",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 7^1 - 1 = 6, divisible por 6 (6 = 6*1)",
+      "Paso 2: Formular hipótesis para n = k: 7^k - 1 = 6m con m entero",
+      "Paso 3: Analizar n = k+1: 7^(k+1) - 1 = 7*(7^k) - 1",
+      "Paso 4: Descomponer 7 como (6 + 1): (6 + 1)*7^k - 1 = 6*7^k + (7^k - 1)",
+      "Paso 5: Sustituir hipótesis: 6*7^k + 6m = 6(7^k + m), confirmando divisibilidad"
+    ],
+    "distractors": [
+      "Evaluar caso base: 7^1 - 1 = 7 (error)",
+      "Descomponer 7 como 5 + 2",
+      "Afirmar que 7^(k+1) - 1 = (7^k - 1)^2",
+      "Dividir entre 7 a ambos miembros",
+      "Concluir que 7^n siempre es un número par",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-18",
+    "hypothesis": "Hipótesis #18: Probar que Desigualdad de potencias: 2^n >= n^2 para todo n >= 4",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Verificar caso base en n = 4: 2^4 = 16 y 4^2 = 16 (16 >= 16 Verdadero)",
+      "Paso 2: Hipótesis inductiva: 2^k >= k^2 para k >= 4",
+      "Paso 3: Evaluar k+1 en potencia: 2^(k+1) = 2 * 2^k >= 2*k^2 = k^2 + k^2",
+      "Paso 4: Demostrar lema: Para k >= 4 se cumple k^2 >= 2k + 1",
+      "Paso 5: Sustituir lema: k^2 + k^2 >= k^2 + 2k + 1 = (k+1)^2 (QED)"
+    ],
+    "distractors": [
+      "Tomar como caso base n = 1 donde la desigualdad falla (2 < 4)",
+      "Afirmar que 2k^2 = (2k)^2",
+      "Restar k^2 de ambos lados sin conservar la desigualdad",
+      "Usar el lema para k < 2",
+      "Declarar que la hipótesis es falsa para todo n",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-19",
+    "hypothesis": "Hipótesis #19: Probar que Propiedad de conjuntos: Un conjunto de n elementos tiene 2^n subconjuntos",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 0: Conjunto vacío tiene 1 subconjunto (2^0 = 1)",
+      "Paso 2: Hipótesis de inducción: Todo conjunto con k elementos tiene 2^k subconjuntos",
+      "Paso 3: Considerar un conjunto S con k+1 elementos: S = S_k union {x}",
+      "Paso 4: Clasificar subconjuntos: Aquellos sin x (2^k) y aquellos con x (otros 2^k)",
+      "Paso 5: Totalizar: 2^k + 2^k = 2 * 2^k = 2^(k+1) subconjuntos"
+    ],
+    "distractors": [
+      "Caso base falso: conjunto vacío tiene 0 subconjuntos",
+      "Multiplicar 2^k * 2^k obteniendo 2^(2k)",
+      "Ignorar los subconjuntos que contienen el elemento x",
+      "Afirmar que el conjunto potencia es finito sólo para n=0",
+      "Restar 1 por el conjunto vacío en el conteo total",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-20",
+    "hypothesis": "Hipótesis #20: Probar que Fórmula de sumatoria aritmética general: sum(a + (i-1)d) = n/2 * (2a + (n-1)d)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Caso base n = 1: Término inicial a y 1/2*(2a + 0*d) = a",
+      "Paso 2: Hipótesis inductiva para n = k: S_k = k/2 * [2a + (k-1)d]",
+      "Paso 3: Para n = k+1: Sumar término (k+1)-ésimo: S_k + [a + kd]",
+      "Paso 4: Agrupar con común denominador 2: [2ka + k(k-1)d + 2a + 2kd] / 2",
+      "Paso 5: Factorizar en [(k+1)(2a + kd)] / 2, que coincide con la fórmula evaluada en k+1"
+    ],
+    "distractors": [
+      "Caso base: evaluar n=1 da 2a+d",
+      "Sumar d en lugar de (a + kd)",
+      "Desarrollar k(k-1)d como k^2*d",
+      "Factorizar erróneamente omitiendo el factor a",
+      "Cambiar el signo de la diferencia común d",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-21",
+    "hypothesis": "Hipótesis #21: Probar que Suma de fracciones telecópicas: 1/(1*2) + 1/(2*3) + ... + 1/(n(n+1)) = n/(n+1)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1/(1*2) = 1/2 y 1/(1+1) = 1/2",
+      "Paso 2: Asumir hipótesis inductiva para n = k: sum(1/(i(i+1))) = k/(k+1)",
+      "Paso 3: Sumar término k+1: k/(k+1) + 1/((k+1)(k+2))",
+      "Paso 4: Denominador común (k+1)(k+2): [k(k+2) + 1]/((k+1)(k+2)) = (k+1)^2/((k+1)(k+2))",
+      "Paso 5: Cancelar factor (k+1): (k+1)/(k+2) completando la inducción"
+    ],
+    "distractors": [
+      "Caso base falso: 1/2 = 1/3",
+      "Sumar 1/(k(k+1)) en lugar del término k+1",
+      "Sumar numeradores directamente sin común denominador",
+      "Afirmar que k(k+2)+1 = k^2 + 2",
+      "Invertir la fracción resultante a (k+2)/(k+1)",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-22",
+    "hypothesis": "Hipótesis #22: Probar que Divisibilidad: 7^n - 1 es divisible por 6 para todo entero n >= 1",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 7^1 - 1 = 6, divisible por 6 (6 = 6*1)",
+      "Paso 2: Formular hipótesis para n = k: 7^k - 1 = 6m con m entero",
+      "Paso 3: Analizar n = k+1: 7^(k+1) - 1 = 7*(7^k) - 1",
+      "Paso 4: Descomponer 7 como (6 + 1): (6 + 1)*7^k - 1 = 6*7^k + (7^k - 1)",
+      "Paso 5: Sustituir hipótesis: 6*7^k + 6m = 6(7^k + m), confirmando divisibilidad"
+    ],
+    "distractors": [
+      "Evaluar caso base: 7^1 - 1 = 7 (error)",
+      "Descomponer 7 como 5 + 2",
+      "Afirmar que 7^(k+1) - 1 = (7^k - 1)^2",
+      "Dividir entre 7 a ambos miembros",
+      "Concluir que 7^n siempre es un número par",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-23",
+    "hypothesis": "Hipótesis #23: Probar que Desigualdad de potencias: 2^n >= n^2 para todo n >= 4",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Verificar caso base en n = 4: 2^4 = 16 y 4^2 = 16 (16 >= 16 Verdadero)",
+      "Paso 2: Hipótesis inductiva: 2^k >= k^2 para k >= 4",
+      "Paso 3: Evaluar k+1 en potencia: 2^(k+1) = 2 * 2^k >= 2*k^2 = k^2 + k^2",
+      "Paso 4: Demostrar lema: Para k >= 4 se cumple k^2 >= 2k + 1",
+      "Paso 5: Sustituir lema: k^2 + k^2 >= k^2 + 2k + 1 = (k+1)^2 (QED)"
+    ],
+    "distractors": [
+      "Tomar como caso base n = 1 donde la desigualdad falla (2 < 4)",
+      "Afirmar que 2k^2 = (2k)^2",
+      "Restar k^2 de ambos lados sin conservar la desigualdad",
+      "Usar el lema para k < 2",
+      "Declarar que la hipótesis es falsa para todo n",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-24",
+    "hypothesis": "Hipótesis #24: Probar que Propiedad de conjuntos: Un conjunto de n elementos tiene 2^n subconjuntos",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 0: Conjunto vacío tiene 1 subconjunto (2^0 = 1)",
+      "Paso 2: Hipótesis de inducción: Todo conjunto con k elementos tiene 2^k subconjuntos",
+      "Paso 3: Considerar un conjunto S con k+1 elementos: S = S_k union {x}",
+      "Paso 4: Clasificar subconjuntos: Aquellos sin x (2^k) y aquellos con x (otros 2^k)",
+      "Paso 5: Totalizar: 2^k + 2^k = 2 * 2^k = 2^(k+1) subconjuntos"
+    ],
+    "distractors": [
+      "Caso base falso: conjunto vacío tiene 0 subconjuntos",
+      "Multiplicar 2^k * 2^k obteniendo 2^(2k)",
+      "Ignorar los subconjuntos que contienen el elemento x",
+      "Afirmar que el conjunto potencia es finito sólo para n=0",
+      "Restar 1 por el conjunto vacío en el conteo total",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-25",
+    "hypothesis": "Hipótesis #25: Probar que Fórmula de sumatoria aritmética general: sum(a + (i-1)d) = n/2 * (2a + (n-1)d)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Caso base n = 1: Término inicial a y 1/2*(2a + 0*d) = a",
+      "Paso 2: Hipótesis inductiva para n = k: S_k = k/2 * [2a + (k-1)d]",
+      "Paso 3: Para n = k+1: Sumar término (k+1)-ésimo: S_k + [a + kd]",
+      "Paso 4: Agrupar con común denominador 2: [2ka + k(k-1)d + 2a + 2kd] / 2",
+      "Paso 5: Factorizar en [(k+1)(2a + kd)] / 2, que coincide con la fórmula evaluada en k+1"
+    ],
+    "distractors": [
+      "Caso base: evaluar n=1 da 2a+d",
+      "Sumar d en lugar de (a + kd)",
+      "Desarrollar k(k-1)d como k^2*d",
+      "Factorizar erróneamente omitiendo el factor a",
+      "Cambiar el signo de la diferencia común d",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-26",
+    "hypothesis": "Hipótesis #26: Probar que Suma de fracciones telecópicas: 1/(1*2) + 1/(2*3) + ... + 1/(n(n+1)) = n/(n+1)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 1/(1*2) = 1/2 y 1/(1+1) = 1/2",
+      "Paso 2: Asumir hipótesis inductiva para n = k: sum(1/(i(i+1))) = k/(k+1)",
+      "Paso 3: Sumar término k+1: k/(k+1) + 1/((k+1)(k+2))",
+      "Paso 4: Denominador común (k+1)(k+2): [k(k+2) + 1]/((k+1)(k+2)) = (k+1)^2/((k+1)(k+2))",
+      "Paso 5: Cancelar factor (k+1): (k+1)/(k+2) completando la inducción"
+    ],
+    "distractors": [
+      "Caso base falso: 1/2 = 1/3",
+      "Sumar 1/(k(k+1)) en lugar del término k+1",
+      "Sumar numeradores directamente sin común denominador",
+      "Afirmar que k(k+2)+1 = k^2 + 2",
+      "Invertir la fracción resultante a (k+2)/(k+1)",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-27",
+    "hypothesis": "Hipótesis #27: Probar que Divisibilidad: 7^n - 1 es divisible por 6 para todo entero n >= 1",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 1: 7^1 - 1 = 6, divisible por 6 (6 = 6*1)",
+      "Paso 2: Formular hipótesis para n = k: 7^k - 1 = 6m con m entero",
+      "Paso 3: Analizar n = k+1: 7^(k+1) - 1 = 7*(7^k) - 1",
+      "Paso 4: Descomponer 7 como (6 + 1): (6 + 1)*7^k - 1 = 6*7^k + (7^k - 1)",
+      "Paso 5: Sustituir hipótesis: 6*7^k + 6m = 6(7^k + m), confirmando divisibilidad"
+    ],
+    "distractors": [
+      "Evaluar caso base: 7^1 - 1 = 7 (error)",
+      "Descomponer 7 como 5 + 2",
+      "Afirmar que 7^(k+1) - 1 = (7^k - 1)^2",
+      "Dividir entre 7 a ambos miembros",
+      "Concluir que 7^n siempre es un número par",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-28",
+    "hypothesis": "Hipótesis #28: Probar que Desigualdad de potencias: 2^n >= n^2 para todo n >= 4",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Verificar caso base en n = 4: 2^4 = 16 y 4^2 = 16 (16 >= 16 Verdadero)",
+      "Paso 2: Hipótesis inductiva: 2^k >= k^2 para k >= 4",
+      "Paso 3: Evaluar k+1 en potencia: 2^(k+1) = 2 * 2^k >= 2*k^2 = k^2 + k^2",
+      "Paso 4: Demostrar lema: Para k >= 4 se cumple k^2 >= 2k + 1",
+      "Paso 5: Sustituir lema: k^2 + k^2 >= k^2 + 2k + 1 = (k+1)^2 (QED)"
+    ],
+    "distractors": [
+      "Tomar como caso base n = 1 donde la desigualdad falla (2 < 4)",
+      "Afirmar que 2k^2 = (2k)^2",
+      "Restar k^2 de ambos lados sin conservar la desigualdad",
+      "Usar el lema para k < 2",
+      "Declarar que la hipótesis es falsa para todo n",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-29",
+    "hypothesis": "Hipótesis #29: Probar que Propiedad de conjuntos: Un conjunto de n elementos tiene 2^n subconjuntos",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Probar caso base n = 0: Conjunto vacío tiene 1 subconjunto (2^0 = 1)",
+      "Paso 2: Hipótesis de inducción: Todo conjunto con k elementos tiene 2^k subconjuntos",
+      "Paso 3: Considerar un conjunto S con k+1 elementos: S = S_k union {x}",
+      "Paso 4: Clasificar subconjuntos: Aquellos sin x (2^k) y aquellos con x (otros 2^k)",
+      "Paso 5: Totalizar: 2^k + 2^k = 2 * 2^k = 2^(k+1) subconjuntos"
+    ],
+    "distractors": [
+      "Caso base falso: conjunto vacío tiene 0 subconjuntos",
+      "Multiplicar 2^k * 2^k obteniendo 2^(2k)",
+      "Ignorar los subconjuntos que contienen el elemento x",
+      "Afirmar que el conjunto potencia es finito sólo para n=0",
+      "Restar 1 por el conjunto vacío en el conteo total",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  },
+  {
+    "id": "INGENIERO-30",
+    "hypothesis": "Hipótesis #30: Probar que Fórmula de sumatoria aritmética general: sum(a + (i-1)d) = n/2 * (2a + (n-1)d)",
+    "description": "Demuestra la proposición ejecutando rigurosamente la secuencia de los 5 pasos formales de inducción:",
+    "steps": [
+      "Paso 1: Caso base n = 1: Término inicial a y 1/2*(2a + 0*d) = a",
+      "Paso 2: Hipótesis inductiva para n = k: S_k = k/2 * [2a + (k-1)d]",
+      "Paso 3: Para n = k+1: Sumar término (k+1)-ésimo: S_k + [a + kd]",
+      "Paso 4: Agrupar con común denominador 2: [2ka + k(k-1)d + 2a + 2kd] / 2",
+      "Paso 5: Factorizar en [(k+1)(2a + kd)] / 2, que coincide con la fórmula evaluada en k+1"
+    ],
+    "distractors": [
+      "Caso base: evaluar n=1 da 2a+d",
+      "Sumar d en lugar de (a + kd)",
+      "Desarrollar k(k-1)d como k^2*d",
+      "Factorizar erróneamente omitiendo el factor a",
+      "Cambiar el signo de la diferencia común d",
+      "Paso lógico desfasado o invertido",
+      "Anulación de hipótesis por premisa contradictoria",
+      "Petición de principio (circularidad deductiva)"
+    ]
+  }
+]
