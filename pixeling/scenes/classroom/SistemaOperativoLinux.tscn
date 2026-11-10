@@ -15,4 +15,8 @@ minigames_list = [{
 "id": "exploracion_archivos",
 "name": "Explorar el sistema de archivos",
 "scene": "res://scenes/minigames/sistemas_operativos/exploracion_archivos/FileSystemExplorer.tscn"
+}, {
+"id": "permisos_procesos",
+"name": "Administrar permisos y procesos",
+"scene": "res://scenes/minigames/sistemas_operativos/permisos_procesos/PermissionsProcesses.tscn"
 }]
