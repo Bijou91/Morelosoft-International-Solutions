@@ -1,0 +1,303 @@
+[
+	{
+		"id": "HU-01",
+		"historia": "Como alumno quiero ver el logo de la UAZ en la pantalla de inicio, para identificar la aplicación.",
+		"criterios": [
+			"Cambio puramente visual en 1 pantalla",
+			"Imagen estática ya disponible en el proyecto",
+			"Sin lógica de negocio ni persistencia"
+		],
+		"puntos": 1
+	},
+	{
+		"id": "HU-02",
+		"historia": "Como usuario quiero que el botón 'Salir' muestre 'Cerrar sesión', para entender mejor su función.",
+		"criterios": [
+			"Cambio de texto en una etiqueta existente",
+			"Sin cambios de lógica ni de navegación",
+			"Cero dependencias con otros módulos"
+		],
+		"puntos": 1
+	},
+	{
+		"id": "HU-03",
+		"historia": "Como cliente quiero ver el horario de atención en el pie de página, para saber cuándo acudir.",
+		"criterios": [
+			"Texto fijo informativo en pantalla",
+			"No requiere lectura de base de datos",
+			"Esfuerzo mínimo e incertidumbre nula"
+		],
+		"puntos": 1
+	},
+	{
+		"id": "HU-04",
+		"historia": "Como visitante quiero que los enlaces del menú cambien de color al tocarlos, para notar la selección.",
+		"criterios": [
+			"Ajuste de estilo visual en botones actuales",
+			"Sin reglas de negocio adicionales",
+			"Comportamiento estándar del motor gráfico"
+		],
+		"puntos": 1
+	},
+	{
+		"id": "HU-05",
+		"historia": "Como lector quiero ver la versión actual de la app en Ajustes, para reportar fallos con precisión.",
+		"criterios": [
+			"Mostrar una constante de texto en un Label",
+			"Ubicación definida en un panel ya creado",
+			"Sin validaciones ni cálculos"
+		],
+		"puntos": 1
+	},
+	{
+		"id": "HU-06",
+		"historia": "Como usuario quiero un botón para mostrar u ocultar mi contraseña al escribirla, para evitar errores.",
+		"criterios": [
+			"Alternar propiedad secret de un campo",
+			"Cambiar ícono del botón entre dos estados",
+			"Lógica local simple en una sola vista"
+		],
+		"puntos": 2
+	},
+	{
+		"id": "HU-07",
+		"historia": "Como alumno quiero confirmar con un diálogo antes de borrar mi avance, para no perderlo por accidente.",
+		"criterios": [
+			"Mostrar ventana modal de confirmación Sí/No",
+			"Conectar a la función de borrado ya existente",
+			"Baja complejidad y flujo conocido"
+		],
+		"puntos": 2
+	},
+	{
+		"id": "HU-08",
+		"historia": "Como comprador quiero ordenar la lista de productos por precio, para encontrar rápido los más baratos.",
+		"criterios": [
+			"Ordenamiento en memoria de un arreglo local",
+			"Selector simple ascendente o descendente",
+			"Sin consultas nuevas al almacenamiento"
+		],
+		"puntos": 2
+	},
+	{
+		"id": "HU-09",
+		"historia": "Como estudiante quiero ver cuántas preguntas llevo respondidas en la partida, para medir mi ritmo.",
+		"criterios": [
+			"Contador entero incrementado en cada intento",
+			"Etiqueta adicional en la barra superior",
+			"Lógica acotada a una sola escena"
+		],
+		"puntos": 2
+	},
+	{
+		"id": "HU-10",
+		"historia": "Como docente quiero filtrar la lista de alumnos por grupo, para revisar solo mi salón.",
+		"criterios": [
+			"Filtro simple por coincidencia exacta",
+			"Menú desplegable con grupos fijos",
+			"Datos ya cargados en memoria"
+		],
+		"puntos": 2
+	},
+	{
+		"id": "HU-11",
+		"historia": "Como usuario quiero editar mi nombre y avatar en mi perfil, para personalizar mi cuenta.",
+		"criterios": [
+			"Formulario con validación de longitud y vacío",
+			"Selector entre avatares predefinidos",
+			"Guardar cambios en el archivo JSON local"
+		],
+		"puntos": 3
+	},
+	{
+		"id": "HU-12",
+		"historia": "Como bibliotecario quiero registrar el préstamo de un libro a un alumno, para controlar el inventario.",
+		"criterios": [
+			"Validar credencial vigente y disponibilidad",
+			"Calcular fecha de devolución a 7 días",
+			"Persistir registro y descontar ejemplar"
+		],
+		"puntos": 3
+	},
+	{
+		"id": "HU-13",
+		"historia": "Como alumno quiero recuperar mi contraseña con una pregunta secreta, para entrar si la olvido.",
+		"criterios": [
+			"Flujo de 2 pasos: validar respuesta y cambiar clave",
+			"Reglas de formato mínimo de contraseña",
+			"Actualización en almacenamiento local"
+		],
+		"puntos": 3
+	},
+	{
+		"id": "HU-14",
+		"historia": "Como cliente quiero aplicar un cupón de descuento en mi carrito, para pagar menos en mi compra.",
+		"criterios": [
+			"Verificar vigencia y monto mínimo del cupón",
+			"Recalcular subtotal, descuento y total",
+			"Manejar mensajes de cupón inválido o vencido"
+		],
+		"puntos": 3
+	},
+	{
+		"id": "HU-15",
+		"historia": "Como jugador quiero ajustar el volumen de música y efectos por separado, para adaptar el audio.",
+		"criterios": [
+			"Dos barras deslizantes con vista previa en vivo",
+			"Conversión a decibeles en el gestor de audio",
+			"Guardar y restaurar preferencias en JSON"
+		],
+		"puntos": 3
+	},
+	{
+		"id": "HU-16",
+		"historia": "Como coordinador quiero exportar el reporte de calificaciones en PDF, para entregarlo a dirección.",
+		"criterios": [
+			"Recopilar datos de varios grupos y materias",
+			"Maquetar tabla con encabezados, promedios y firmas",
+			"Generar archivo descargable y manejar errores de E/S"
+		],
+		"puntos": 5
+	},
+	{
+		"id": "HU-17",
+		"historia": "Como alumno quiero inscribir mis materias validando choques de horario y seriación, para armar mi carga.",
+		"criterios": [
+			"Cruzar horarios entre todas las materias elegidas",
+			"Verificar prerrequisitos aprobados en el kárdex",
+			"Controlar cupo máximo por grupo y confirmar"
+		],
+		"puntos": 5
+	},
+	{
+		"id": "HU-18",
+		"historia": "Como comprador quiero un carrito que conserve mis artículos entre sesiones y valide existencias al abrir.",
+		"criterios": [
+			"Sincronizar estado del carrito con almacenamiento",
+			"Ajustar cantidades si el inventario cambió",
+			"Notificar al usuario productos agotados"
+		],
+		"puntos": 5
+	},
+	{
+		"id": "HU-19",
+		"historia": "Como administrador quiero un panel con gráficas de ventas por mes y categoría, para analizar tendencias.",
+		"criterios": [
+			"Consultas de agregación por rango de fechas",
+			"Dibujar gráficas de barras y pastel en pantalla",
+			"Filtros combinables con recálculo dinámico"
+		],
+		"puntos": 5
+	},
+	{
+		"id": "HU-20",
+		"historia": "Como paciente quiero agendar una cita médica eligiendo doctor, consultorio y horario libre.",
+		"criterios": [
+			"Calendario interactivo con bloqueo de horas ocupadas",
+			"Validar reglas de duración y traslapes por médico",
+			"Confirmación, cancelación y reprogramación de cita"
+		],
+		"puntos": 5
+	},
+	{
+		"id": "HU-21",
+		"historia": "Como cliente de la tienda quiero pagar mi pedido con tarjeta bancaria, para completar mi compra al instante.",
+		"criterios": [
+			"Integración con pasarela de pago externa",
+			"Validación y tokenización segura de tarjeta",
+			"Manejo de cargos rechazados, reintentos y recibo"
+		],
+		"puntos": 8
+	},
+	{
+		"id": "HU-22",
+		"historia": "Como usuario quiero iniciar sesión con mi cuenta institucional OAuth2 y doble factor, para mayor seguridad.",
+		"criterios": [
+			"Flujo de autenticación con proveedor externo",
+			"Generación y validación de código temporal 2FA",
+			"Manejo de tokens, expiración y revocación"
+		],
+		"puntos": 8
+	},
+	{
+		"id": "HU-23",
+		"historia": "Como repartidor quiero ver en un mapa la ruta óptima con tráfico en vivo hacia el domicilio del cliente.",
+		"criterios": [
+			"Consumo de API externa de mapas y geolocalización",
+			"Recálculo de ruta ante desvíos de GPS",
+			"Incertidumbre por permisos y conectividad móvil"
+		],
+		"puntos": 8
+	},
+	{
+		"id": "HU-24",
+		"historia": "Como alumno quiero trabajar sin internet y que mi avance se sincronice al recuperar la conexión.",
+		"criterios": [
+			"Cola local de operaciones pendientes offline",
+			"Detección de red y envío automático en segundo plano",
+			"Resolución de conflictos entre datos locales y remotos"
+		],
+		"puntos": 8
+	},
+	{
+		"id": "HU-25",
+		"historia": "Como banco quiero emitir facturas electrónicas CFDI timbradas ante el SAT en cada compra.",
+		"criterios": [
+			"Integración con proveedor de timbrado PAC externo",
+			"Firma con sellos digitales y formato XML estricto",
+			"Manejo de caídas del servicio y cancelaciones"
+		],
+		"puntos": 8
+	},
+	{
+		"id": "HU-26",
+		"historia": "Como estudiante quiero un modo multijugador en tiempo real para competir con mi salón en simultáneo.",
+		"criterios": [
+			"Servidor WebSockets con salas y emparejamiento",
+			"Sincronización de estado con baja latencia",
+			"Manejo de desconexiones, reconexión y trampas"
+		],
+		"puntos": 13
+	},
+	{
+		"id": "HU-27",
+		"historia": "Como empresa quiero migrar todo el sistema monolítico de nómina a microservicios sin detener operación.",
+		"criterios": [
+			"Afecta múltiples módulos críticos y bases de datos",
+			"Sincronización dual durante la transición",
+			"Alta incertidumbre técnica y riesgo de regresión"
+		],
+		"puntos": 13
+	},
+	{
+		"id": "HU-28",
+		"historia": "Como docente quiero un tutor con inteligencia artificial que genere retos personalizados según los fallos.",
+		"criterios": [
+			"Modelo adaptativo de dominio y perfil del alumno",
+			"Integración con motor LLM y validación pedagógica",
+			"Alta incertidumbre en calidad y tiempos de respuesta"
+		],
+		"puntos": 13
+	},
+	{
+		"id": "HU-29",
+		"historia": "Como hospital quiero videollamadas cifradas de extremo a extremo con expediente clínico compartido en vivo.",
+		"criterios": [
+			"Streaming de audio y video WebRTC en tiempo real",
+			"Cifrado estricto por normativa de datos médicos",
+			"Múltiples subsistemas y alta complejidad de red"
+		],
+		"puntos": 13
+	},
+	{
+		"id": "HU-30",
+		"historia": "Como universidad quiero un generador automático de horarios para toda la facultad sin choques de aulas ni profesores.",
+		"criterios": [
+			"Algoritmo de optimización combinatoria NP-difícil",
+			"Cientos de restricciones duras y blandas simultáneas",
+			"Interfaz de ajuste manual y validación global"
+		],
+		"puntos": 13
+	}
+]
+

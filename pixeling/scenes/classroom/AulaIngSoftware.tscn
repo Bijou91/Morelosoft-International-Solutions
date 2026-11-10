@@ -6,7 +6,7 @@
 classroom_name = "Aula 102: Ing. de Software"
 subject_code = "ISW-01"
 teacher_name = "Docente de Software (UAZ)"
-teacher_tip = "• Req: Funcionales (QUÉ) y No Funcionales (CÓMO).\n• UML: «include» es obligatorio; «extend» es opcional/condicional."
+teacher_tip = "• Req: Funcionales (QUÉ) y No Funcionales (CÓMO).\n• UML: «include» es obligatorio; «extend» es opcional/condicional.\n• Planning Poker: estima historias de usuario con la escala Fibonacci (1, 2, 3, 5, 8, 13)."
 minigames_list = [{
 "id": "lluvia_requerimientos",
 "name": "Lluvia de Requerimientos",
@@ -15,4 +15,8 @@ minigames_list = [{
 "id": "include_extend",
 "name": "¿Include o Extend?",
 "scene": "res://scenes/minigames/ing_software/include_extend/IncludeExtend.tscn"
+}, {
+"id": "planning_poker",
+"name": "Planning Poker",
+"scene": "res://scenes/minigames/ing_software/planning_poker/PlanningPoker.tscn"
 }]

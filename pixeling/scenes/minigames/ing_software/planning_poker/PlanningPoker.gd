@@ -1,0 +1,1151 @@
+## PlanningPoker.gd — Minijuego CU-09: Practicar a estimar historias de usuario
+## El alumno analiza una historia de usuario junto con sus criterios de complejidad y
+## selecciona contra reloj su estimación en puntos de historia (escala Fibonacci: 1, 2, 3, 5, 8, 13).
+## Cumple con la Especificación CU-09 y su Diagrama de Secuencia (TSP / ISO/IEC 29110).
+## Responsable: Karol Christopher Espino Galicia
+extends MiniGameBase
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONSTANTES
+# ══════════════════════════════════════════════════════════════════════════════
+
+const DATA_PATH: String = "res://scenes/minigames/ing_software/planning_poker/data/historias.json"
+const CLASSROOM_SCENE: String = "res://scenes/classroom/AulaIngSoftware.tscn"
+const LOBBY_SCENE: String = "res://scenes/campus/Lobby.tscn"
+
+const VALID_FIBONACCI: Array[int] = [1, 2, 3, 5, 8, 13]
+
+const CARD_DEFS: Array[Dictionary] = [
+	{ "value": 1,  "label": "Muy Baja", "color": Color("2e6f40") },
+	{ "value": 2,  "label": "Baja",     "color": Color("3b7a57") },
+	{ "value": 3,  "label": "Moderada", "color": Color("3b6fb6") },
+	{ "value": 5,  "label": "Alta",     "color": Color("b8732a") },
+	{ "value": 8,  "label": "Muy Alta", "color": Color("b84a39") },
+	{ "value": 13, "label": "Compleja", "color": Color("7a3b8e") },
+]
+
+## Configuración por dificultad (Precondición 6 de la especificación + tiempo por historia acordado).
+const DIFFICULTY_CONFIG: Dictionary = {
+	"FACIL":     { "name": "FÁCIL",     "lives": 5, "points": 15, "time": 120.0, "reaction": 15.0 },
+	"NORMAL":    { "name": "NORMAL",    "lives": 3, "points": 30, "time": 90.0,  "reaction": 12.0 },
+	"INGENIERO": { "name": "INGENIERO", "lives": 2, "points": 50, "time": 60.0,  "reaction": 10.0 },
+}
+
+## Historias de respaldo por si el JSON no se puede cargar.
+const FALLBACK_STORIES: Array = [
+	{
+		"id": "FB-01",
+		"historia": "Como alumno quiero ver el logo de la UAZ en la pantalla de inicio, para identificar la aplicación.",
+		"criterios": ["Cambio puramente visual en 1 pantalla", "Imagen estática ya disponible", "Sin lógica ni persistencia"],
+		"puntos": 1
+	},
+	{
+		"id": "FB-02",
+		"historia": "Como usuario quiero un botón para mostrar u ocultar mi contraseña al escribirla, para evitar errores.",
+		"criterios": ["Alternar propiedad secret de un campo", "Cambiar ícono entre dos estados", "Lógica local en una sola vista"],
+		"puntos": 2
+	},
+	{
+		"id": "FB-03",
+		"historia": "Como usuario quiero editar mi nombre y avatar en mi perfil, para personalizar mi cuenta.",
+		"criterios": ["Formulario con validación de longitud", "Selector entre avatares predefinidos", "Guardar cambios en el JSON local"],
+		"puntos": 3
+	},
+	{
+		"id": "FB-04",
+		"historia": "Como alumno quiero inscribir mis materias validando choques de horario y seriación, para armar mi carga.",
+		"criterios": ["Cruzar horarios entre materias elegidas", "Verificar prerrequisitos en el kárdex", "Controlar cupo máximo por grupo"],
+		"puntos": 5
+	},
+	{
+		"id": "FB-05",
+		"historia": "Como cliente de la tienda quiero pagar mi pedido con tarjeta bancaria, para completar mi compra al instante.",
+		"criterios": ["Integración con pasarela de pago externa", "Validación de datos de tarjeta", "Manejo de pagos rechazados"],
+		"puntos": 8
+	},
+	{
+		"id": "FB-06",
+		"historia": "Como estudiante quiero un modo multijugador en tiempo real para competir con mi salón en simultáneo.",
+		"criterios": ["Servidor WebSockets con emparejamiento", "Sincronización en tiempo real", "Manejo de desconexiones y reconexión"],
+		"puntos": 13
+	},
+]
+
+# ── Paleta pixel art "aula" ──
+const COL_BG: Color = Color("1a1c2c")
+const COL_BG_LINE: Color = Color("232741")
+const COL_PANEL: Color = Color("262b44")
+const COL_PANEL_BORDER: Color = Color("5a6988")
+const COL_BOARD: Color = Color("1f3b2d")
+const COL_WOOD: Color = Color("6b4226")
+const COL_CHALK: Color = Color("e8e6d9")
+const COL_CHALK_DIM: Color = Color("a9b8a8")
+const COL_INK: Color = Color("1a1c2c")
+const COL_OK: Color = Color("3fae5a")
+const COL_WARN: Color = Color("e0a030")
+const COL_ERR: Color = Color("d9483b")
+const COL_ACCENT: Color = Color("f2c14e")
+const COL_SHADOW: Color = Color(0, 0, 0, 0.55)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ESTADO
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Máquina de estados: los temporizadores avanzan únicamente en QUESTION,
+## por lo que la pausa (FA-02.01) congela todo y conserva el estado exacto.
+enum State { DIFFICULTY, INSTRUCTIONS, QUESTION, PAUSED, GAME_OVER, VICTORY }
+
+var state: int = State.DIFFICULTY
+var state_before_pause: int = State.QUESTION
+var selected_difficulty: String = "NORMAL"
+
+var max_lives: int = 3
+var current_lives: int = 3
+var points_per_hit: int = 30
+var game_duration: float = 90.0
+var reaction_time: float = 12.0
+
+var score: int = 0
+var total_answered: int = 0
+var total_correct: int = 0
+var time_remaining: float = 0.0
+var question_time_remaining: float = 0.0
+
+var all_stories: Array = []
+var story_bag: Array = []
+var current_story: Dictionary = {}
+var last_story_id: String = ""
+
+# ══════════════════════════════════════════════════════════════════════════════
+# REFERENCIAS UI (asignadas en _build_ui)
+# ══════════════════════════════════════════════════════════════════════════════
+
+var content_root: MarginContainer
+var lives_label: Label
+var score_label: Label
+var global_bar: ProgressBar
+var global_time_label: Label
+var global_fill_tier: int = -1
+var global_fill_styles: Array = []
+
+var story_label: Label
+var criteria_label: Label
+var question_bar: ProgressBar
+var question_time_label: Label
+var question_fill_ok: StyleBoxFlat
+var question_fill_danger: StyleBoxFlat
+
+var card_buttons: Array[Button] = []
+
+var difficulty_overlay: ColorRect
+var instructions_overlay: ColorRect
+var pause_overlay: ColorRect
+var game_over_overlay: ColorRect
+var victory_overlay: ColorRect
+
+var instr_difficulty_label: Label
+var game_over_score_label: Label
+var game_over_stats_label: Label
+var victory_stars_label: Label
+var victory_score_label: Label
+var victory_stats_label: Label
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CICLO DE VIDA
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _ready() -> void:
+	super._ready()
+	minigame_id = "planning_poker"
+	cu_id = "CU-09"
+	minigame_title = "Planning Poker"
+	subject_name = "Introducción a la Ingeniería de Software"
+
+	_load_stories()
+	_build_ui()
+	_show_difficulty_selector()
+
+
+func _process(delta: float) -> void:
+	if state != State.QUESTION:
+		return
+	if _tick_global_timer(delta):
+		return
+	question_time_remaining -= delta
+	_update_question_timer()
+	if question_time_remaining <= 0.0:
+		_on_question_timeout()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	super._unhandled_input(event)
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	match event.keycode:
+		KEY_ESCAPE, KEY_P:
+			_toggle_pause()
+		KEY_1, KEY_KP_1:
+			_on_card_pressed(1)
+		KEY_2, KEY_KP_2:
+			_on_card_pressed(2)
+		KEY_3, KEY_KP_3:
+			_on_card_pressed(3)
+		KEY_5, KEY_KP_5:
+			_on_card_pressed(5)
+		KEY_8, KEY_KP_8:
+			_on_card_pressed(8)
+		KEY_0, KEY_KP_0, KEY_T:
+			_on_card_pressed(13)
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			if _is_playing() or state == State.PAUSED:
+				_toggle_pause()
+			elif state == State.DIFFICULTY or state == State.INSTRUCTIONS:
+				_go_to_classroom()
+		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED:
+			# La app pasa a segundo plano → pausa automática (FA-02.01).
+			if _is_playing():
+				_toggle_pause()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CARGA DE DATOS
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _load_stories() -> void:
+	all_stories.clear()
+	if FileAccess.file_exists(DATA_PATH):
+		var file := FileAccess.open(DATA_PATH, FileAccess.READ)
+		if file:
+			var parsed = JSON.parse_string(file.get_as_text())
+			file.close()
+			if parsed is Array:
+				for item in parsed:
+					if item is Dictionary and item.has("historia") and item.has("criterios") and item.has("puntos"):
+						var pts: int = int(item.get("puntos", 0))
+						if pts in VALID_FIBONACCI:
+							all_stories.append(item)
+
+	if all_stories.is_empty():
+		push_error("[PlanningPoker] No se pudo cargar %s. Usando historias de respaldo." % DATA_PATH)
+		all_stories = FALLBACK_STORIES.duplicate(true)
+
+
+## "Bolsa" barajada: no se repite una historia hasta agotar el banco completo.
+func _draw_story() -> Dictionary:
+	if story_bag.is_empty():
+		story_bag = all_stories.duplicate()
+		story_bag.shuffle()
+		if story_bag.size() > 1 and str(story_bag[0].get("id", "")) == last_story_id:
+			story_bag.push_back(story_bag.pop_front())
+	var story: Dictionary = story_bag.pop_front()
+	last_story_id = str(story.get("id", ""))
+	return story
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CONSTRUCCIÓN DE UI (estilo pixel art en viewport vertical 360x640)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _build_ui() -> void:
+	# ── Fondo con líneas horizontales tipo scanline ──
+	var bg := ColorRect.new()
+	bg.color = COL_BG
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+	var vp_size: Vector2 = get_viewport_rect().size
+	for i in range(int(vp_size.y / 8.0) + 1):
+		if i % 2 == 0:
+			continue
+		var line := ColorRect.new()
+		line.color = COL_BG_LINE
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		line.position = Vector2(0, i * 8.0)
+		line.size = Vector2(vp_size.x, 2)
+		bg.add_child(line)
+
+	# ── Contenedor principal ──
+	content_root = MarginContainer.new()
+	content_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		content_root.add_theme_constant_override("margin_" + side, 8)
+	add_child(content_root)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	content_root.add_child(vbox)
+
+	vbox.add_child(_build_top_hud())
+	vbox.add_child(_build_global_timer())
+	var board := _build_board()
+	board.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(board)
+	vbox.add_child(_build_cards_section())
+
+	# ── Overlays (el último añadido queda encima) ──
+	_build_overlay_victory()
+	_build_overlay_game_over()
+	_build_overlay_pause()
+	_build_overlay_instructions()
+	_build_overlay_difficulty()
+
+
+func _build_top_hud() -> Control:
+	var hud := HBoxContainer.new()
+	hud.add_theme_constant_override("separation", 6)
+
+	var btn_back := _make_button("←", COL_PANEL, 14, Vector2(38, 32))
+	btn_back.pressed.connect(_on_hud_back_pressed)
+	hud.add_child(btn_back)
+
+	var lives_box := _make_badge()
+	lives_label = _make_label("❤ 5/5", 12, Color("ff6b6b"))
+	lives_box.add_child(lives_label)
+	hud.add_child(lives_box)
+
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hud.add_child(spacer)
+
+	var score_box := _make_badge()
+	score_label = _make_label("0 Pts", 12, COL_ACCENT)
+	score_box.add_child(score_label)
+	hud.add_child(score_box)
+
+	var btn_pause := _make_button("II", COL_PANEL, 13, Vector2(38, 32))
+	btn_pause.pressed.connect(_toggle_pause)
+	hud.add_child(btn_pause)
+	return hud
+
+
+func _build_global_timer() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+
+	global_fill_styles = [
+		_make_pixel_box(COL_OK, COL_OK, 0, false),
+		_make_pixel_box(COL_WARN, COL_WARN, 0, false),
+		_make_pixel_box(COL_ERR, COL_ERR, 0, false),
+	]
+
+	global_bar = ProgressBar.new()
+	global_bar.show_percentage = false
+	global_bar.custom_minimum_size = Vector2(0, 12)
+	global_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	global_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	global_bar.add_theme_stylebox_override("background", _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, false))
+	row.add_child(global_bar)
+
+	global_time_label = _make_label("2:00", 11, COL_CHALK)
+	global_time_label.custom_minimum_size = Vector2(38, 0)
+	row.add_child(global_time_label)
+	return row
+
+
+func _build_board() -> PanelContainer:
+	var board := PanelContainer.new()
+	board.add_theme_stylebox_override("panel", _make_pixel_box(COL_BOARD, COL_WOOD, 4, true))
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	board.add_child(margin)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 6)
+	margin.add_child(v)
+
+	# ── Historia de Usuario (FN-01) ──
+	v.add_child(_make_label("▌HISTORIA DE USUARIO:", 10, COL_ACCENT, false))
+	story_label = _make_label("", 12, COL_CHALK, false, true)
+	story_label.custom_minimum_size = Vector2(0, 62)
+	v.add_child(story_label)
+
+	v.add_child(_make_expand_spacer())
+
+	# ── Criterios de complejidad (FN-01) ──
+	var crit_box := PanelContainer.new()
+	crit_box.add_theme_stylebox_override("panel", _make_pixel_box(Color(0, 0, 0, 0.25), COL_CHALK_DIM, 1, false))
+	var crit_v := VBoxContainer.new()
+	crit_v.add_theme_constant_override("separation", 3)
+	crit_box.add_child(crit_v)
+	crit_v.add_child(_make_label("📋 CRITERIOS DE COMPLEJIDAD", 9, COL_ACCENT, false))
+	criteria_label = _make_label("", 10, COL_CHALK, false, true)
+	crit_v.add_child(criteria_label)
+	v.add_child(crit_box)
+
+	v.add_child(_make_expand_spacer())
+
+	# ── Temporizador de respuesta por historia ──
+	var q_row := HBoxContainer.new()
+	q_row.add_theme_constant_override("separation", 6)
+	q_row.add_child(_make_label("⏱", 12, COL_CHALK))
+
+	question_fill_ok = _make_pixel_box(COL_ACCENT, COL_ACCENT, 0, false)
+	question_fill_danger = _make_pixel_box(COL_ERR, COL_ERR, 0, false)
+	question_bar = ProgressBar.new()
+	question_bar.show_percentage = false
+	question_bar.custom_minimum_size = Vector2(0, 10)
+	question_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	question_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	question_bar.add_theme_stylebox_override("background", _make_pixel_box(Color(0, 0, 0, 0.35), COL_CHALK_DIM, 1, false))
+	question_bar.add_theme_stylebox_override("fill", question_fill_ok)
+	q_row.add_child(question_bar)
+
+	question_time_label = _make_label("15s", 12, COL_CHALK)
+	question_time_label.custom_minimum_size = Vector2(30, 0)
+	q_row.add_child(question_time_label)
+	v.add_child(q_row)
+
+	return board
+
+
+func _build_cards_section() -> Control:
+	var section := VBoxContainer.new()
+	section.add_theme_constant_override("separation", 6)
+
+	var prompt := _make_label("Selecciona tu carta Fibonacci", 11, COL_ACCENT, true)
+	section.add_child(prompt)
+
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	section.add_child(grid)
+
+	card_buttons.clear()
+	for def in CARD_DEFS:
+		var val: int = int(def["value"])
+		var sub_txt: String = str(def["label"])
+		var col: Color = def["color"]
+		var btn := _make_card_button(val, sub_txt, col)
+		btn.pressed.connect(func(): _on_card_pressed(val))
+		grid.add_child(btn)
+		card_buttons.append(btn)
+
+	return section
+
+
+func _make_card_button(fib_value: int, complexity_text: String, color: Color) -> Button:
+	var btn := Button.new()
+	btn.text = "%d\n%s" % [fib_value, complexity_text]
+	btn.custom_minimum_size = Vector2(0, 74)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 13)
+	btn.add_theme_color_override("font_color", COL_CHALK)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", COL_ACCENT)
+	btn.add_theme_color_override("font_disabled_color", Color(1, 1, 1, 0.35))
+	btn.add_theme_stylebox_override("normal", _make_pixel_box(color, COL_CHALK, 2, true))
+	btn.add_theme_stylebox_override("hover", _make_pixel_box(color.lightened(0.15), Color.WHITE, 2, true))
+	var pressed_sb := _make_pixel_box(color.darkened(0.2), COL_ACCENT, 2, false)
+	pressed_sb.content_margin_top = 6.0
+	pressed_sb.content_margin_bottom = 2.0
+	btn.add_theme_stylebox_override("pressed", pressed_sb)
+	btn.add_theme_stylebox_override("disabled", _make_pixel_box(color.darkened(0.55), color.darkened(0.7), 2, false))
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn.mouse_entered.connect(func():
+		if not btn.disabled:
+			btn.pivot_offset = btn.size / 2.0
+			create_tween().tween_property(btn, "scale", Vector2(1.03, 1.03), 0.08))
+	btn.mouse_exited.connect(func():
+		create_tween().tween_property(btn, "scale", Vector2.ONE, 0.08))
+	return btn
+
+# ── Overlays ─────────────────────────────────────────────────────────────────
+
+func _build_overlay_difficulty() -> void:
+	var parts: Array = _create_overlay(Color(0, 0, 0, 0.85))
+	difficulty_overlay = parts[0]
+	var vbox: VBoxContainer = parts[1]
+
+	var title := Label.new()
+	title.text = "🃏  Planning Poker"
+	title.add_theme_font_size_override("font_size", 15)
+	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	var sub := Label.new()
+	sub.text = "Analiza historias de usuario y estima su esfuerzo\nen puntos de historia (escala Fibonacci)"
+	sub.add_theme_font_size_override("font_size", 9)
+	sub.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(sub)
+
+	vbox.add_child(HSeparator.new())
+
+	var lbl_diff := Label.new()
+	lbl_diff.text = "Selecciona la dificultad:"
+	lbl_diff.add_theme_font_size_override("font_size", 10)
+	lbl_diff.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	lbl_diff.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(lbl_diff)
+
+	var btn_facil := Button.new()
+	btn_facil.text = "🟢  Fácil  (5 vidas · 15 pts · 120s)"
+	btn_facil.add_theme_font_size_override("font_size", 11)
+	btn_facil.custom_minimum_size = Vector2(0, 38)
+	btn_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
+	vbox.add_child(btn_facil)
+
+	var btn_normal := Button.new()
+	btn_normal.text = "🟡  Normal  (3 vidas · 30 pts · 90s)"
+	btn_normal.add_theme_font_size_override("font_size", 11)
+	btn_normal.custom_minimum_size = Vector2(0, 38)
+	btn_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
+	vbox.add_child(btn_normal)
+
+	var btn_ing := Button.new()
+	btn_ing.text = "🔴  Ingeniero  (2 vidas · 50 pts · 60s)"
+	btn_ing.add_theme_font_size_override("font_size", 11)
+	btn_ing.custom_minimum_size = Vector2(0, 38)
+	btn_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
+	vbox.add_child(btn_ing)
+
+	var btn_back := Button.new()
+	btn_back.text = "←  Volver al Salón"
+	btn_back.add_theme_font_size_override("font_size", 11)
+	btn_back.custom_minimum_size = Vector2(0, 34)
+	btn_back.pressed.connect(_go_to_classroom)
+	vbox.add_child(btn_back)
+
+
+func _build_overlay_instructions() -> void:
+	var parts: Array = _create_overlay(Color(0, 0, 0, 0.82))
+	instructions_overlay = parts[0]
+	var vbox: VBoxContainer = parts[1]
+
+	var title := Label.new()
+	title.text = "📋  INSTRUCCIONES"
+	title.add_theme_font_size_override("font_size", 15)
+	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	instr_difficulty_label = Label.new()
+	instr_difficulty_label.text = "Dificultad: NORMAL — 3 vidas"
+	instr_difficulty_label.add_theme_font_size_override("font_size", 10)
+	instr_difficulty_label.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
+	instr_difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(instr_difficulty_label)
+
+	vbox.add_child(HSeparator.new())
+
+	var rules: Array[String] = [
+		"🟢  Analizar la historia de usuario y seleccionar\n     el valor de Story Points en escala Fibonacci\n     [1, 2, 3, 5, 8, 13] según su complejidad = +Puntos",
+		"🔴  Seleccionar una estimación\n     incorrecta = -1 Vida",
+		"⚠️  Si el tiempo de respuesta por\n     historia se agota = -1 Vida",
+		"⏱  Sobrevive hasta que el tiempo\n     global termine para ganar",
+	]
+	for rule_text in rules:
+		var rule_lbl := Label.new()
+		rule_lbl.text = rule_text
+		rule_lbl.add_theme_font_size_override("font_size", 9)
+		rule_lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
+		vbox.add_child(rule_lbl)
+
+	vbox.add_child(HSeparator.new())
+
+	var btn_start := Button.new()
+	btn_start.text = "▶  ¡COMENZAR!"
+	btn_start.add_theme_font_size_override("font_size", 14)
+	btn_start.custom_minimum_size = Vector2(0, 42)
+	btn_start.pressed.connect(_on_start_pressed)
+	vbox.add_child(btn_start)
+
+	var btn_change := Button.new()
+	btn_change.text = "←  Cambiar Dificultad"
+	btn_change.add_theme_font_size_override("font_size", 11)
+	btn_change.custom_minimum_size = Vector2(0, 34)
+	btn_change.pressed.connect(func():
+		AudioManager.play_click()
+		_show_difficulty_selector()
+	)
+	vbox.add_child(btn_change)
+
+
+func _build_overlay_pause() -> void:
+	var parts: Array = _create_overlay(Color(0, 0, 0, 0.70))
+	pause_overlay = parts[0]
+	var vbox: VBoxContainer = parts[1]
+
+	var title := Label.new()
+	title.text = "⏸  PAUSA"
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	var btn_resume := Button.new()
+	btn_resume.text = "▶  Reanudar"
+	btn_resume.add_theme_font_size_override("font_size", 13)
+	btn_resume.custom_minimum_size = Vector2(0, 40)
+	btn_resume.pressed.connect(_toggle_pause)
+	vbox.add_child(btn_resume)
+
+	var btn_salon := Button.new()
+	btn_salon.text = "←  Volver al Salón"
+	btn_salon.add_theme_font_size_override("font_size", 12)
+	btn_salon.custom_minimum_size = Vector2(0, 38)
+	btn_salon.pressed.connect(_go_to_classroom)
+	vbox.add_child(btn_salon)
+
+
+func _build_overlay_game_over() -> void:
+	var parts: Array = _create_overlay(Color(0.15, 0, 0, 0.85))
+	game_over_overlay = parts[0]
+	var vbox: VBoxContainer = parts[1]
+
+	var title := Label.new()
+	title.text = "💀  GAME OVER"
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	game_over_score_label = Label.new()
+	game_over_score_label.text = "Puntaje: 0"
+	game_over_score_label.add_theme_font_size_override("font_size", 13)
+	game_over_score_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
+	game_over_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(game_over_score_label)
+
+	game_over_stats_label = Label.new()
+	game_over_stats_label.text = ""
+	game_over_stats_label.add_theme_font_size_override("font_size", 10)
+	game_over_stats_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
+	game_over_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(game_over_stats_label)
+
+	var btn_retry := Button.new()
+	btn_retry.text = "🔄  Reiniciar Actividad"
+	btn_retry.add_theme_font_size_override("font_size", 13)
+	btn_retry.custom_minimum_size = Vector2(0, 40)
+	btn_retry.pressed.connect(_on_retry_pressed)
+	vbox.add_child(btn_retry)
+
+	var btn_salon := Button.new()
+	btn_salon.text = "←  Volver al Salón"
+	btn_salon.add_theme_font_size_override("font_size", 11)
+	btn_salon.custom_minimum_size = Vector2(0, 36)
+	btn_salon.pressed.connect(_go_to_classroom)
+	vbox.add_child(btn_salon)
+
+
+func _build_overlay_victory() -> void:
+	var parts: Array = _create_overlay(Color(0, 0.05, 0.1, 0.85))
+	victory_overlay = parts[0]
+	var vbox: VBoxContainer = parts[1]
+
+	var title := Label.new()
+	title.text = "🏆  ¡COMPLETADO!"
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	victory_stars_label = Label.new()
+	victory_stars_label.text = "⭐⭐⭐"
+	victory_stars_label.add_theme_font_size_override("font_size", 22)
+	victory_stars_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(victory_stars_label)
+
+	victory_score_label = Label.new()
+	victory_score_label.text = "Puntaje: 0"
+	victory_score_label.add_theme_font_size_override("font_size", 14)
+	victory_score_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	victory_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(victory_score_label)
+
+	victory_stats_label = Label.new()
+	victory_stats_label.text = ""
+	victory_stats_label.add_theme_font_size_override("font_size", 10)
+	victory_stats_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
+	victory_stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(victory_stats_label)
+
+	# Postcondición 3: opciones para volver al salón o volver al campus
+	var btn_salon := Button.new()
+	btn_salon.text = "📚  Volver al Salón"
+	btn_salon.add_theme_font_size_override("font_size", 13)
+	btn_salon.custom_minimum_size = Vector2(0, 40)
+	btn_salon.pressed.connect(_go_to_classroom)
+	vbox.add_child(btn_salon)
+
+	var btn_campus := Button.new()
+	btn_campus.text = "🚪  Salir al Campus"
+	btn_campus.add_theme_font_size_override("font_size", 13)
+	btn_campus.custom_minimum_size = Vector2(0, 40)
+	btn_campus.pressed.connect(_go_to_campus)
+	vbox.add_child(btn_campus)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HELPERS DE UI (estilo pixel art)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _make_pixel_box(bg: Color, border: Color, border_w: int = 2, shadow: bool = true, radius: int = 0) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.anti_aliasing = false
+	sb.set_corner_radius_all(radius)
+	sb.set_border_width_all(border_w)
+	sb.border_color = border
+	if shadow:
+		sb.shadow_color = COL_SHADOW
+		sb.shadow_size = 1
+		sb.shadow_offset = Vector2(3, 3)
+	sb.content_margin_left = 6.0
+	sb.content_margin_right = 6.0
+	sb.content_margin_top = 4.0
+	sb.content_margin_bottom = 4.0
+	return sb
+
+
+func _make_label(text: String, font_size: int, color: Color, centered: bool = true, wrap: bool = false) -> Label:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", font_size)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	lbl.add_theme_constant_override("shadow_offset_x", 1)
+	lbl.add_theme_constant_override("shadow_offset_y", 1)
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if centered:
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if wrap:
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return lbl
+
+
+func _make_button(text: String, color: Color, font_size: int, min_size: Vector2) -> Button:
+	var btn := Button.new()
+	btn.text = text
+	btn.custom_minimum_size = min_size
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", font_size)
+	btn.add_theme_color_override("font_color", COL_CHALK)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", COL_ACCENT)
+	btn.add_theme_color_override("font_disabled_color", Color(1, 1, 1, 0.35))
+	btn.add_theme_stylebox_override("normal", _make_pixel_box(color, color.darkened(0.45), 2, true))
+	btn.add_theme_stylebox_override("hover", _make_pixel_box(color.lightened(0.15), color.lightened(0.4), 2, true))
+	var pressed_sb := _make_pixel_box(color.darkened(0.2), color.darkened(0.55), 2, false)
+	pressed_sb.content_margin_top = 6.0
+	pressed_sb.content_margin_bottom = 2.0
+	btn.add_theme_stylebox_override("pressed", pressed_sb)
+	btn.add_theme_stylebox_override("disabled", _make_pixel_box(color.darkened(0.55), color.darkened(0.7), 2, false))
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	return btn
+
+
+func _make_badge() -> PanelContainer:
+	var badge := PanelContainer.new()
+	badge.add_theme_stylebox_override("panel", _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, true))
+	return badge
+
+
+func _make_expand_spacer() -> Control:
+	var s := Control.new()
+	s.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	return s
+
+
+func _make_stylebox(color: Color, corner_radius: int = 4, border_width: int = 0, border_color: Color = Color.BLACK) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = color
+	sb.set_corner_radius_all(corner_radius)
+	if border_width > 0:
+		sb.set_border_width_all(border_width)
+		sb.border_color = border_color
+	sb.content_margin_left = 4.0
+	sb.content_margin_right = 4.0
+	sb.content_margin_top = 2.0
+	sb.content_margin_bottom = 2.0
+	return sb
+
+
+func _create_overlay(bg_color: Color = Color(0, 0, 0, 0.75)) -> Array:
+	var overlay := ColorRect.new()
+	overlay.color = bg_color
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.visible = false
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(300, 0)
+	panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.12, 0.13, 0.18, 0.95), 12, 2, Color(0.4, 0.45, 0.55)))
+	center.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 24)
+	margin.add_theme_constant_override("margin_bottom", 24)
+	panel.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+
+	add_child(overlay)
+	return [overlay, vbox]
+
+
+func _show_overlay(target: ColorRect) -> void:
+	for o in [difficulty_overlay, instructions_overlay, pause_overlay, game_over_overlay, victory_overlay]:
+		if is_instance_valid(o):
+			o.visible = (o == target)
+	if target and is_inside_tree():
+		target.modulate.a = 0.0
+		var tw := create_tween()
+		if tw:
+			tw.tween_property(target, "modulate:a", 1.0, 0.15)
+	elif target:
+		target.modulate.a = 1.0
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FLUJO PRE-PARTIDA: Dificultad → Instrucciones → Juego (Precondiciones 5, 6 y 7)
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _show_difficulty_selector() -> void:
+	state = State.DIFFICULTY
+	_reset_board()
+	_show_overlay(difficulty_overlay)
+
+
+func _on_difficulty_selected(diff: String) -> void:
+	AudioManager.play_click()
+	selected_difficulty = diff
+	var cfg: Dictionary = DIFFICULTY_CONFIG.get(diff, DIFFICULTY_CONFIG["NORMAL"])
+	max_lives = cfg["lives"]
+	points_per_hit = cfg["points"]
+	game_duration = cfg["time"]
+	reaction_time = cfg["reaction"]
+
+	var diff_names := {"FACIL": "FÁCIL", "NORMAL": "NORMAL", "INGENIERO": "INGENIERO"}
+	instr_difficulty_label.text = "Dificultad: %s — %d vidas · %d pts · %ds" % [
+		diff_names.get(diff, diff), max_lives, points_per_hit, int(game_duration)
+	]
+	state = State.INSTRUCTIONS
+	_show_overlay(instructions_overlay)
+
+
+func _on_start_pressed() -> void:
+	AudioManager.play_click()
+	_start_game_play()
+
+
+func _start_game_play() -> void:
+	super.start_game(selected_difficulty)
+
+	score = 0
+	total_answered = 0
+	total_correct = 0
+	current_lives = max_lives
+	time_remaining = game_duration
+	story_bag.clear()
+
+	global_bar.max_value = game_duration
+	global_fill_tier = -1
+	question_bar.max_value = reaction_time
+	_update_hud()
+	_update_global_timer()
+
+	_show_overlay(null)
+	EventBus.minigame_started.emit(minigame_id, selected_difficulty)
+	_next_story()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LÓGICA DEL JUEGO (FN-01 a FN-05 y FA-02.01 a FA-02.04)
+# ══════════════════════════════════════════════════════════════════════════════
+
+## FN-01 (pasos 1 y 2 del diagrama de secuencia): solicita y presenta una historia de usuario
+## junto con sus criterios de complejidad y las opciones Fibonacci.
+func _next_story() -> void:
+	if current_lives <= 0:
+		_handle_game_over()
+		return
+
+	current_story = _draw_story()
+	story_label.text = "\"%s\"" % str(current_story.get("historia", ""))
+
+	var raw_criteria = current_story.get("criterios", [])
+	var lines: PackedStringArray = PackedStringArray()
+	if raw_criteria is Array:
+		for c in raw_criteria:
+			lines.append("• " + str(c))
+	criteria_label.text = "\n".join(lines)
+
+	question_time_remaining = reaction_time
+	_update_question_timer()
+	_set_cards_enabled(true)
+	state = State.QUESTION
+
+
+## FN-02 (pasos 7 y 15 del diagrama de secuencia): el alumno selecciona una carta Fibonacci.
+func _on_card_pressed(fibonacci_value: int) -> void:
+	if state != State.QUESTION:
+		return
+	total_answered += 1
+	if _validate_estimate(fibonacci_value):
+		_register_success()
+	else:
+		_register_failure()
+
+
+## Pasos 8 y 16 del diagrama de secuencia: validarEstimacion() por valor exacto.
+func _validate_estimate(fibonacci_value: int) -> bool:
+	var expected: int = int(current_story.get("puntos", -1))
+	return fibonacci_value == expected
+
+
+## FA-02.03 (paso 26 del diagrama de secuencia): tiempoPreguntaAgotado().
+func _on_question_timeout() -> void:
+	if state != State.QUESTION:
+		return
+	total_answered += 1
+	_register_failure()
+
+
+## FN-03 (pasos 9 a 14 del diagrama de secuencia): notificarAcierto(), sumarPuntos(),
+## reproducirSonido("acierto"), emitirAviso("puntaje_actualizado"), actualizar HUD y proveer nueva historia.
+func _register_success() -> void:
+	total_correct += 1
+	score += points_per_hit
+	AudioManager.play_success()
+	EventBus.score_changed.emit(score)
+	_update_hud()
+	_show_floating_text("+%d" % points_per_hit, COL_OK, score_label.get_global_rect().position + Vector2(0, 24))
+	_pulse(score_label)
+	_next_story()
+
+
+## FA-02.02 / FA-02.03 (pasos 17 a 22 y 27 a 31 del diagrama de secuencia):
+## descontarVida(), reproducirSonido("error"), emitirAviso("vida_descontada"), actualizar HUD.
+## Si aún quedan vidas, provee una nueva historia (FN-01); si llegan a 0, fin anticipado (FA-02.04).
+func _register_failure() -> void:
+	AudioManager.play_error()
+	current_lives = maxi(0, current_lives - 1)
+	_update_hud()
+	EventBus.life_lost.emit(current_lives)
+	_flash_screen(COL_ERR)
+	_shake_screen()
+	_pulse(lives_label)
+	if current_lives <= 0:
+		_handle_game_over()
+	else:
+		_next_story()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FIN DE PARTIDA / PAUSA
+# ══════════════════════════════════════════════════════════════════════════════
+
+## FA-02.04 (pasos 23 a 25 y 32 a 34 del diagrama de secuencia):
+## detenerProvisionHistorias(), reproducirSonido("fin_juego") y habilitar reinicio inmediato.
+func _handle_game_over() -> void:
+	state = State.GAME_OVER
+	_set_cards_enabled(false)
+	AudioManager.play_game_over()
+	EventBus.game_over.emit(minigame_id)
+
+	finish_game(false, score, 0, "Sin vidas — %d/%d estimaciones correctas" % [total_correct, total_answered])
+
+	if is_instance_valid(game_over_score_label):
+		game_over_score_label.text = "Puntaje: %d" % score
+	if is_instance_valid(game_over_stats_label):
+		game_over_stats_label.text = _stats_text()
+	_show_overlay(game_over_overlay)
+
+
+## FN-05 (pasos 35 a 42 del diagrama de secuencia):
+## calcularPuntajeFinal(), registrarPuntaje("CU-09", puntajeFinal) → guardarPartida en JSON →
+## notificarCambios() y mostrar resultados con opciones Salón / Campus.
+func _handle_victory() -> void:
+	state = State.VICTORY
+	_set_cards_enabled(false)
+	AudioManager.play_success()
+
+	var stars: int = _calculate_stars()
+	finish_game(true, score, stars, "¡Historias estimadas! %d/%d aciertos" % [total_correct, total_answered])
+
+	if is_instance_valid(victory_stars_label):
+		victory_stars_label.text = "⭐".repeat(stars) + "☆".repeat(3 - stars)
+	if is_instance_valid(victory_score_label):
+		victory_score_label.text = "Puntaje: %d" % score
+	if is_instance_valid(victory_stats_label):
+		victory_stats_label.text = _stats_text()
+	_show_overlay(victory_overlay)
+
+
+## Estrellas por precisión: ≥80% ⭐⭐⭐ · ≥60% ⭐⭐ · sobrevivir ⭐.
+func _calculate_stars() -> int:
+	if total_answered == 0:
+		return 1
+	var accuracy: float = float(total_correct) / float(total_answered)
+	if accuracy >= 0.8:
+		return 3
+	elif accuracy >= 0.6:
+		return 2
+	return 1
+
+
+func _stats_text() -> String:
+	var accuracy: int = 0
+	if total_answered > 0:
+		accuracy = int(round(100.0 * total_correct / total_answered))
+	return "Aciertos: %d/%d  ·  Precisión: %d%%" % [total_correct, total_answered, accuracy]
+
+
+## FA-02.01 (pasos 3 a 6 del diagrama de secuencia):
+## detenerTemporizadoresYConservarEstado() / restaurarTemporizadores() en la misma historia.
+func _toggle_pause() -> void:
+	if state == State.PAUSED:
+		state = state_before_pause
+		_show_overlay(null)
+		AudioManager.play_click()
+	elif _is_playing():
+		state_before_pause = state
+		state = State.PAUSED
+		_show_overlay(pause_overlay)
+		AudioManager.play_click()
+
+
+func _is_playing() -> bool:
+	return state == State.QUESTION
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TEMPORIZADORES Y HUD
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Descuenta el reloj global. Devuelve true si la actividad terminó (FN-04 → FN-05).
+func _tick_global_timer(delta: float) -> bool:
+	time_remaining -= delta
+	_update_global_timer()
+	if time_remaining <= 0.0:
+		time_remaining = 0.0
+		_handle_victory()
+		return true
+	return false
+
+
+func _update_global_timer() -> void:
+	global_bar.value = maxf(time_remaining, 0.0)
+	var secs: int = ceili(maxf(time_remaining, 0.0))
+	global_time_label.text = "%d:%02d" % [secs / 60, secs % 60]
+
+	var ratio: float = time_remaining / game_duration if game_duration > 0.0 else 0.0
+	var tier: int = 0 if ratio > 0.5 else (1 if ratio > 0.25 else 2)
+	if tier != global_fill_tier:
+		global_fill_tier = tier
+		global_bar.add_theme_stylebox_override("fill", global_fill_styles[tier])
+
+
+func _update_question_timer() -> void:
+	var t: float = maxf(question_time_remaining, 0.0)
+	question_bar.value = t
+	question_time_label.text = "%ds" % ceili(t)
+	var danger: bool = t <= 3.0
+	question_bar.add_theme_stylebox_override("fill", question_fill_danger if danger else question_fill_ok)
+	question_time_label.modulate.a = (0.4 + 0.6 * absf(sin(t * 8.0))) if danger else 1.0
+	question_time_label.add_theme_color_override("font_color", COL_ERR if danger else COL_CHALK)
+
+
+func _update_hud() -> void:
+	lives_label.text = "❤ %d/%d" % [current_lives, max_lives]
+	score_label.text = "%d Pts" % score
+
+
+func _set_cards_enabled(enabled: bool) -> void:
+	for btn in card_buttons:
+		if is_instance_valid(btn):
+			btn.disabled = not enabled
+			btn.modulate = Color.WHITE
+
+
+func _reset_board() -> void:
+	story_label.text = ""
+	criteria_label.text = ""
+	_set_cards_enabled(false)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MICRO-ANIMACIONES
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _show_floating_text(text: String, color: Color, pos: Vector2) -> void:
+	var lbl := _make_label(text, 16, color)
+	lbl.position = pos
+	lbl.z_index = 20
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(lbl)
+	var tween := create_tween()
+	tween.tween_property(lbl, "position:y", pos.y + 30.0, 0.7)
+	tween.parallel().tween_property(lbl, "modulate:a", 0.0, 0.7)
+	tween.tween_callback(lbl.queue_free)
+
+
+func _flash_screen(color: Color) -> void:
+	var flash := ColorRect.new()
+	flash.color = Color(color.r, color.g, color.b, 0.25)
+	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = 15
+	add_child(flash)
+	var tween := create_tween()
+	tween.tween_property(flash, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(flash.queue_free)
+
+
+func _shake_screen() -> void:
+	var tween := create_tween()
+	for offset in [Vector2(-6, 0), Vector2(5, 0), Vector2(-3, 0), Vector2(2, 0), Vector2.ZERO]:
+		tween.tween_property(content_root, "position", offset, 0.04)
+
+
+func _pulse(node: Control) -> void:
+	node.pivot_offset = node.size / 2.0
+	var tween := create_tween()
+	tween.tween_property(node, "scale", Vector2(1.3, 1.3), 0.08)
+	tween.tween_property(node, "scale", Vector2.ONE, 0.12)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NAVEGACIÓN
+# ══════════════════════════════════════════════════════════════════════════════
+
+func _on_hud_back_pressed() -> void:
+	if _is_playing():
+		_toggle_pause()
+	else:
+		_go_to_classroom()
+
+
+## FA-02.04: reinicio inmediato con la misma dificultad.
+func _on_retry_pressed() -> void:
+	AudioManager.play_click()
+	_start_game_play()
+
+
+func _go_to_classroom() -> void:
+	AudioManager.play_click()
+	state = State.DIFFICULTY
+	if ResourceLoader.exists(CLASSROOM_SCENE):
+		get_tree().change_scene_to_file(CLASSROOM_SCENE)
+	else:
+		get_tree().change_scene_to_file(LOBBY_SCENE)
+
+
+func _go_to_campus() -> void:
+	AudioManager.play_click()
+	state = State.DIFFICULTY
+	get_tree().change_scene_to_file(LOBBY_SCENE)
+

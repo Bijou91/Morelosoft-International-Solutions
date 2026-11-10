@@ -6,6 +6,7 @@ Esta carpeta aloja los minijuegos didácticos asociados a la ingeniería de requ
 ## Minijuegos del Módulo:
 * `lluvia_requerimientos/`: **Lluvia de Requerimientos** (CU-07) - El estudiante clasifica requerimientos funcionales y no funcionales en tiempo real.
 * `include_extend/`: **¿Include o Extend?** (CU-08) - Práctica interactiva contra reloj para identificar relaciones UML «include» y «extend».
+* `planning_poker/`: **Planning Poker** (CU-09) - Estimación ágil contra reloj de historias de usuario en puntos de historia usando la escala Fibonacci [1, 2, 3, 5, 8, 13].
 * *(Futuro Sprint 2)* `casos_uso/`: Asociación interactiva de actores, precondiciones y flujos principales.
 * *(Futuro Sprint 3)* `estimacion_tsp/`: Estimación de tamaños, tiempos y métricas de calidad bajo TSP.
 
