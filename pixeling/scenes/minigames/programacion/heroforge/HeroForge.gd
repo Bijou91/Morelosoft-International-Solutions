@@ -39,7 +39,7 @@ var points_per_char: int = 125
 var target_stars: int = 2
 
 # ══════════════════════════════════════════════════════════════════════════════
-# NODOS Y CONTENEDORES DE PANTALLA (Generados de forma programática y resiliente)
+# NODOS Y CONTENEDORES DE PANTALLA
 # ══════════════════════════════════════════════════════════════════════════════
 
 var bg_rect: ColorRect
@@ -77,13 +77,6 @@ var bank_meth_vbox: VBoxContainer
 
 var btn_instantiate: Button
 var status_banner_lbl: Label
-
-# Modal de Instanciación Exitosa
-var modal_instance_overlay: PanelContainer
-var modal_instance_avatar_lbl: Label
-var modal_instance_title_lbl: Label
-var modal_instance_lore_lbl: Label
-var modal_instance_next_btn: Button
 
 # Pantalla de Pausa
 var btn_pause_resume: Button
@@ -593,71 +586,6 @@ func _build_screen_game() -> void:
 	status_banner_lbl.add_theme_color_override("font_color", Color("90a4ae"))
 	main_vbox.add_child(status_banner_lbl)
 
-	# ── Modal de Héroe Instanciado Exitosamente (FN-05 / FN-06) ──
-	_build_modal_instance_overlay()
-
-func _build_modal_instance_overlay() -> void:
-	modal_instance_overlay = PanelContainer.new()
-	modal_instance_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	modal_instance_overlay.visible = false
-
-	var overlay_style := StyleBoxFlat.new()
-	overlay_style.bg_color = Color(0.04, 0.06, 0.10, 0.94)
-	modal_instance_overlay.add_theme_stylebox_override("panel", overlay_style)
-	screen_game.add_child(modal_instance_overlay)
-
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	modal_instance_overlay.add_child(center)
-
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(300, 240)
-	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color("1a202c")
-	card_style.border_color = Color("4caf50")
-	card_style.set_border_width_all(2)
-	card_style.set_corner_radius_all(8)
-	card.add_theme_stylebox_override("panel", card_style)
-	center.add_child(card)
-
-	var card_margin := MarginContainer.new()
-	card_margin.add_theme_constant_override("margin_left", 14)
-	card_margin.add_theme_constant_override("margin_right", 14)
-	card_margin.add_theme_constant_override("margin_top", 12)
-	card_margin.add_theme_constant_override("margin_bottom", 12)
-	card.add_child(card_margin)
-
-	var card_vbox := VBoxContainer.new()
-	card_vbox.add_theme_constant_override("separation", 8)
-	card_margin.add_child(card_vbox)
-
-	modal_instance_avatar_lbl = Label.new()
-	modal_instance_avatar_lbl.text = "🧙‍♂️🔥"
-	modal_instance_avatar_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	modal_instance_avatar_lbl.add_theme_font_size_override("font_size", 32)
-	card_vbox.add_child(modal_instance_avatar_lbl)
-
-	modal_instance_title_lbl = Label.new()
-	modal_instance_title_lbl.text = "¡Instancia Creada con Éxito!"
-	modal_instance_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	modal_instance_title_lbl.add_theme_font_size_override("font_size", 14)
-	modal_instance_title_lbl.add_theme_color_override("font_color", Color("69f0ae"))
-	card_vbox.add_child(modal_instance_title_lbl)
-
-	modal_instance_lore_lbl = Label.new()
-	modal_instance_lore_lbl.text = "El objeto ha sido cargado en memoria."
-	modal_instance_lore_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	modal_instance_lore_lbl.add_theme_font_size_override("font_size", 10)
-	modal_instance_lore_lbl.add_theme_color_override("font_color", Color("eceff1"))
-	card_vbox.add_child(modal_instance_lore_lbl)
-
-	modal_instance_next_btn = Button.new()
-	modal_instance_next_btn.text = "Siguiente Personaje →"
-	modal_instance_next_btn.custom_minimum_size = Vector2(0, 38)
-	modal_instance_next_btn.add_theme_font_size_override("font_size", 12)
-	modal_instance_next_btn.pressed.connect(_on_modal_next_hero_pressed)
-	card_vbox.add_child(modal_instance_next_btn)
-
 # ── ScreenPause: Pausa didáctica ──
 func _build_screen_pause() -> void:
 	screen_pause = Control.new()
@@ -714,7 +642,7 @@ func _build_screen_pause() -> void:
 	btn_pause_back.pressed.connect(_on_back_pressed)
 	box.add_child(btn_pause_back)
 
-# ── ScreenVictory: Pantalla de Victoria ──
+# ── ScreenVictory: Pantalla Final de Victoria (Con Botones Volver a Jugar Misma Dificultad y Volver al Aula) ──
 func _build_screen_victory() -> void:
 	screen_victory = Control.new()
 	screen_victory.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -722,7 +650,7 @@ func _build_screen_victory() -> void:
 	add_child(screen_victory)
 
 	var vic_bg := ColorRect.new()
-	vic_bg.color = Color(0.03, 0.08, 0.05, 0.92)
+	vic_bg.color = Color(0.03, 0.08, 0.05, 0.94)
 	vic_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen_victory.add_child(vic_bg)
 
@@ -731,8 +659,8 @@ func _build_screen_victory() -> void:
 	screen_victory.add_child(center)
 
 	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(260, 240)
-	box.add_theme_constant_override("separation", 10)
+	box.custom_minimum_size = Vector2(260, 260)
+	box.add_theme_constant_override("separation", 12)
 	center.add_child(box)
 
 	var title := Label.new()
@@ -750,19 +678,23 @@ func _build_screen_victory() -> void:
 	box.add_child(lbl_victory_stats)
 
 	btn_victory_restart = Button.new()
-	btn_victory_restart.text = "🔄 Jugar Otra Vez"
-	btn_victory_restart.custom_minimum_size = Vector2(0, 38)
-	btn_victory_restart.pressed.connect(func():
-		_show_screen(screen_start)
-		_show_difficulty_step()
-	)
+	btn_victory_restart.text = "🔄 Volver a Jugar"
+	btn_victory_restart.custom_minimum_size = Vector2(0, 40)
+	btn_victory_restart.add_theme_font_size_override("font_size", 12)
+	btn_victory_restart.pressed.connect(_on_victory_play_again_pressed)
 	box.add_child(btn_victory_restart)
 
 	btn_victory_back = Button.new()
 	btn_victory_back.text = "🚪 Volver al Salón 101"
-	btn_victory_back.custom_minimum_size = Vector2(0, 36)
+	btn_victory_back.custom_minimum_size = Vector2(0, 38)
+	btn_victory_back.add_theme_font_size_override("font_size", 12)
 	btn_victory_back.pressed.connect(_on_back_pressed)
 	box.add_child(btn_victory_back)
+
+func _on_victory_play_again_pressed() -> void:
+	if AudioManager and AudioManager.has_method("play_click"):
+		AudioManager.play_click()
+	start_game(selected_diff)
 
 # ── ScreenGameOver: Pantalla de Fin de Partida ──
 func _build_screen_game_over() -> void:
@@ -909,8 +841,6 @@ func _load_class_challenge(index: int) -> void:
 	time_left = round_time
 	is_timer_running = true
 
-	modal_instance_overlay.visible = false
-
 	# Generar banco para la dificultad seleccionada
 	var bank_pack: Dictionary = HeroForgeData.generate_bank_for_hero(current_hero, selected_diff)
 	bank_attributes = bank_pack.attributes
@@ -927,6 +857,8 @@ func _load_class_challenge(index: int) -> void:
 	_update_slot_displays()
 	_render_component_bank()
 
+	btn_instantiate.disabled = false
+	btn_instantiate.text = "🔨 ¡Instanciar Objeto! (Validar Clase)"
 	_set_status("Asigna %d Atributo(s) a la izquierda y %d Método(s) a la derecha." % [required_slots, required_slots], Color("90a4ae"))
 	_update_hud()
 
@@ -1086,7 +1018,7 @@ func _on_method_assigned(item: Dictionary) -> void:
 		if AudioManager and AudioManager.has_method("play_click"):
 			AudioManager.play_click()
 
-# FA-02.02: Remoción de elemento asignado
+# FA-02.02: Remoción de elemento asignado sin penalización
 func _on_component_removed(section: String, slot_index: int) -> void:
 	if is_game_paused or not is_timer_running:
 		return
@@ -1107,7 +1039,7 @@ func _on_component_removed(section: String, slot_index: int) -> void:
 			_render_component_bank()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FN-03 & FN-04: INSTANCIACIÓN Y VALIDACIÓN DE LA CLASE
+# FN-03 & FN-04: INSTANCIACIÓN, VALIDACIÓN Y TRANSICIÓN FLUIDA
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _on_instantiate_pressed() -> void:
@@ -1162,7 +1094,7 @@ func _validate_class() -> void:
 			_show_game_over("Vidas agotadas por errores de definición de clase.")
 		return
 
-	# FN-05 / FN-06: Construcción válida e Instanciación Exitosa
+	# FN-05 & FN-06: Instanciación Exitosa y Avance Fluido
 	_on_hero_instantiated_success()
 
 func _on_hero_instantiated_success() -> void:
@@ -1179,22 +1111,31 @@ func _on_hero_instantiated_success() -> void:
 		EventBus.emit_signal("score_changed", total_score)
 	_update_hud()
 
-	# Mostrar tarjeta del objeto forjado
-	modal_instance_avatar_lbl.text = current_hero.avatar_symbol
-	modal_instance_title_lbl.text = "¡%s Instanciado!" % current_hero.class_name
-	modal_instance_title_lbl.add_theme_color_override("font_color", current_hero.badge_color)
+	# Resaltar slots en verde brillante de éxito
+	for btn in attr_slot_buttons:
+		btn.add_theme_color_override("font_color", Color("69f0ae"))
+	for btn in meth_slot_buttons:
+		btn.add_theme_color_override("font_color", Color("69f0ae"))
 
-	var lore: String = current_tier_data.get("instance_lore", "¡Objeto instanciado con éxito en memoria!")
-	modal_instance_lore_lbl.text = "%s\n\n🎯 +%d Puntos obtenidos." % [lore, points_per_char]
-	modal_instance_overlay.visible = true
+	var is_last_hero: bool = (current_hero_index + 1 >= hero_classes_queue.size())
 
-func _on_modal_next_hero_pressed() -> void:
-	if AudioManager and AudioManager.has_method("play_click"):
-		AudioManager.play_click()
+	if is_last_hero:
+		btn_instantiate.disabled = true
+		btn_instantiate.text = "🎉 ¡Mesa de Forja Superada!"
+		_set_status("🏆 ¡%s forjado! Completaste todos los personajes (+%d pts)." % [current_hero.class_name, points_per_char], Color("ffd54f"))
 
-	modal_instance_overlay.visible = false
-	current_hero_index += 1
-	_load_class_challenge(current_hero_index)
+		# Pausa breve para celebrar y mostrar la Pantalla Final de Victoria
+		await get_tree().create_timer(0.6).timeout
+		_handle_victory()
+	else:
+		btn_instantiate.disabled = true
+		btn_instantiate.text = "✨ ¡%s Instanciado! (+%d pts)" % [current_hero.class_name, points_per_char]
+		_set_status("✨ ¡%s forjado con éxito! Cargando siguiente personaje..." % current_hero.class_name, Color("69f0ae"))
+
+		# Transición fluida directa en la misma mesa de forja sin interrumpir con modales
+		await get_tree().create_timer(0.8).timeout
+		current_hero_index += 1
+		_load_class_challenge(current_hero_index)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # FA-04.02 & FA-04.03: TIEMPO AGOTADO Y GESTIÓN DE VIDAS
@@ -1253,7 +1194,10 @@ func _show_game_over(reason: String) -> void:
 	lbl_gameover_reason.text = reason
 	_show_screen(screen_game_over)
 
-# FN-07: Victoria y Persistencia Atómica
+# ══════════════════════════════════════════════════════════════════════════════
+# FN-07: PANTALLA FINAL DE VICTORIA Y PERSISTENCIA
+# ══════════════════════════════════════════════════════════════════════════════
+
 func _handle_victory() -> void:
 	is_timer_running = false
 	_set_game_paused(false)
@@ -1271,7 +1215,11 @@ func _handle_victory() -> void:
 	var lives_bonus: int = current_lives * 25
 	var final_score: int = total_score + lives_bonus
 
-	lbl_victory_stats.text = "🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d (+%d bonus vidas)\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
+	var diff_name: String = diff_config.get("name", selected_diff)
+	btn_victory_restart.text = "🔄 Volver a Jugar (%s)" % diff_name
+
+	lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d (+%d bonus vidas)\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
+		diff_name,
 		hero_classes_queue.size(),
 		hero_classes_queue.size(),
 		final_score,
