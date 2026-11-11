@@ -1,0 +1,147 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/modals/DifficultyModal.gd" id="1_diff_script"]
+[ext_resource type="Theme" path="res://scenes/ui/theme/space_ui_theme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/tab_cyan.tres" id="3_tab"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_screws.tres" id="4_panel"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_inner_plate.tres" id="5_inner"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_normal.tres" id="6_g_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_hover.tres" id="7_g_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_pressed.tres" id="8_g_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_yellow_normal.tres" id="9_y_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_yellow_hover.tres" id="10_y_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_yellow_pressed.tres" id="11_y_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_normal.tres" id="12_r_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_hover.tres" id="13_r_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_pressed.tres" id="14_r_press"]
+
+[node name="DifficultyModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_diff_script")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.08, 0.82)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(310, 0)
+layout_mode = 2
+pivot_offset = Vector2(155, 175)
+theme_override_constants/separation = 0
+
+[node name="TabHeaderHBox" type="HBoxContainer" parent="Center/PanelContainer"]
+layout_mode = 2
+
+[node name="TabHeader" type="PanelContainer" parent="Center/PanelContainer/TabHeaderHBox"]
+custom_minimum_size = Vector2(140, 26)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_tab")
+
+[node name="TabTitle" type="Label" parent="Center/PanelContainer/TabHeaderHBox/TabHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "MISIÓN · DIFICULTAD"
+horizontal_alignment = 1
+
+[node name="MainPanel" type="PanelContainer" parent="Center/PanelContainer"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Center/PanelContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "EXPLORACIÓN DE ARCHIVOS"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 8
+text = "Selecciona el nivel de desafío táctico:"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="InnerPlate" type="PanelContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("5_inner")
+
+[node name="CardsContainer" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnFacil" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/CardsContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.04, 0.22, 0.08, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.3, 0.05, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+text = "🟢 FÁCIL (3 VIDAS · 250 PTS)"
+
+[node name="BtnNormal" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/CardsContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.16, 0.02, 1)
+theme_override_colors/font_hover_color = Color(0.32, 0.22, 0.02, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("9_y_norm")
+theme_override_styles/hover = ExtResource("10_y_hov")
+theme_override_styles/pressed = ExtResource("11_y_press")
+text = "🟡 NORMAL (2 VIDAS · 500 PTS)"
+
+[node name="BtnIngeniero" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/CardsContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("12_r_norm")
+theme_override_styles/hover = ExtResource("13_r_hov")
+theme_override_styles/pressed = ExtResource("14_r_press")
+text = "🔴 INGENIERO (1 VIDA · 750 PTS)"
+
+[node name="BtnCancel" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
+theme_override_font_sizes/font_size = 10
+text = "✕ CANCELAR / VOLVER"

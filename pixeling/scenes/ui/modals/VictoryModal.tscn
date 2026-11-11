@@ -1,0 +1,196 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/modals/VictoryModal.gd" id="1_vic_script"]
+[ext_resource type="Theme" path="res://scenes/ui/theme/space_ui_theme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/tab_green.tres" id="3_tab"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_screws.tres" id="4_panel"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_inner_plate.tres" id="5_inner"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_normal.tres" id="6_g_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_hover.tres" id="7_g_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_pressed.tres" id="8_g_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_blue_normal.tres" id="9_b_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_blue_hover.tres" id="10_b_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_blue_pressed.tres" id="11_b_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_neutral_normal.tres" id="12_n_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_neutral_hover.tres" id="13_n_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_neutral_pressed.tres" id="14_n_press"]
+
+[node name="VictoryModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_vic_script")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.06, 0.04, 0.85)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+pivot_offset = Vector2(150, 180)
+theme_override_constants/separation = 0
+
+[node name="TabHeaderHBox" type="HBoxContainer" parent="Center/PanelContainer"]
+layout_mode = 2
+
+[node name="TabHeader" type="PanelContainer" parent="Center/PanelContainer/TabHeaderHBox"]
+custom_minimum_size = Vector2(150, 26)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_tab")
+
+[node name="TabTitle" type="Label" parent="Center/PanelContainer/TabHeaderHBox/TabHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "★ MISIÓN CUMPLIDA"
+horizontal_alignment = 1
+
+[node name="MainPanel" type="PanelContainer" parent="Center/PanelContainer"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Center/PanelContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "¡DESAFÍO SUPERADO!"
+horizontal_alignment = 1
+
+[node name="StarsBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StarsIcons" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/StarsBox"]
+layout_mode = 2
+pivot_offset = Vector2(136, 14)
+theme_override_colors/font_color = Color(1, 0.85, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "★  ★  ★"
+horizontal_alignment = 1
+
+[node name="StarsDesc" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/StarsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 9
+text = "¡DESEMPEÑO IMPECABLE! (3 ESTRELLAS)"
+horizontal_alignment = 1
+
+[node name="InnerPlate" type="PanelContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("5_inner")
+
+[node name="StatsBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ScoreRow" type="HBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox"]
+layout_mode = 2
+
+[node name="KeyLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox/ScoreRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 9
+text = "Puntos Obtenidos:"
+
+[node name="ValLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox/ScoreRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 11
+text = "+500 PTS"
+horizontal_alignment = 2
+
+[node name="RewardRow" type="HBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox"]
+layout_mode = 2
+
+[node name="KeyLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox/RewardRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 9
+text = "Recompensa Mike:"
+
+[node name="ValLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox/RewardRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 10
+text = "+50 MONEDAS"
+horizontal_alignment = 2
+
+[node name="RecordBadge" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/StatsBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 8
+text = "⚡ ¡NUEVO RÉCORD PERSONAL SUPERADO! ⚡"
+horizontal_alignment = 1
+
+[node name="ButtonsContainer" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnContinue" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox/ButtonsContainer"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.04, 0.22, 0.08, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.3, 0.05, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+text = "▶ CONTINUAR / SIGUIENTE"
+
+[node name="BtnPlayAgain" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox/ButtonsContainer"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("9_b_norm")
+theme_override_styles/hover = ExtResource("10_b_hov")
+theme_override_styles/pressed = ExtResource("11_b_press")
+text = "🔄 OTRA DIFICULTAD"
+
+[node name="BtnExit" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox/ButtonsContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("12_n_norm")
+theme_override_styles/hover = ExtResource("13_n_hov")
+theme_override_styles/pressed = ExtResource("14_n_press")
+text = "🚪 VOLVER AL CAMPUS"

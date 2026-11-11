@@ -21,6 +21,41 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.12, 0.12, 0.18, 1.0)
 
+[node name="BackgroundLobby" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 0
+mouse_filter = 2
+
+[node name="BackgroundLeft" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 0
+mouse_filter = 2
+
+[node name="BackgroundRight" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 0
+mouse_filter = 2
+
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -92,7 +127,7 @@ offset_top = 10.0
 offset_right = 140.0
 offset_bottom = 60.0
 theme_override_font_sizes/font_size = 10
-text = "Salón
+text = "Aula 101
 (Programación)"
 
 [node name="BtnAulaSoft" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
@@ -102,49 +137,8 @@ offset_top = 10.0
 offset_right = 310.0
 offset_bottom = 60.0
 theme_override_font_sizes/font_size = 10
-text = "Salón
+text = "Aula 102
 (Ing. Software)"
-
-[node name="TiendaMike" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
-layout_mode = 0
-offset_left = 200.0
-offset_top = 100.0
-offset_right = 290.0
-offset_bottom = 150.0
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomLeft/TiendaMike"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 12
-text = "Tienda
-Mike"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Couches1" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 100.0
-offset_right = 70.0
-offset_bottom = 180.0
-
-[node name="Couches2" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 220.0
-offset_right = 70.0
-offset_bottom = 300.0
-
-[node name="Couches3" type="Panel" parent="VBox/RoomsContainer/RoomLeft"]
-layout_mode = 0
-offset_left = 180.0
-offset_top = 220.0
-offset_right = 250.0
-offset_bottom = 270.0
 
 [node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomLeft"]
 layout_mode = 1
@@ -153,11 +147,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -50.0
+offset_left = -60.0
 offset_top = -30.0
-offset_right = 50.0
+offset_right = 60.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
 text = "ALA IZQUIERDA"
 horizontal_alignment = 1
 
@@ -184,105 +180,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Stairs" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -70.0
-offset_top = 10.0
-offset_right = 70.0
-offset_bottom = 80.0
-grow_horizontal = 2
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Stairs"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 12
-text = "Escaleras"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Exterior" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -60.0
-offset_top = -100.0
-offset_bottom = -20.0
-grow_horizontal = 0
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Exterior"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 9
-text = "Maquina\nExpendedora"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Sillas1" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -120.0
-offset_right = 50.0
-offset_bottom = -40.0
-grow_vertical = 0
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Sillas1"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 9
-text = "sillas"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="Sillas2" type="Panel" parent="VBox/RoomsContainer/RoomCenter"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -40.0
-offset_top = -80.0
-offset_right = 20.0
-offset_bottom = -50.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomCenter/Sillas2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 9
-text = "sillas"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
 [node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomCenter"]
 layout_mode = 1
 anchors_preset = 7
@@ -295,6 +192,8 @@ offset_top = -30.0
 offset_right = 50.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
 text = "CENTRO"
 horizontal_alignment = 1
 
@@ -334,88 +233,25 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Ventanal" type="Panel" parent="VBox/RoomsContainer/RoomRight"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -80.0
-offset_top = 10.0
-offset_right = 80.0
-offset_bottom = 60.0
-grow_horizontal = 2
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomRight/Ventanal"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 12
-text = "Ventanal"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="BtnAulaLogic" type="Button" parent="VBox/RoomsContainer/RoomRight"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -80.0
-offset_right = -10.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 2
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 140.0
+offset_bottom = 60.0
 theme_override_font_sizes/font_size = 10
-text = "Salón
+text = "Aula 103
 (Lógica)"
 
 [node name="BtnAulaLinux" type="Button" parent="VBox/RoomsContainer/RoomRight"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = 30.0
-offset_right = -10.0
-offset_bottom = 100.0
-grow_horizontal = 0
-grow_vertical = 2
+layout_mode = 0
+offset_left = 180.0
+offset_top = 10.0
+offset_right = 310.0
+offset_bottom = 60.0
 theme_override_font_sizes/font_size = 10
-text = "Salón
+text = "Aula 104
 (Linux)"
-
-[node name="SillasRight" type="Panel" parent="VBox/RoomsContainer/RoomRight"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -40.0
-offset_top = -80.0
-offset_right = 40.0
-offset_bottom = -50.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomRight/SillasRight"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 9
-text = "Sillas"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomRight"]
 layout_mode = 1
@@ -424,11 +260,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -50.0
+offset_left = -60.0
 offset_top = -30.0
-offset_right = 50.0
+offset_right = 60.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
 text = "ALA DERECHA"
 horizontal_alignment = 1
 
