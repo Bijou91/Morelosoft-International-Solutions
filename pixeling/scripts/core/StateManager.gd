@@ -40,6 +40,7 @@ var player_data: Dictionary = {
 			"lluvia_requerimientos": { "completed": false, "score": 0, "stars": 0 },
 			"terminal_linux": { "completed": false, "score": 0, "stars": 0 },
 			"exploracion_archivos": { "completed": false, "score": 0, "stars": 0 },
+			"permisos_procesos": { "completed": false, "score": 0, "stars": 0 },
 			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0 },
 			"mansion_escape": { "completed": false, "score": 0, "stars": 0 },
 			"include_extend": { "completed": false, "score": 0, "stars": 0 },
@@ -255,7 +256,8 @@ func debug_unlock_all_minigames() -> void:
 		"derby_de_bateo",
 		"mansion_escape",
 		"terminal_linux",
-		"exploracion_archivos"
+		"exploracion_archivos",
+		"permisos_procesos"
 	]
 	var minigames: Dictionary = player_data.progress.minigames
 	for g in all_games:

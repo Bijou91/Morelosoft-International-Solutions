@@ -23,9 +23,10 @@ var required_slots: int = 2
 var assigned_attributes: Array = []
 var assigned_methods: Array = []
 
-# Listas del Banco de Componentes de la ronda (Izquierda: Atributos, Derecha: Métodos)
-var bank_attributes: Array[Dictionary] = []
-var bank_methods: Array[Dictionary] = []
+# Banco de Componentes de la ronda (Unificado y mezclado para retar la distinción Atributo/Método)
+var bank_all_components: Array[Dictionary] = []
+var selected_target_slot: Dictionary = {}
+var pending_item_to_assign: Dictionary = {}
 
 # Métricas de partida
 var max_lives: int = 3
@@ -71,9 +72,13 @@ var meth_slots_vbox: VBoxContainer
 var attr_slot_buttons: Array[Button] = []
 var meth_slot_buttons: Array[Button] = []
 
-# Nodos del Banco de Componentes (Separación Izquierda / Derecha)
-var bank_attr_vbox: VBoxContainer
-var bank_meth_vbox: VBoxContainer
+# Nodos del Banco de Componentes y Selector de Destino
+var bank_grid: GridContainer
+var assign_dialog_panel: PanelContainer
+var lbl_assign_prompt: Label
+var btn_to_attr: Button
+var btn_to_meth: Button
+var btn_cancel_assign: Button
 
 var btn_instantiate: Button
 var status_banner_lbl: Label
@@ -530,49 +535,81 @@ func _build_screen_game() -> void:
 	meth_slots_vbox.add_theme_constant_override("separation", 4)
 	meth_col.add_child(meth_slots_vbox)
 
-	# Banco de Componentes Disponibles (Separado en Columnas Izq / Der)
+	# Banco de Componentes Disponibles (Mezclados en Grid de 2 columnas)
 	var bank_header := Label.new()
-	bank_header.text = "Banco de Componentes (Toca para asignar a la plantilla):"
+	bank_header.text = "Banco de Componentes (Toca un componente para asignarlo):"
 	bank_header.add_theme_font_size_override("font_size", 10)
 	bank_header.add_theme_color_override("font_color", Color("e2e8f0"))
 	main_vbox.add_child(bank_header)
 
-	var bank_columns := HBoxContainer.new()
-	bank_columns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bank_columns.add_theme_constant_override("separation", 8)
-	main_vbox.add_child(bank_columns)
+	bank_grid = GridContainer.new()
+	bank_grid.columns = 2
+	bank_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bank_grid.add_theme_constant_override("h_separation", 6)
+	bank_grid.add_theme_constant_override("v_separation", 4)
+	main_vbox.add_child(bank_grid)
 
-	# Columna Izquierda del Banco: Atributos
-	var bank_attr_col := VBoxContainer.new()
-	bank_attr_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bank_attr_col.add_theme_constant_override("separation", 3)
-	bank_columns.add_child(bank_attr_col)
+	# Mini-diálogo de selección de destino (¿Atributo o Método?)
+	assign_dialog_panel = PanelContainer.new()
+	var as_style := StyleBoxFlat.new()
+	as_style.bg_color = Color("1a2233")
+	as_style.border_color = Color("40c4ff")
+	as_style.set_border_width_all(2)
+	as_style.set_corner_radius_all(6)
+	assign_dialog_panel.add_theme_stylebox_override("panel", as_style)
+	assign_dialog_panel.visible = false
+	main_vbox.add_child(assign_dialog_panel)
 
-	var lbl_bank_attr := Label.new()
-	lbl_bank_attr.text = "Atributos Disponibles:"
-	lbl_bank_attr.add_theme_font_size_override("font_size", 9)
-	lbl_bank_attr.add_theme_color_override("font_color", Color("80d8ff"))
-	bank_attr_col.add_child(lbl_bank_attr)
+	var as_margin := MarginContainer.new()
+	as_margin.add_theme_constant_override("margin_left", 8)
+	as_margin.add_theme_constant_override("margin_right", 8)
+	as_margin.add_theme_constant_override("margin_top", 6)
+	as_margin.add_theme_constant_override("margin_bottom", 6)
+	assign_dialog_panel.add_child(as_margin)
 
-	bank_attr_vbox = VBoxContainer.new()
-	bank_attr_vbox.add_theme_constant_override("separation", 4)
-	bank_attr_col.add_child(bank_attr_vbox)
+	var as_vbox := VBoxContainer.new()
+	as_vbox.add_theme_constant_override("separation", 6)
+	as_margin.add_child(as_vbox)
 
-	# Columna Derecha del Banco: Métodos
-	var bank_meth_col := VBoxContainer.new()
-	bank_meth_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bank_meth_col.add_theme_constant_override("separation", 3)
-	bank_columns.add_child(bank_meth_col)
+	lbl_assign_prompt = Label.new()
+	lbl_assign_prompt.text = "¿Dónde deseas asignar este componente?"
+	lbl_assign_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl_assign_prompt.add_theme_font_size_override("font_size", 9)
+	lbl_assign_prompt.add_theme_color_override("font_color", Color("eceff1"))
+	lbl_assign_prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	as_vbox.add_child(lbl_assign_prompt)
 
-	var lbl_bank_meth := Label.new()
-	lbl_bank_meth.text = "Métodos Disponibles:"
-	lbl_bank_meth.add_theme_font_size_override("font_size", 9)
-	lbl_bank_meth.add_theme_color_override("font_color", Color("ffe57f"))
-	bank_meth_col.add_child(lbl_bank_meth)
+	var as_hbox := HBoxContainer.new()
+	as_hbox.add_theme_constant_override("separation", 6)
+	as_vbox.add_child(as_hbox)
 
-	bank_meth_vbox = VBoxContainer.new()
-	bank_meth_vbox.add_theme_constant_override("separation", 4)
-	bank_meth_col.add_child(bank_meth_vbox)
+	btn_to_attr = Button.new()
+	btn_to_attr.text = "⬅️ Como ATRIBUTO"
+	btn_to_attr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_to_attr.custom_minimum_size = Vector2(0, 32)
+	btn_to_attr.add_theme_font_size_override("font_size", 9)
+	btn_to_attr.add_theme_color_override("font_color", Color("80d8ff"))
+	btn_to_attr.pressed.connect(func(): _on_target_section_chosen("ATTR"))
+	as_hbox.add_child(btn_to_attr)
+
+	btn_to_meth = Button.new()
+	btn_to_meth.text = "Como MÉTODO ➡️"
+	btn_to_meth.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_to_meth.custom_minimum_size = Vector2(0, 32)
+	btn_to_meth.add_theme_font_size_override("font_size", 9)
+	btn_to_meth.add_theme_color_override("font_color", Color("ffe57f"))
+	btn_to_meth.pressed.connect(func(): _on_target_section_chosen("METH"))
+	as_hbox.add_child(btn_to_meth)
+
+	btn_cancel_assign = Button.new()
+	btn_cancel_assign.text = "✖"
+	btn_cancel_assign.custom_minimum_size = Vector2(30, 32)
+	btn_cancel_assign.add_theme_font_size_override("font_size", 10)
+	btn_cancel_assign.pressed.connect(func():
+		assign_dialog_panel.visible = false
+		pending_item_to_assign.clear()
+	)
+	as_hbox.add_child(btn_cancel_assign)
 
 	# Botón de Acción Principal e Instrucciones
 	btn_instantiate = Button.new()
@@ -863,9 +900,12 @@ func _load_class_challenge(index: int) -> void:
 
 	# Generar banco para la dificultad seleccionada
 	var bank_pack: Dictionary = HeroForgeData.generate_bank_for_hero(current_hero, selected_diff)
-	bank_attributes = bank_pack.attributes
-	bank_methods = bank_pack.methods
+	bank_all_components = bank_pack.all_components
 	current_tier_data = bank_pack.tier_data
+	selected_target_slot.clear()
+	pending_item_to_assign.clear()
+	if assign_dialog_panel:
+		assign_dialog_panel.visible = false
 
 	# Actualizar cabecera de la clase con el concepto del tier
 	hero_badge_lbl.text = "class %s:  [%s]" % [current_hero.class_name, current_hero.avatar_symbol]
@@ -902,7 +942,7 @@ func _rebuild_slot_buttons() -> void:
 		btn_attr.custom_minimum_size = Vector2(0, 36)
 		btn_attr.add_theme_font_size_override("font_size", 9)
 		btn_attr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn_attr.pressed.connect(func(): _on_component_removed("ATTR", slot_idx))
+		btn_attr.pressed.connect(func(): _on_slot_button_pressed("ATTR", slot_idx))
 		attr_slots_vbox.add_child(btn_attr)
 		attr_slot_buttons.append(btn_attr)
 
@@ -911,7 +951,7 @@ func _rebuild_slot_buttons() -> void:
 		btn_meth.custom_minimum_size = Vector2(0, 36)
 		btn_meth.add_theme_font_size_override("font_size", 9)
 		btn_meth.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn_meth.pressed.connect(func(): _on_component_removed("METH", slot_idx))
+		btn_meth.pressed.connect(func(): _on_slot_button_pressed("METH", slot_idx))
 		meth_slots_vbox.add_child(btn_meth)
 		meth_slot_buttons.append(btn_meth)
 
@@ -920,71 +960,57 @@ func _update_slot_displays() -> void:
 		if i >= attr_slot_buttons.size() or i >= meth_slot_buttons.size():
 			continue
 
+		var attr_btn := attr_slot_buttons[i]
+		attr_btn.remove_theme_stylebox_override("normal")
 		var attr_item = assigned_attributes[i]
 		if attr_item != null:
-			attr_slot_buttons[i].text = "✓ " + attr_item.text
-			attr_slot_buttons[i].add_theme_color_override("font_color", Color("80d8ff"))
+			attr_btn.text = "✓ " + attr_item.text
+			attr_btn.add_theme_color_override("font_color", Color("80d8ff"))
+		elif not selected_target_slot.is_empty() and selected_target_slot.get("section", "") == "ATTR" and selected_target_slot.get("index", -1) == i:
+			attr_btn.text = "[ Seleccionar Atributo %d ]" % (i + 1)
+			attr_btn.add_theme_color_override("font_color", Color("ffd54f"))
 		else:
-			attr_slot_buttons[i].text = "[ + Atributo %d ]" % (i + 1)
-			attr_slot_buttons[i].add_theme_color_override("font_color", Color("78909c"))
+			attr_btn.text = "[ + Atributo %d ]" % (i + 1)
+			attr_btn.add_theme_color_override("font_color", Color("78909c"))
 
+		var meth_btn := meth_slot_buttons[i]
+		meth_btn.remove_theme_stylebox_override("normal")
 		var meth_item = assigned_methods[i]
 		if meth_item != null:
-			meth_slot_buttons[i].text = "✓ " + meth_item.text
-			meth_slot_buttons[i].add_theme_color_override("font_color", Color("ffea00"))
+			meth_btn.text = "✓ " + meth_item.text
+			meth_btn.add_theme_color_override("font_color", Color("ffea00"))
+		elif not selected_target_slot.is_empty() and selected_target_slot.get("section", "") == "METH" and selected_target_slot.get("index", -1) == i:
+			meth_btn.text = "[ Seleccionar Método %d ]" % (i + 1)
+			meth_btn.add_theme_color_override("font_color", Color("ffd54f"))
 		else:
-			meth_slot_buttons[i].text = "[ + Método %d ]" % (i + 1)
-			meth_slot_buttons[i].add_theme_color_override("font_color", Color("78909c"))
+			meth_btn.text = "[ + Método %d ]" % (i + 1)
+			meth_btn.add_theme_color_override("font_color", Color("78909c"))
 
 func _render_component_bank() -> void:
-	for child in bank_attr_vbox.get_children():
-		child.queue_free()
-	for child in bank_meth_vbox.get_children():
+	for child in bank_grid.get_children():
 		child.queue_free()
 
-	# Renderizar Atributos (Columna Izquierda)
-	for i in range(bank_attributes.size()):
-		var item: Dictionary = bank_attributes[i]
+	# Renderizar todos los componentes del banco de forma unificada y mezclada
+	for i in range(bank_all_components.size()):
+		var item: Dictionary = bank_all_components[i]
 		var btn := Button.new()
 		btn.text = item.text
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.custom_minimum_size = Vector2(0, 36)
 		btn.add_theme_font_size_override("font_size", 9)
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn.add_theme_color_override("font_color", Color("80d8ff"))
+		btn.add_theme_color_override("font_color", Color("eceff1")) # Color neutral para retar distinción
 
 		var is_assigned: bool = _is_item_assigned(item.id)
 		btn.disabled = is_assigned
 		if is_assigned:
-			btn.modulate = Color(0.4, 0.4, 0.4, 0.6)
+			btn.modulate = Color(0.35, 0.35, 0.35, 0.5)
 		else:
 			btn.modulate = Color.WHITE
 
 		var captured_item: Dictionary = item
-		btn.pressed.connect(func(): _on_attribute_assigned(captured_item))
-		bank_attr_vbox.add_child(btn)
-
-	# Renderizar Métodos (Columna Derecha)
-	for i in range(bank_methods.size()):
-		var item: Dictionary = bank_methods[i]
-		var btn := Button.new()
-		btn.text = item.text
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.custom_minimum_size = Vector2(0, 36)
-		btn.add_theme_font_size_override("font_size", 9)
-		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn.add_theme_color_override("font_color", Color("ffe57f"))
-
-		var is_assigned: bool = _is_item_assigned(item.id)
-		btn.disabled = is_assigned
-		if is_assigned:
-			btn.modulate = Color(0.4, 0.4, 0.4, 0.6)
-		else:
-			btn.modulate = Color.WHITE
-
-		var captured_item: Dictionary = item
-		btn.pressed.connect(func(): _on_method_assigned(captured_item))
-		bank_meth_vbox.add_child(btn)
+		btn.pressed.connect(func(): _on_bank_item_clicked(captured_item))
+		bank_grid.add_child(btn)
 
 func _is_item_assigned(item_id: String) -> bool:
 	for slot in assigned_attributes:
@@ -1002,45 +1028,96 @@ func _play_sfx_select() -> void:
 		elif AudioManager.has_method("play_click"):
 			AudioManager.play_click()
 
-func _on_attribute_assigned(item: Dictionary) -> void:
+func _on_slot_button_pressed(section: String, slot_index: int) -> void:
 	if is_game_paused or not is_timer_running:
 		return
 
-	var free_slot: int = -1
-	for i in range(required_slots):
-		if assigned_attributes[i] == null:
-			free_slot = i
-			break
+	var is_filled: bool = false
+	if section == "ATTR" and slot_index < assigned_attributes.size() and assigned_attributes[slot_index] != null:
+		is_filled = true
+	elif section == "METH" and slot_index < assigned_methods.size() and assigned_methods[slot_index] != null:
+		is_filled = true
 
-	if free_slot != -1:
-		assigned_attributes[free_slot] = item
-		_play_sfx_select()
-		_update_slot_displays()
-		_render_component_bank()
+	if is_filled:
+		# FA-02.02: Si ya estaba lleno, remover el elemento
+		_on_component_removed(section, slot_index)
 	else:
-		_set_status("⚠️ Los slots de Atributos están llenos (%d/%d). Toca uno a la izquierda para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
+		# Seleccionar slot destino para asignación rápida
+		if not selected_target_slot.is_empty() and selected_target_slot.get("section") == section and selected_target_slot.get("index") == slot_index:
+			selected_target_slot.clear()
+			_set_status("Selección cancelada. Toca un componente del banco para asignarlo.", Color("90a4ae"))
+		else:
+			selected_target_slot = { "section": section, "index": slot_index }
+			_set_status("Ranura de %s %d seleccionada. Toca un componente del banco para asignarlo aquí." % [
+				"Atributo" if section == "ATTR" else "Método",
+				slot_index + 1
+			], Color("ffd54f"))
 		if AudioManager and AudioManager.has_method("play_click"):
 			AudioManager.play_click()
+		_update_slot_displays()
 
-func _on_method_assigned(item: Dictionary) -> void:
+func _on_bank_item_clicked(item: Dictionary) -> void:
 	if is_game_paused or not is_timer_running:
 		return
 
-	var free_slot: int = -1
-	for i in range(required_slots):
-		if assigned_methods[i] == null:
-			free_slot = i
-			break
+	# Si el alumno seleccionó previamente un slot en la plantilla, asignar directamente ahí
+	if not selected_target_slot.is_empty():
+		var sec: String = selected_target_slot.get("section", "ATTR")
+		var idx: int = selected_target_slot.get("index", 0)
+		selected_target_slot.clear()
+		_assign_item_to_slot(item, sec, idx)
+		return
 
-	if free_slot != -1:
-		assigned_methods[free_slot] = item
-		_play_sfx_select()
-		_update_slot_displays()
-		_render_component_bank()
-	else:
-		_set_status("⚠️ Los slots de Métodos están llenos (%d/%d). Toca uno a la derecha para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
-		if AudioManager and AudioManager.has_method("play_click"):
-			AudioManager.play_click()
+	# Si no seleccionó slot previo, mostrar selector de columna (¿Atributo o Método?)
+	pending_item_to_assign = item
+	lbl_assign_prompt.text = "¿Dónde deseas asignar \"%s\"?" % item.text
+	assign_dialog_panel.visible = true
+	if AudioManager and AudioManager.has_method("play_click"):
+		AudioManager.play_click()
+
+func _on_target_section_chosen(section: String) -> void:
+	assign_dialog_panel.visible = false
+	if pending_item_to_assign.is_empty():
+		return
+
+	var item: Dictionary = pending_item_to_assign
+	pending_item_to_assign = {}
+
+	if section == "ATTR":
+		var free_slot: int = -1
+		for i in range(required_slots):
+			if assigned_attributes[i] == null:
+				free_slot = i
+				break
+		if free_slot != -1:
+			_assign_item_to_slot(item, "ATTR", free_slot)
+		else:
+			_set_status("⚠️ La columna de ATRIBUTOS está llena (%d/%d). Toca uno a la izquierda para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
+			if AudioManager and AudioManager.has_method("play_click"):
+				AudioManager.play_click()
+	elif section == "METH":
+		var free_slot: int = -1
+		for i in range(required_slots):
+			if assigned_methods[i] == null:
+				free_slot = i
+				break
+		if free_slot != -1:
+			_assign_item_to_slot(item, "METH", free_slot)
+		else:
+			_set_status("⚠️ La columna de MÉTODOS está llena (%d/%d). Toca uno a la derecha para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
+			if AudioManager and AudioManager.has_method("play_click"):
+				AudioManager.play_click()
+
+func _assign_item_to_slot(item: Dictionary, section: String, slot_idx: int) -> void:
+	if section == "ATTR" and slot_idx < assigned_attributes.size():
+		assigned_attributes[slot_idx] = item
+	elif section == "METH" and slot_idx < assigned_methods.size():
+		assigned_methods[slot_idx] = item
+
+	_play_sfx_select()
+	_update_slot_displays()
+	_render_component_bank()
+	_set_status("'%s' colocado como %s." % [item.text, "Atributo" if section == "ATTR" else "Método"], Color("90a4ae"))
 
 # FA-02.02: Remoción de elemento asignado sin penalización
 func _on_component_removed(section: String, slot_index: int) -> void:
@@ -1091,29 +1168,60 @@ func _on_instantiate_pressed() -> void:
 	# FN-04: Validación de la estructura y distractores
 	_validate_class()
 
-func _validate_class() -> void:
-	var errors: Array[String] = []
+func _apply_error_style(btn: Button) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.28, 0.08, 0.08, 0.95)
+	sb.border_color = Color("ff5252")
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(4)
+	btn.add_theme_stylebox_override("normal", sb)
 
-	# Validar Atributos
+func _validate_class() -> void:
+	var error_attr_indices: Array[int] = []
+	var error_meth_indices: Array[int] = []
+	var error_messages: Array[String] = []
+
+	# Validar Columna de Atributos (Lado Izquierdo)
 	for i in range(required_slots):
 		var item: Dictionary = assigned_attributes[i]
-		if not item.is_correct:
-			errors.append("Atributo distractor: '%s' no pertenece a %s" % [item.text, current_hero.class_name])
+		if item.type != HeroForgeData.ComponentType.ATTRIBUTE:
+			error_attr_indices.append(i)
+			error_messages.append("'%s' es un Método (acción), no debe ir como Atributo" % item.text)
+		elif not item.is_correct:
+			error_attr_indices.append(i)
+			error_messages.append("'%s' no es un Atributo que pertenezca a %s" % [item.text, current_hero.class_name])
 
-	# Validar Métodos
+	# Validar Columna de Métodos (Lado Derecho)
 	for i in range(required_slots):
 		var item: Dictionary = assigned_methods[i]
-		if not item.is_correct:
-			errors.append("Método distractor: '%s' no pertenece a %s" % [item.text, current_hero.class_name])
+		if item.type != HeroForgeData.ComponentType.METHOD:
+			error_meth_indices.append(i)
+			error_messages.append("'%s' es un Atributo (estado), no debe ir como Método" % item.text)
+		elif not item.is_correct:
+			error_meth_indices.append(i)
+			error_messages.append("'%s' no es un Método que pertenezca a %s" % [item.text, current_hero.class_name])
 
 	# FA-04.01: Clasificación errónea de componentes o distractor
-	if errors.size() > 0:
+	if error_attr_indices.size() > 0 or error_meth_indices.size() > 0:
 		if AudioManager and AudioManager.has_method("play_error"):
 			AudioManager.play_error()
 
+		# Resaltar en ROJO los elementos incorrectos en la plantilla
+		for idx in error_attr_indices:
+			var btn: Button = attr_slot_buttons[idx]
+			btn.text = "✗ " + assigned_attributes[idx].text
+			btn.add_theme_color_override("font_color", Color("ff5252"))
+			_apply_error_style(btn)
+
+		for idx in error_meth_indices:
+			var btn: Button = meth_slot_buttons[idx]
+			btn.text = "✗ " + assigned_methods[idx].text
+			btn.add_theme_color_override("font_color", Color("ff5252"))
+			_apply_error_style(btn)
+
 		_lose_life()
 		if current_lives > 0:
-			_set_status("❌ Error en la Clase: " + errors[0] + " (-1 vida)", Color("f44336"))
+			_set_status("❌ Error en la Clase: " + error_messages[0] + " (-1 vida). Corrige los elementos en rojo.", Color("f44336"))
 		else:
 			_show_game_over("Vidas agotadas por errores de definición de clase.")
 		return
@@ -1231,24 +1339,20 @@ func _handle_victory() -> void:
 	is_timer_running = false
 	_set_game_paused(false)
 
-	var stars: int = target_stars
-	if current_lives == max_lives:
-		stars = mini(3, stars + 1)
-
-	var lives_bonus: int = current_lives * 25
-	var final_score: int = total_score + lives_bonus
-
+	# Puntajes fijos y estrellas fijas estrictamente según dificultad (TSP / Especificación)
+	var final_score: int = diff_config.get("total_score", total_score)
+	var stars: int = diff_config.get("stars", target_stars)
 	var diff_name: String = diff_config.get("name", selected_diff)
+
 	if btn_victory_restart:
 		btn_victory_restart.text = "🔄 Volver a Jugar (%s)" % diff_name
 
 	if lbl_victory_stats:
-		lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d (+%d bonus vidas)\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
+		lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d pts\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
 			diff_name,
 			hero_classes_queue.size(),
 			hero_classes_queue.size(),
 			final_score,
-			lives_bonus,
 			"⭐".repeat(stars),
 			current_lives
 		]

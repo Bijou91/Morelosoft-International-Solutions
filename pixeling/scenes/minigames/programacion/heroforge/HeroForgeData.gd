@@ -624,8 +624,15 @@ static func generate_bank_for_hero(hero_data: Dictionary, difficulty_key: String
 		meth_items.append(item)
 	meth_items.shuffle()
 
+	# Lista unificada y mezclada de componentes (para que el alumno elija la sección correcta)
+	var mixed_items: Array[Dictionary] = []
+	mixed_items.append_array(attr_items)
+	mixed_items.append_array(meth_items)
+	mixed_items.shuffle()
+
 	return {
 		"attributes": attr_items,
 		"methods": meth_items,
+		"all_components": mixed_items,
 		"tier_data": tier_data
 	}

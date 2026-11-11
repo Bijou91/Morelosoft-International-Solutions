@@ -1,0 +1,562 @@
+[gd_scene load_steps=5 format=3 uid="uid://permisoprocesocu18uaz"]
+
+[ext_resource type="Script" path="res://scenes/minigames/sistemas_operativos/permisos_procesos/PermissionsProcesses.gd" id="1_proc01"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/teacher_linux.png" id="2_teach"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/crt_bezel.png" id="3_bezel"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/student_hands_keyboard.png" id="4_hands"]
+
+[node name="PermissionsProcesses" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_proc01")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0470588, 0.054902, 0.0784314, 1)
+
+[node name="TopHUD" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_constants/separation = 6
+
+[node name="BtnPause" type="Button" parent="TopHUD"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+text = "⏸"
+
+[node name="ChallengeLabel" type="Label" parent="TopHUD"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "DESAFÍO: NORMAL"
+vertical_alignment = 1
+
+[node name="TimeBar" type="ProgressBar" parent="TopHUD"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 100.0
+show_percentage = false
+
+[node name="TimeLabel" type="Label" parent="TopHUD"]
+custom_minimum_size = Vector2(34, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 11
+text = "60 s"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HeartsContainer" type="HBoxContainer" parent="TopHUD"]
+custom_minimum_size = Vector2(70, 24)
+layout_mode = 2
+alignment = 2
+
+[node name="TeacherSection" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 44.0
+offset_right = -8.0
+offset_bottom = 122.0
+grow_horizontal = 2
+theme_override_constants/separation = 8
+
+[node name="BubblePanel" type="PanelContainer" parent="TeacherSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TeacherLabel" type="Label" parent="TeacherSection/BubblePanel"]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.95, 0.98, 1)
+theme_override_font_sizes/font_size = 10
+text = "Administra los permisos de archivos y procesos de Linux mediante la terminal simulada."
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="TeacherTexture" type="TextureRect" parent="TeacherSection"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("2_teach")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CRTContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 126.0
+offset_right = -8.0
+offset_bottom = 438.0
+grow_horizontal = 2
+
+[node name="ScreenBackground" type="ColorRect" parent="CRTContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.02, 0.035, 1)
+
+[node name="LaptopScreen" type="VBoxContainer" parent="CRTContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="TerminalPane" type="VBoxContainer" parent="CRTContainer/LaptopScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.7
+theme_override_constants/separation = 2
+
+[node name="HeaderBar" type="ColorRect" parent="CRTContainer/LaptopScreen/TerminalPane"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+color = Color(0.09, 0.11, 0.15, 1)
+
+[node name="TerminalPromptLabel" type="Label" parent="CRTContainer/LaptopScreen/TerminalPane/HeaderBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "user@is-pixelverse:~$ "
+vertical_alignment = 1
+clip_text = true
+
+[node name="ConsoleScroll" type="ScrollContainer" parent="CRTContainer/LaptopScreen/TerminalPane"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TerminalOutput" type="RichTextLabel" parent="CRTContainer/LaptopScreen/TerminalPane/ConsoleScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_font_sizes/normal_font_size = 9
+bbcode_enabled = true
+text = ""
+scroll_following = true
+
+[node name="ObjectivesPane" type="VBoxContainer" parent="CRTContainer/LaptopScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 2
+
+[node name="ObjHeaderBar" type="ColorRect" parent="CRTContainer/LaptopScreen/ObjectivesPane"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+color = Color(0.11, 0.13, 0.18, 1)
+
+[node name="ObjectivesHeaderLabel" type="Label" parent="CRTContainer/LaptopScreen/ObjectivesPane/ObjHeaderBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 9
+text = "📋 OBJETIVOS DE LA MISIÓN:"
+vertical_alignment = 1
+
+[node name="ObjectivesScroll" type="ScrollContainer" parent="CRTContainer/LaptopScreen/ObjectivesPane"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ObjectivesVBox" type="VBoxContainer" parent="CRTContainer/LaptopScreen/ObjectivesPane/ObjectivesScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="ControlsSection" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -200.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HandsTexture" type="TextureRect" parent="ControlsSection"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 36.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_hands")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyboardRoot" type="VBoxContainer" parent="ControlsSection"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = -6.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 3
+
+[node name="QuickBar" type="HBoxContainer" parent="ControlsSection/KeyboardRoot"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+theme_override_constants/separation = 3
+alignment = 1
+
+[node name="KeysVBox" type="VBoxContainer" parent="ControlsSection/KeyboardRoot"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Row4" type="HBoxContainer" parent="ControlsSection/KeyboardRoot"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="BtnToggleMode" type="Button" parent="ControlsSection/KeyboardRoot/Row4"]
+custom_minimum_size = Vector2(38, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "123"
+
+[node name="BtnSpace" type="Button" parent="ControlsSection/KeyboardRoot/Row4"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Espacio"
+
+[node name="BtnBackspace" type="Button" parent="ControlsSection/KeyboardRoot/Row4"]
+custom_minimum_size = Vector2(38, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "⌫"
+
+[node name="BtnEnter" type="Button" parent="ControlsSection/KeyboardRoot/Row4"]
+custom_minimum_size = Vector2(50, 26)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 9
+text = "↵ Enviar"
+
+[node name="Modals" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DifficultyModal" type="ColorRect" parent="Modals"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="Panel" type="PanelContainer" parent="Modals/DifficultyModal"]
+custom_minimum_size = Vector2(300, 320)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -160.0
+offset_right = 150.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Modals/DifficultyModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Modals/DifficultyModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "ADMINISTRAR PERMISOS Y PROCESOS
+SELECCIONA DIFICULTAD"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Modals/DifficultyModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Elige la dificultad del desafío según tu destreza con la terminal Linux:"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnFacil" type="Button" parent="Modals/DifficultyModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "🟢 FÁCIL (3 Vidas · 90s)
+300 Puntos · Servidor web y scripts"
+
+[node name="BtnNormal" type="Button" parent="Modals/DifficultyModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "🟡 NORMAL (2 Vidas · 60s)
+600 Puntos · Base de datos y claves"
+
+[node name="BtnIngeniero" type="Button" parent="Modals/DifficultyModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "🔴 INGENIERO (1 Vida · 45s)
+900 Puntos · Cluster, logs y chown"
+
+[node name="TutorialModal" type="ColorRect" parent="Modals"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="Panel" type="PanelContainer" parent="Modals/TutorialModal"]
+custom_minimum_size = Vector2(320, 400)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -200.0
+offset_right = 160.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Modals/TutorialModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Modals/TutorialModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "INSTRUCCIONES DE LA MISIÓN"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Modals/TutorialModal/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TutorialText" type="Label" parent="Modals/TutorialModal/Panel/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 11
+autowrap_mode = 2
+
+[node name="BtnStartTutorial" type="Button" parent="Modals/TutorialModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+text = "¡INICIAR MISIÓN! ↵"
+
+[node name="PauseModal" type="ColorRect" parent="Modals"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="Panel" type="PanelContainer" parent="Modals/PauseModal"]
+custom_minimum_size = Vector2(240, 220)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -110.0
+offset_right = 120.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Modals/PauseModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Modals/PauseModal/Panel/VBox"]
+layout_mode = 2
+text = "MISIÓN PAUSADA"
+horizontal_alignment = 1
+
+[node name="BtnResume" type="Button" parent="Modals/PauseModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "Continuar Misión"
+
+[node name="BtnRestart" type="Button" parent="Modals/PauseModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "Reiniciar Desafío"
+
+[node name="BtnExit" type="Button" parent="Modals/PauseModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "Salir al Aula"
+
+[node name="GameOverModal" type="ColorRect" parent="Modals"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.15, 0.02, 0.04, 0.9)
+
+[node name="Panel" type="PanelContainer" parent="Modals/GameOverModal"]
+custom_minimum_size = Vector2(280, 240)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -120.0
+offset_right = 140.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Modals/GameOverModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Modals/GameOverModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.25, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "SISTEMA DESESTABILIZADO
+GAME OVER"
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="Modals/GameOverModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Has agotado tus vidas en el intento."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnRetry" type="Button" parent="Modals/GameOverModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Reintentar Desafío"
+
+[node name="BtnExit" type="Button" parent="Modals/GameOverModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Volver al Aula"
+
+[node name="VictoryModal" type="ColorRect" parent="Modals"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.12, 0.06, 0.9)
+
+[node name="Panel" type="PanelContainer" parent="Modals/VictoryModal"]
+custom_minimum_size = Vector2(290, 260)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -145.0
+offset_top = -130.0
+offset_right = 145.0
+offset_bottom = 130.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Modals/VictoryModal/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Modals/VictoryModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 15
+text = "¡MISIÓN COMPLETADA!
+DESAFÍO SUPERADO"
+horizontal_alignment = 1
+
+[node name="SummaryLabel" type="Label" parent="Modals/VictoryModal/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Resumen de la misión"
+autowrap_mode = 2
+
+[node name="BtnPlayAgain" type="Button" parent="Modals/VictoryModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Jugar Otra Dificultad"
+
+[node name="BtnExit" type="Button" parent="Modals/VictoryModal/Panel/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Volver al Aula"
+
