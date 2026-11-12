@@ -65,6 +65,15 @@ func play_tone(freq: float, duration: float = 0.08) -> void:
 func play_click() -> void:
 	play_tone(600.0, 0.04)
 
+func play_sfx(sfx_name: String = "") -> void:
+	match sfx_name:
+		"success", "win", "victory":
+			play_success()
+		"error", "fail", "game_over":
+			play_game_over()
+		_:
+			play_click()
+
 func play_step() -> void:
 	play_tone(350.0, 0.06)
 
@@ -76,13 +85,16 @@ func play_error() -> void:
 
 func play_success() -> void:
 	play_tone(587.33, 0.1) # D5
-	await get_tree().create_timer(0.1).timeout
-	play_tone(880.0, 0.2)  # A5
+	get_tree().create_timer(0.1).timeout.connect(func():
+		play_tone(880.0, 0.2)  # A5
+	)
 
 func play_game_over() -> void:
 	play_tone(220.0, 0.14)
-	await get_tree().create_timer(0.14).timeout
-	play_tone(174.61, 0.16)
-	await get_tree().create_timer(0.16).timeout
-	play_tone(130.81, 0.28)
+	get_tree().create_timer(0.14).timeout.connect(func():
+		play_tone(174.61, 0.16)
+		get_tree().create_timer(0.16).timeout.connect(func():
+			play_tone(130.81, 0.28)
+		)
+	)
 

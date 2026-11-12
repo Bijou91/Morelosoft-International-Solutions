@@ -5,7 +5,6 @@
 extends MiniGameBase
 
 # --- Configuración por dificultad ---
-# --- Configuración por dificultad ---
 const TIMER_BY_DIFF: Dictionary = {
 	"FACIL": 10.0,
 	"NORMAL": 20.0,
@@ -28,6 +27,35 @@ const SCORE_BASE: Dictionary = {
 	"INGENIERO": 200
 }
 
+const DIFFICULTY_CONFIG: Dictionary = {
+	"FACIL": {
+		"name": "FÁCIL",
+		"description": "10 vidas, 10s por pregunta, 2 opciones.\n50 pts base por acierto (+bonus de racha)."
+	},
+	"NORMAL": {
+		"name": "NORMAL",
+		"description": "5 vidas, 20s por pregunta, 3 opciones.\n100 pts base por acierto (+bonus de racha)."
+	},
+	"INGENIERO": {
+		"name": "INGENIERO",
+		"description": "3 vidas, 60s por pregunta, 5 opciones.\n200 pts base por acierto (+bonus de racha)."
+	}
+}
+
+# --- Assets visuales y de audio (aislados en esta carpeta) ---
+const ASSET_DIR: String = "res://assets/logica/derby_de_bateo/"
+const STADIUM_DIM: Color = Color(0.42, 0.45, 0.56, 1.0)   # oscurece el estadio para no opacar el texto
+const HOME_RUN_SIZE: float = 240.0                         # tamaño del pop-up "HOME RUN!" en pantalla
+const HOME_RUN_POP_TIME: float = 0.22
+const HOME_RUN_HOLD_TIME: float = 0.35
+const HOME_RUN_FADE_TIME: float = 0.25
+
+var _stadium_bg: TextureRect = null
+var _home_run_popup: TextureRect = null
+var _home_run_tween: Tween = null
+var _sfx_charge: AudioStreamPlayer = null
+var _sfx_wrong: AudioStreamPlayer = null
+
 # --- Estado del minijuego ---
 var questions: Array = []
 var current_question: Dictionary = {}
@@ -42,6 +70,11 @@ var streak: int = 0
 var total_correct: int = 0
 var total_answered: int = 0
 var total_score: int = 0
+
+# Overlay de Instrucciones (idéntico a Cinturón de Hipótesis)
+var instructions_overlay: ColorRect
+var instr_diff_label: Label
+var instr_desc_label: Label
 
 # --- Rutas de JSON (aisladas en esta carpeta) ---
 const DATA_PATHS: Dictionary = {
@@ -88,6 +121,9 @@ func _ready() -> void:
 	minigame_title = "Derby de Bateo: Proposiciones Lógicas"
 	subject_name = "Lógica y Algoritmos"
 
+	_build_instructions_overlay()
+	_build_visuals_and_audio()
+
 	btn_back.pressed.connect(_on_back_pressed)
 	btn_diff_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
 	btn_diff_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
@@ -110,6 +146,95 @@ func _ready() -> void:
 	# CRÍTICO: Permitir que el menú de pausa funcione mientras el juego está congelado
 	pause_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 
+# ---------------------------------------------------------------------------
+# Fondo de estadio, pop-up de Home Run y efectos de sonido propios del minijuego
+# ---------------------------------------------------------------------------
+
+func _load_asset(file_name: String) -> Resource:
+	var path: String = ASSET_DIR + file_name
+	if ResourceLoader.exists(path):
+		return load(path)
+	push_warning("[DerbyDeBateo] No se encontró el asset: " + path + " (abre el proyecto en el editor para importarlo)")
+	return null
+
+func _build_visuals_and_audio() -> void:
+	# Estadio: ocupa toda la pantalla, ajustado a la altura (sin deformarse), y va oscurecido
+	var stadium_tex := _load_asset("estadio_beisbol.png") as Texture2D
+	if stadium_tex != null:
+		_stadium_bg = TextureRect.new()
+		_stadium_bg.name = "StadiumBg"
+		_stadium_bg.texture = stadium_tex
+		_stadium_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_stadium_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		# Ajuste por ALTURA: escala uniforme (sin deformar), centrado, y recorta lo que sobre a los lados
+		_stadium_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_stadium_bg.modulate = STADIUM_DIM
+		_stadium_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_stadium_bg)
+		move_child(_stadium_bg, 1)   # justo encima del ColorRect de fondo, debajo de toda la UI
+
+	# Pop-up "HOME RUN!": justo encima del VBox y debajo de los overlays (pausa / game over)
+	var hr_tex := _load_asset("home_run.png") as Texture2D
+	if hr_tex != null:
+		var half: float = HOME_RUN_SIZE * 0.5
+		_home_run_popup = TextureRect.new()
+		_home_run_popup.name = "HomeRunPopup"
+		_home_run_popup.texture = hr_tex
+		_home_run_popup.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_home_run_popup.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_home_run_popup.set_anchors_preset(Control.PRESET_CENTER)
+		_home_run_popup.offset_left = -half
+		_home_run_popup.offset_top = -half
+		_home_run_popup.offset_right = half
+		_home_run_popup.offset_bottom = half
+		_home_run_popup.pivot_offset = Vector2(half, half)
+		_home_run_popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_home_run_popup.visible = false
+		add_child(_home_run_popup)
+		move_child(_home_run_popup, $VBox.get_index() + 1)
+
+	# Sonidos propios (no se toca el AudioManager compartido)
+	_sfx_charge = _make_sfx_player("SfxCharge", "baseball_charge.mp3")
+	_sfx_wrong = _make_sfx_player("SfxWrong", "wrong_buzzer.mp3")
+
+func _make_sfx_player(node_name: String, file_name: String) -> AudioStreamPlayer:
+	var stream := _load_asset(file_name) as AudioStream
+	if stream == null:
+		return null
+	var player := AudioStreamPlayer.new()
+	player.name = node_name
+	player.stream = stream
+	add_child(player)
+	return player
+
+func _play_sfx(player: AudioStreamPlayer) -> void:
+	player.volume_db = linear_to_db(maxf(AudioManager.sfx_volume, 0.0001))
+	player.play()
+
+func _show_home_run() -> void:
+	if _home_run_popup == null:
+		return
+	if _home_run_tween != null and _home_run_tween.is_valid():
+		_home_run_tween.kill()
+	_home_run_popup.visible = true
+	_home_run_popup.modulate = Color.WHITE
+	_home_run_popup.scale = Vector2(0.2, 0.2)
+	_home_run_popup.rotation_degrees = -12.0
+
+	_home_run_tween = create_tween()
+	_home_run_tween.set_parallel(true)
+	_home_run_tween.tween_property(_home_run_popup, "scale", Vector2.ONE, HOME_RUN_POP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_home_run_tween.tween_property(_home_run_popup, "rotation_degrees", 0.0, HOME_RUN_POP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_home_run_tween.chain().tween_interval(HOME_RUN_HOLD_TIME)
+	_home_run_tween.chain().tween_property(_home_run_popup, "modulate:a", 0.0, HOME_RUN_FADE_TIME)
+	_home_run_tween.chain().tween_callback(func(): _home_run_popup.visible = false)
+
+func _hide_home_run() -> void:
+	if _home_run_tween != null and _home_run_tween.is_valid():
+		_home_run_tween.kill()
+	if _home_run_popup != null:
+		_home_run_popup.visible = false
+
 func _process(delta: float) -> void:
 	if not is_playing or is_answering:
 		return
@@ -124,6 +249,7 @@ func _process(delta: float) -> void:
 
 func start_game(difficulty: String = "NORMAL") -> void:
 	super.start_game(difficulty)
+	_hide_home_run()
 	_load_questions(difficulty)
 	max_lives = LIVES_BY_DIFF.get(difficulty, 3)
 	current_lives = max_lives
@@ -134,6 +260,8 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	is_playing = true
 	is_answering = false
 
+	if instructions_overlay:
+		instructions_overlay.visible = false
 	difficulty_selector.visible = false
 	question_panel.visible = true
 	options_container.visible = true
@@ -149,9 +277,23 @@ func start_game(difficulty: String = "NORMAL") -> void:
 
 func _on_difficulty_selected(diff: String) -> void:
 	AudioManager.play_click()
-	start_game(diff)
+	current_difficulty = diff
+	var cfg: Dictionary = DIFFICULTY_CONFIG.get(diff, DIFFICULTY_CONFIG["NORMAL"])
+	instr_diff_label.text = "Dificultad: %s" % cfg["name"]
+	instr_desc_label.text = cfg["description"]
+	difficulty_selector.visible = false
+	btn_back.visible = false
+	instructions_overlay.visible = true
+
+func _on_start_game_pressed() -> void:
+	AudioManager.play_click()
+	if instructions_overlay:
+		instructions_overlay.visible = false
+	start_game(current_difficulty)
 
 func _show_difficulty_selector() -> void:
+	if instructions_overlay:
+		instructions_overlay.visible = false
 	difficulty_selector.visible = true
 	question_panel.visible = false
 	options_container.visible = false
@@ -161,6 +303,96 @@ func _show_difficulty_selector() -> void:
 	btn_back.visible = true
 	if btn_pause: # Comprobación de seguridad por si el nodo aún no carga
 		btn_pause.visible = false
+
+# ---------------------------------------------------------------------------
+# Construcción del Overlay de Instrucciones (Estilo Cinturón de Hipótesis)
+# ---------------------------------------------------------------------------
+
+func _build_instructions_overlay() -> void:
+	instructions_overlay = _create_overlay()
+	add_child(instructions_overlay)
+	var i_vbox := _create_overlay_vbox(instructions_overlay, "INSTRUCCIONES", "Cómo jugar")
+
+	instr_diff_label = Label.new()
+	instr_diff_label.text = "Dificultad: NORMAL"
+	instr_diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instr_diff_label.add_theme_font_size_override("font_size", 14)
+	instr_diff_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	i_vbox.add_child(instr_diff_label)
+
+	instr_desc_label = Label.new()
+	instr_desc_label.text = ""
+	instr_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instr_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	instr_desc_label.add_theme_font_size_override("font_size", 12)
+	i_vbox.add_child(instr_desc_label)
+
+	var rules_label := Label.new()
+	rules_label.text = "• Lee atentamente la proposición o silogismo lógico en pantalla.\n• Selecciona la opción correcta antes de que se agote el tiempo.\n• Cada fallo o tiempo agotado resta 1 vida (-1 ❤️).\n• ¡Encadena aciertos consecutivos para ganar bonus por racha!"
+	rules_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rules_label.add_theme_font_size_override("font_size", 11)
+	rules_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
+	i_vbox.add_child(rules_label)
+
+	var start_btn := Button.new()
+	start_btn.text = "COMENZAR PARTIDA"
+	start_btn.custom_minimum_size = Vector2(250, 44)
+	var s_sb := StyleBoxFlat.new()
+	s_sb.bg_color = Color(0.2, 0.6, 0.3, 0.9)
+	s_sb.set_corner_radius_all(6)
+	start_btn.add_theme_stylebox_override("normal", s_sb)
+	start_btn.pressed.connect(_on_start_game_pressed)
+	i_vbox.add_child(start_btn)
+
+func _create_overlay() -> ColorRect:
+	var cr := ColorRect.new()
+	cr.set_anchors_preset(PRESET_FULL_RECT)
+	cr.color = Color(0.04, 0.06, 0.1, 0.94)
+	cr.visible = false
+	return cr
+
+func _create_overlay_vbox(parent: Control, title: String, subtitle: String) -> VBoxContainer:
+	var center := CenterContainer.new()
+	center.set_anchors_preset(PRESET_FULL_RECT)
+	parent.add_child(center)
+
+	var p := PanelContainer.new()
+	p.custom_minimum_size = Vector2(310, 0)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.1, 0.13, 0.20, 0.98)
+	sb.set_corner_radius_all(10)
+	sb.set_border_width_all(2)
+	sb.border_color = Color(0.3, 0.5, 0.8, 0.8)
+	p.add_theme_stylebox_override("panel", sb)
+	center.add_child(p)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_bottom", 16)
+	p.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(vbox)
+
+	var t := Label.new()
+	t.text = title
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	t.add_theme_font_size_override("font_size", 16)
+	t.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
+	vbox.add_child(t)
+
+	if subtitle != "":
+		var s := Label.new()
+		s.text = subtitle
+		s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		s.add_theme_font_size_override("font_size", 11)
+		s.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		vbox.add_child(s)
+
+	return vbox
 
 func _load_questions(diff: String) -> void:
 	questions.clear()
@@ -255,7 +487,12 @@ func _on_timeout() -> void:
 	_handle_incorrect("¡Se acabó el tiempo!")
 
 func _handle_correct() -> void:
-	AudioManager.play_success()
+	# Acierto: pop-up "HOME RUN!" + efecto de carga de béisbol al mismo tiempo
+	_show_home_run()
+	if _sfx_charge != null:
+		_play_sfx(_sfx_charge)
+	else:
+		AudioManager.play_success()   # respaldo si falta el mp3
 	total_correct += 1
 	streak += 1
 	var points: int = SCORE_BASE.get(current_difficulty, 100)
@@ -271,7 +508,10 @@ func _handle_correct() -> void:
 		_next_question()
 
 func _handle_incorrect(reason: String) -> void:
-	AudioManager.play_error()
+	if _sfx_wrong != null:
+		_play_sfx(_sfx_wrong)
+	else:
+		AudioManager.play_error()   # respaldo si falta el mp3
 	streak = 0
 	_deduct_life(reason)
 
@@ -290,6 +530,7 @@ func _deduct_life(reason: String) -> void:
 
 func _handle_game_over(reason: String) -> void:
 	is_playing = false
+	_hide_home_run()
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 

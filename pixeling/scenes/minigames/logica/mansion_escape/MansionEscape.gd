@@ -29,9 +29,36 @@ const LOBBY_SCENE: String = "res://scenes/campus/Lobby.tscn"
 #   start_gap      -> pisos de ventaja inicial del enemigo (1 = empieza en el piso inmediato de arriba)
 # ---------------------------------------------------------------------------
 const CONFIG: Dictionary = {
-	"FACIL":     {"timer": 60.0,  "lives": 7, "points": 50,  "penalty": 10, "enemy_interval": 15.0, "start_gap": 1},
-	"NORMAL":    {"timer": 90.0,  "lives": 5, "points": 100, "penalty": 20, "enemy_interval": 20.0, "start_gap": 1},
-	"INGENIERO": {"timer": 135.0, "lives": 3, "points": 200, "penalty": 40, "enemy_interval": 27.0, "start_gap": 1}
+	"FACIL": {
+		"name": "FÁCIL",
+		"timer": 60.0,
+		"lives": 7,
+		"points": 50,
+		"penalty": 10,
+		"enemy_interval": 15.0,
+		"start_gap": 1,
+		"description": "7 vidas, 60s en total, 50 pts/acierto.\nEl fantasma baja cada 15s."
+	},
+	"NORMAL": {
+		"name": "NORMAL",
+		"timer": 90.0,
+		"lives": 5,
+		"points": 100,
+		"penalty": 20,
+		"enemy_interval": 20.0,
+		"start_gap": 1,
+		"description": "5 vidas, 90s en total, 100 pts/acierto.\nEl fantasma baja cada 20s."
+	},
+	"INGENIERO": {
+		"name": "INGENIERO",
+		"timer": 135.0,
+		"lives": 3,
+		"points": 200,
+		"penalty": 40,
+		"enemy_interval": 27.0,
+		"start_gap": 1,
+		"description": "3 vidas, 135s en total, 200 pts/acierto.\nEl fantasma baja cada 27s."
+	}
 }
 
 # --- Reglas generales (ajustables) ---
@@ -51,15 +78,37 @@ const DOOR_SIZE: Vector2 = Vector2(46, 58)
 const PLAYER_SIZE: float = 36.0
 const ENEMY_SIZE: float = 36.0
 const LINE_MARGIN: float = 8.0           # distancia del suelo al borde inferior de cada piso
+const OVERLAY_Z: int = 10                # z_index de pausa / instrucciones / game over (mayor que barandal y avisos)
+const WALL_TILE_PX: float = 64.0         # tamaño en pantalla de UN mosaico de pared.png (más grande = ladrillos más grandes)
 
-enum State { SELECTING, INTRO, PLAYING, RESOLVING, ENDED }
+## Pared en mosaico: repite pared.png a un tamaño fijo (WALL_TILE_PX) en lugar de estirar
+## una sola imagen. Se dibuja a mano para no depender de texture_repeat.
+class WallTile extends Control:
+	var tex: Texture2D = null
+	var tile_px: float = 64.0
+	var fallback: Color = Color(0.12, 0.16, 0.24)
+
+	func _init() -> void:
+		clip_contents = true
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		if tex == null:
+			draw_rect(Rect2(Vector2.ZERO, size), fallback)
+			return
+		var cols: int = int(ceil(size.x / tile_px))
+		var rows: int = int(ceil(size.y / tile_px))
+		for r in range(rows):
+			for c in range(cols):
+				draw_texture_rect(tex, Rect2(float(c) * tile_px, float(r) * tile_px, tile_px, tile_px), false)
+
+enum State { SELECTING, INSTRUCTIONS, PLAYING, RESOLVING, ENDED }
 enum GhostMode { STATIC, PATROL }
 
 # --- Estado del minijuego ---
 var state: int = State.SELECTING
 var run_id: int = 0                      # invalida awaits pendientes al reintentar/salir
 var rng := RandomNumberGenerator.new()
-var show_intro_next: bool = true
 var retos: Array = []
 var reto_index: int = 0
 var door_files: Array[String] = []       # archivo de imagen que hay detrás de cada puerta 1..5
@@ -99,6 +148,9 @@ var enemy_tween: Tween
 var stage_w: float = 336.0
 var stage_h: float = 176.0
 var symbol_font: Font = null
+var _diagram_sky: TextureRect = null   # cielo detrás de los diagramas
+var _diagram_moon: TextureRect = null  # luna detrás de los diagramas
+var _menu_bg: TextureRect = null        # imagen de la mansión en la pantalla de selección de dificultad
 
 # --- Referencias UI ---
 @onready var btn_back: Button = $TopHUD/BtnBack
@@ -124,11 +176,10 @@ var symbol_font: Font = null
 @onready var btn_right: Button = $VBox/Controls/BtnRight
 @onready var btn_enter: Button = $VBox/Controls/BtnEnter
 
-# Instrucciones (ventana emergente)
-@onready var intro_overlay: ColorRect = $IntroOverlay
-@onready var intro_text: RichTextLabel = $IntroOverlay/Panel/Margin/VBox/Scroll/Text
-@onready var btn_start: Button = $IntroOverlay/Panel/Margin/VBox/BtnStart
-@onready var btn_intro_back: Button = $IntroOverlay/Panel/Margin/VBox/BtnIntroBack
+# Overlay de Instrucciones (idéntico a Cinturón de Hipótesis)
+var instructions_overlay: ColorRect
+var instr_diff_label: Label
+var instr_desc_label: Label
 
 # Pausa
 @onready var pause_overlay: ColorRect = $PauseOverlay
@@ -156,9 +207,8 @@ func _ready() -> void:
 	if ResourceLoader.exists(f_path):
 		symbol_font = load(f_path) as Font
 		question_label.add_theme_font_override("font", symbol_font)
-		intro_text.add_theme_font_override("normal_font", symbol_font)
-		intro_text.add_theme_font_override("bold_font", symbol_font)
-		intro_text.add_theme_font_override("italics_font", symbol_font)
+
+	_build_instructions_overlay()
 
 	btn_back.pressed.connect(_on_back_pressed)
 	btn_diff_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
@@ -172,11 +222,6 @@ func _ready() -> void:
 	btn_right.button_up.connect(func(): _release_move(1))
 	btn_enter.pressed.connect(_on_enter_pressed)
 
-	# Instrucciones
-	btn_start.pressed.connect(_on_start_pressed)
-	btn_intro_back.pressed.connect(_on_back_pressed)
-	intro_text.text = _build_intro_bbcode()
-
 	# Pausa
 	btn_pause.pressed.connect(_on_pause_pressed)
 	btn_resume.pressed.connect(_on_resume_pressed)
@@ -186,10 +231,18 @@ func _ready() -> void:
 	btn_go_retry.pressed.connect(_on_go_retry_pressed)
 
 	_build_options_ui()
+	_build_diagram_background()  # cielo + luna detrás de los diagramas de Venn
+	_build_menu_background()     # imagen de la mansión para la pantalla de selección
 	_build_stage()
 	stage.resized.connect(_layout_stage)
 
 	_show_difficulty_selector()
+
+	# Los overlays van por encima de todo lo del escenario (barandal z=1, avisos z=2)
+	pause_overlay.z_index = OVERLAY_Z
+	game_over_overlay.z_index = OVERLAY_Z
+	if instructions_overlay:
+		instructions_overlay.z_index = OVERLAY_Z
 
 	# CRÍTICO: el menú de pausa debe funcionar con el árbol pausado
 	pause_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -202,7 +255,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	# INTRO / RESOLVING / ENDED: el temporizador y el enemigo están detenidos
+	# INSTRUCTIONS / RESOLVING / ENDED: el temporizador y el enemigo están detenidos
 	if state != State.PLAYING:
 		return
 
@@ -244,35 +297,102 @@ func _process(delta: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Instrucciones (ventana emergente)
+# Construcción del Overlay de Instrucciones (Estilo Cinturón de Hipótesis)
 # ---------------------------------------------------------------------------
 
-func _build_intro_bbcode() -> String:
-	var t: String = ""
-	t += "[b]¡Escapa de la mansión![/b]\n"
-	t += "Un fantasma te persigue piso por piso. Para bajar al siguiente piso entra por la puerta cuyo diagrama de Venn representa la operación que aparece arriba.\n\n"
-	t += "[b]Cómo jugar[/b]\n"
-	t += "• Mantén presionado ◀ o ▶ para mover a tu personaje. Párate frente a una puerta y pulsa ENTRAR.\n"
-	t += "• [b]Correcta:[/b] bajas un piso, sumas puntos y el fantasma se ralentiza un momento.\n"
-	t += "• [b]Incorrecta:[/b] pierdes una vida y puntos, quedas inmovilizado un instante y el fantasma se acelera.\n"
-	t += "• Ganas al resolver los 5 retos. Pierdes si te quedas sin vidas, si se acaba el tiempo (el contador es para los 5 retos en conjunto) o si el fantasma te alcanza.\n"
-	t += "• El fantasma baja un piso cada cierto tiempo. Si va varios pisos atrás, verás una nota con cuántos pisos arriba está.\n\n"
-	t += "[b]Símbolos de las operaciones[/b]\n"
-	t += "[b]∩  Intersección:[/b] lo que está en ambos conjuntos.  A ∩ B\n"
-	t += "[b]∪  Unión:[/b] lo que está en al menos uno de los conjuntos.  A ∪ B\n"
-	t += "[b]−  Diferencia:[/b] lo que está en el primero pero no en el segundo.  A − B\n"
-	t += "[b]Δ  Diferencia simétrica:[/b] lo que está en uno u otro, pero no en ambos.  A Δ B\n"
-	t += "[b]′  Complemento:[/b] todo lo que está fuera del conjunto, dentro del universo U.  A′\n"
-	t += "[b]U  Universo:[/b] el rectángulo que contiene todos los conjuntos.\n\n"
-	t += "[i]Nota: algunos dispositivos no incluyen estos símbolos en su fuente y pueden verse como un cuadro (▯) o con otra forma. Si te pasa, guíate por esta lista: ∩ (intersección) y ∪ (unión) son los dos \"arcos\" (∩ abierto hacia abajo, ∪ abierto hacia arriba), Δ es un triángulo, − es un guion y ′ es una pequeña comilla pegada a la letra o al paréntesis.[/i]"
-	return t
+func _build_instructions_overlay() -> void:
+	instructions_overlay = _create_overlay()
+	add_child(instructions_overlay)
+	var i_vbox := _create_overlay_vbox(instructions_overlay, "INSTRUCCIONES", "Cómo jugar")
 
-func _on_start_pressed() -> void:
-	if state != State.INTRO:
-		return
+	instr_diff_label = Label.new()
+	instr_diff_label.text = "Dificultad: NORMAL"
+	instr_diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instr_diff_label.add_theme_font_size_override("font_size", 14)
+	instr_diff_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	i_vbox.add_child(instr_diff_label)
+
+	instr_desc_label = Label.new()
+	instr_desc_label.text = ""
+	instr_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instr_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	instr_desc_label.add_theme_font_size_override("font_size", 12)
+	i_vbox.add_child(instr_desc_label)
+
+	var rules_label := Label.new()
+	rules_label.text = "• Observa la operación de conjuntos que aparece arriba (A ∩ B, A ∪ B, etc.).\n• Muévete con ◀ y ▶ hacia la puerta con el diagrama de Venn correcto y pulsa ENTRAR.\n• Puerta correcta: desciendes un piso, sumas puntos y ralentizas al fantasma.\n• Puerta incorrecta: pierdes 1 vida (-1 ❤️) y el fantasma avanza más rápido.\n• ¡Supera los 5 pisos antes de que se acabe el tiempo o te alcance!"
+	rules_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rules_label.add_theme_font_size_override("font_size", 11)
+	rules_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
+	if symbol_font:
+		rules_label.add_theme_font_override("font", symbol_font)
+	i_vbox.add_child(rules_label)
+
+	var start_btn := Button.new()
+	start_btn.text = "COMENZAR PARTIDA"
+	start_btn.custom_minimum_size = Vector2(250, 44)
+	var s_sb := StyleBoxFlat.new()
+	s_sb.bg_color = Color(0.2, 0.6, 0.3, 0.9)
+	s_sb.set_corner_radius_all(6)
+	start_btn.add_theme_stylebox_override("normal", s_sb)
+	start_btn.pressed.connect(_on_start_game_pressed)
+	i_vbox.add_child(start_btn)
+
+func _on_start_game_pressed() -> void:
 	AudioManager.play_click()
-	intro_overlay.visible = false
-	state = State.PLAYING                  # aquí empieza a correr el temporizador
+	if instructions_overlay:
+		instructions_overlay.visible = false
+	start_game(current_difficulty)
+
+func _create_overlay() -> ColorRect:
+	var cr := ColorRect.new()
+	cr.set_anchors_preset(PRESET_FULL_RECT)
+	cr.color = Color(0.04, 0.06, 0.1, 0.94)
+	cr.visible = false
+	return cr
+
+func _create_overlay_vbox(parent: Control, title: String, subtitle: String) -> VBoxContainer:
+	var center := CenterContainer.new()
+	center.set_anchors_preset(PRESET_FULL_RECT)
+	parent.add_child(center)
+
+	var p := PanelContainer.new()
+	p.custom_minimum_size = Vector2(310, 0)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.1, 0.13, 0.20, 0.98)
+	sb.set_corner_radius_all(10)
+	sb.set_border_width_all(2)
+	sb.border_color = Color(0.3, 0.5, 0.8, 0.8)
+	p.add_theme_stylebox_override("panel", sb)
+	center.add_child(p)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_bottom", 16)
+	p.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(vbox)
+
+	var t := Label.new()
+	t.text = title
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	t.add_theme_font_size_override("font_size", 16)
+	t.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
+	vbox.add_child(t)
+
+	if subtitle != "":
+		var s := Label.new()
+		s.text = subtitle
+		s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		s.add_theme_font_size_override("font_size", 11)
+		s.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		vbox.add_child(s)
+
+	return vbox
 
 
 # ---------------------------------------------------------------------------
@@ -280,9 +400,18 @@ func _on_start_pressed() -> void:
 # ---------------------------------------------------------------------------
 
 func _tex(file_name: String) -> Texture2D:
-	var path: String = ASSET_DIR + file_name
-	if ResourceLoader.exists(path):
-		return load(path) as Texture2D
+	# Rutas posibles por si los PNG están en assets o junto a la escena
+	var candidates: Array[String] = [
+		ASSET_DIR + file_name,
+		"res://assets/logica/mansion_escape/" + file_name,
+		"res://scenes/minigames/logica/mansion_escape/" + file_name,
+	]
+	for path in candidates:
+		if ResourceLoader.exists(path):
+			var res = load(path)
+			if res is Texture2D:
+				return res as Texture2D
+	push_warning("MansionEscape: no se encontró textura '%s'" % file_name)
 	return null
 
 func _placeholder(color: Color) -> Texture2D:
@@ -345,14 +474,94 @@ func _build_options_ui() -> void:
 			row_bottom.add_child(panel)
 		option_slots.append({"panel": panel, "tex": tex, "missing": missing})
 
-## Un piso = suelo + 5 puertas numeradas
+## Cielo + luna SOLO detrás de los diagramas (OptionsArea).
+## No van en el Stage ni a la altura de la pared. Si los diagramas los tapan, no importa.
+## Oscurecidos para no robar el foco.
+## Fondo de la pantalla de selección de dificultad: ajustado a la ALTURA (sin deformar,
+## centrado y recortando lo que sobre a los lados). Solo se ve mientras state == SELECTING.
+func _build_menu_background() -> void:
+	var tex: Texture2D = _tex("pantalla_mansion.png")
+	if tex == null:
+		return
+	_menu_bg = TextureRect.new()
+	_menu_bg.name = "MenuBg"
+	_menu_bg.texture = tex
+	_menu_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_menu_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_menu_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_menu_bg.modulate = Color(0.42, 0.45, 0.56, 1.0)   # mismo oscurecido que el estadio del Derby de bateo
+	_menu_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_menu_bg.visible = false
+	add_child(_menu_bg)
+	move_child(_menu_bg, 1)   # justo encima del ColorRect de fondo, debajo de toda la UI
+
+func _build_diagram_background() -> void:
+	# Hijos del root de la escena (no del VBox), para no romper el layout de OptionsArea.
+	# Se posicionan encima del área de diagramas con z bajo.
+	_diagram_sky = TextureRect.new()
+	_diagram_sky.name = "DiagramSky"
+	_diagram_sky.texture = _tex("cielo.png")
+	if _diagram_sky.texture == null:
+		_diagram_sky.texture = _placeholder(Color(0.05, 0.06, 0.14))
+	_diagram_sky.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_diagram_sky.stretch_mode = TextureRect.STRETCH_SCALE
+	_diagram_sky.modulate = Color(0.40, 0.43, 0.55, 1.0)
+	_diagram_sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# (sin z_index negativo: quedaría detrás del ColorRect de fondo y no se vería)
+	add_child(_diagram_sky)
+	# Justo después del ColorRect de fondo de la escena
+	move_child(_diagram_sky, 1)
+
+	_diagram_moon = TextureRect.new()
+	_diagram_moon.name = "DiagramMoon"
+	_diagram_moon.texture = _tex("luna.png")
+	if _diagram_moon.texture == null:
+		_diagram_moon.texture = _placeholder(Color(0.75, 0.8, 0.95))
+	_diagram_moon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_diagram_moon.stretch_mode = TextureRect.STRETCH_SCALE
+	_diagram_moon.modulate = Color(0.50, 0.53, 0.65, 1.0)
+	_diagram_moon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_diagram_moon)
+	move_child(_diagram_moon, 2)
+
+	options_area.resized.connect(_layout_diagram_background)
+	options_area.visibility_changed.connect(_layout_diagram_background)
+	call_deferred("_layout_diagram_background")
+
+func _layout_diagram_background() -> void:
+	if _diagram_sky == null or _diagram_moon == null:
+		return
+	# Solo visibles cuando hay diagramas en pantalla
+	var show_bg: bool = options_area.visible and options_area.size.x > 4.0 and options_area.size.y > 4.0
+	_diagram_sky.visible = show_bg
+	_diagram_moon.visible = show_bg
+	if not show_bg:
+		return
+	# Rect global del área de opciones → coords locales del root
+	var gr: Rect2 = options_area.get_global_rect()
+	var inv := get_global_transform_with_canvas().affine_inverse()
+	var local_pos: Vector2 = inv * gr.position
+	_diagram_sky.position = local_pos
+	_diagram_sky.size = gr.size
+	var ms := 48.0
+	_diagram_moon.size = Vector2(ms, ms)
+	_diagram_moon.position = Vector2(local_pos.x + maxf(8.0, gr.size.x - ms - 10.0), local_pos.y + 6.0)
+
+## Un piso = pared (detrás de puertas) + puertas + antorchas (entre puertas) + barandal (delante)
+## Sin cielo ni luna aquí.
 func _make_floor() -> Dictionary:
 	var root := Control.new()
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	world.add_child(root)
 
+	# Pared detrás de las puertas
+	var wall := WallTile.new()
+	wall.tex = _tex("pared.png")
+	wall.tile_px = WALL_TILE_PX
+	root.add_child(wall)
+
 	var line := ColorRect.new()
-	line.color = Color(0.62, 0.62, 0.75)
+	line.color = Color(0.22, 0.26, 0.36)
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(line)
 
@@ -372,24 +581,50 @@ func _make_floor() -> Dictionary:
 		num.offset_top = 8.0
 		root.add_child(door)
 		doors.append(door)
-	return {"root": root, "line": line, "doors": doors}
+
+	# Antorchas solo entre puertas (no extremos)
+	var torches: Array[TextureRect] = []
+	for i in range(NUM_DOORS - 1):
+		var torch := _make_sprite("antorcha.png", Color(0.25, 0.75, 1.0), Vector2(22, 34))
+		root.add_child(torch)
+		torches.append(torch)
+
+	# Barandal delante
+	var railing := TextureRect.new()
+	railing.texture = _tex("barandal.png")
+	if railing.texture == null:
+		railing.texture = _placeholder(Color(0.35, 0.4, 0.55))
+	railing.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	railing.stretch_mode = TextureRect.STRETCH_SCALE
+	railing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	railing.z_index = 1   # por encima del personaje/fantasma (z 0), que van entre puertas y barandal
+	root.add_child(railing)
+
+	return {
+		"root": root,
+		"wall": wall,
+		"line": line,
+		"doors": doors,
+		"torches": torches,
+		"railing": railing
+	}
 
 func _build_stage() -> void:
+	# Solo pisos + personaje + fantasma. Cielo/luna NO van aquí.
 	world = Control.new()
 	world.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(world)
 	for k in range(3):
 		floors.append(_make_floor())
 
-	# Fantasma (patrulla el piso de arriba) y personaje
 	enemy = _make_sprite("ghost.png", Color(1, 0.3, 0.3), Vector2(ENEMY_SIZE, ENEMY_SIZE))
 	stage.add_child(enemy)
 	player = _make_sprite("pacman.png", Color(1, 0.9, 0.1), Vector2(PLAYER_SIZE, PLAYER_SIZE))
 	stage.add_child(player)
 
-	# Nota "el fantasma está N pisos arriba" (sprite estático + texto)
 	ghost_note = Control.new()
 	ghost_note.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost_note.z_index = 2
 	ghost_note.position = Vector2(4, 2)
 	var g_icon := _make_sprite("ghost.png", Color(1, 0.3, 0.3), Vector2(22, 22))
 	ghost_note.add_child(g_icon)
@@ -401,9 +636,9 @@ func _build_stage() -> void:
 	ghost_note.add_child(ghost_note_label)
 	stage.add_child(ghost_note)
 
-	# Mensajes breves de retroalimentación (reemplazan al banner de arriba)
 	toast_label = Label.new()
 	toast_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	toast_label.z_index = 2
 	toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	toast_label.add_theme_font_size_override("font_size", 13)
 	toast_label.add_theme_color_override("font_outline_color", Color.BLACK)
@@ -414,25 +649,53 @@ func _build_stage() -> void:
 func _floor_h() -> float:
 	return stage_h * 0.5
 
-func _floor_line_y() -> float:        # y del suelo dentro de un piso
+func _floor_line_y() -> float:
 	return _floor_h() - LINE_MARGIN
 
-func _player_y() -> float:            # y (coordenadas del escenario) del personaje en el piso actual
+func _player_y() -> float:
 	return _floor_h() + _floor_line_y() - PLAYER_SIZE
 
 func _layout_floors() -> void:
 	var fh: float = _floor_h()
 	var slot_w: float = stage_w / float(NUM_DOORS)
+	var line_y: float = _floor_line_y()
+	var torch_size := Vector2(22.0, 34.0)
+	var railing_h := 22.0
+
 	for idx in range(floors.size()):
 		var f: Dictionary = floors[idx]
-		(f["root"] as Control).position = Vector2(0.0, float(idx) * fh)
-		(f["root"] as Control).size = Vector2(stage_w, fh)
-		(f["line"] as ColorRect).position = Vector2(0.0, _floor_line_y())
-		(f["line"] as ColorRect).size = Vector2(stage_w, 3.0)
+		var root: Control = f["root"]
+		root.position = Vector2(0.0, float(idx) * fh)
+		root.size = Vector2(stage_w, fh)
+
+		var wall: Control = f["wall"]
+		wall.position = Vector2.ZERO          # la pared cubre todo el piso, en mosaico
+		wall.size = Vector2(stage_w, fh)
+
+		var line: ColorRect = f["line"]
+		line.position = Vector2(0.0, line_y)
+		line.size = Vector2(stage_w, 3.0)
+
 		var doors: Array = f["doors"]
 		for i in range(NUM_DOORS):
-			(doors[i] as Control).position = Vector2(slot_w * (float(i) + 0.5) - DOOR_SIZE.x * 0.5, _floor_line_y() - DOOR_SIZE.y)
-	(floors[0]["root"] as Control).modulate = Color(1, 1, 1, 0.45)   # piso de arriba, atenuado
+			(doors[i] as Control).position = Vector2(
+				slot_w * (float(i) + 0.5) - DOOR_SIZE.x * 0.5,
+				line_y - DOOR_SIZE.y
+			)
+
+		var torches: Array = f["torches"]
+		for i in range(torches.size()):
+			# Entre puerta i e i+1
+			var tx: float = slot_w * (float(i) + 1.0) - torch_size.x * 0.5
+			var ty: float = line_y - DOOR_SIZE.y * 0.70 - torch_size.y * 0.5
+			(torches[i] as Control).position = Vector2(tx, ty)
+			(torches[i] as Control).size = torch_size
+
+		var railing: TextureRect = f["railing"]
+		railing.position = Vector2(0.0, line_y - railing_h * 0.45)
+		railing.size = Vector2(stage_w, railing_h)
+
+	(floors[0]["root"] as Control).modulate = Color(1, 1, 1, 0.45)
 	(floors[1]["root"] as Control).modulate = Color.WHITE
 	(floors[2]["root"] as Control).modulate = Color.WHITE
 
@@ -441,6 +704,8 @@ func _layout_stage() -> void:
 	stage_h = maxf(stage.size.y, 150.0)
 	world.position = Vector2.ZERO
 	_layout_floors()
+	_layout_diagram_background()
+
 	player.position.y = _player_y()
 	player.position.x = clampf(player.position.x, 0.0, stage_w - PLAYER_SIZE)
 	toast_label.position = Vector2(4, 2)
@@ -454,13 +719,20 @@ func _layout_stage() -> void:
 
 func _on_difficulty_selected(diff: String) -> void:
 	AudioManager.play_click()
-	show_intro_next = true
-	start_game(diff)
+	current_difficulty = diff
+	var cfg: Dictionary = CONFIG.get(diff, CONFIG["NORMAL"])
+	instr_diff_label.text = "Dificultad: %s" % cfg.get("name", diff)
+	instr_desc_label.text = cfg.get("description", "")
+	difficulty_selector.visible = false
+	btn_back.visible = false
+	if instructions_overlay:
+		instructions_overlay.visible = true
+	state = State.INSTRUCTIONS
 
 func start_game(difficulty: String = "NORMAL") -> void:
 	super.start_game(difficulty)
 	run_id += 1
-	state = State.SELECTING
+	state = State.PLAYING
 
 	var cfg: Dictionary = CONFIG.get(difficulty, CONFIG["NORMAL"])
 	if not _load_retos(difficulty):
@@ -484,7 +756,11 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	selected_door = -1
 	ghost_mode = GhostMode.STATIC
 
+	if instructions_overlay:
+		instructions_overlay.visible = false
 	difficulty_selector.visible = false
+	if _menu_bg:
+		_menu_bg.visible = false
 	hud_row.visible = true
 	question_panel.visible = true
 	options_area.visible = true
@@ -514,23 +790,18 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	EventBus.minigame_started.emit(minigame_id, current_difficulty)
 	_next_reto()
 
-	if show_intro_next:
-		# Instrucciones ANTES que todo: el temporizador y el enemigo siguen detenidos
-		state = State.INTRO
-		intro_overlay.visible = true
-		show_intro_next = false
-	else:
-		state = State.PLAYING
-
 func _show_difficulty_selector() -> void:
 	state = State.SELECTING
+	if _menu_bg:
+		_menu_bg.visible = true
 	difficulty_selector.visible = true
 	hud_row.visible = false
 	question_panel.visible = false
 	options_area.visible = false
 	stage.visible = false
 	controls.visible = false
-	intro_overlay.visible = false
+	if instructions_overlay:
+		instructions_overlay.visible = false
 	btn_back.visible = true
 	btn_pause.visible = false
 
@@ -951,5 +1222,6 @@ func _on_go_exit_pressed() -> void:
 func _on_go_retry_pressed() -> void:
 	AudioManager.play_click()
 	game_over_overlay.visible = false
-	show_intro_next = false
+	if instructions_overlay:
+		instructions_overlay.visible = false
 	start_game(current_difficulty)
