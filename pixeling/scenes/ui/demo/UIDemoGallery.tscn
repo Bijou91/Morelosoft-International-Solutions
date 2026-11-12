@@ -1,0 +1,369 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/demo/UIDemoGallery.gd" id="1_demo_script"]
+[ext_resource type="Theme" path="res://scenes/ui/theme/space_ui_theme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_screws.tres" id="3_panel"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_glass.tres" id="4_glass"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_inner_plate.tres" id="5_inner"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_normal.tres" id="6_g_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_hover.tres" id="7_g_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_pressed.tres" id="8_g_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_blue_normal.tres" id="9_b_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_blue_hover.tres" id="10_b_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_blue_pressed.tres" id="11_b_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_yellow_normal.tres" id="12_y_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_yellow_hover.tres" id="13_y_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_yellow_pressed.tres" id="14_y_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_normal.tres" id="15_r_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_hover.tres" id="16_r_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_pressed.tres" id="17_r_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_neutral_normal.tres" id="18_n_norm"]
+[ext_resource type="PackedScene" path="res://scenes/ui/modals/DifficultyModal.tscn" id="19_diff"]
+[ext_resource type="PackedScene" path="res://scenes/ui/modals/PauseModal.tscn" id="20_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/modals/VictoryModal.tscn" id="21_victory"]
+[ext_resource type="PackedScene" path="res://scenes/ui/modals/GameOverModal.tscn" id="22_gameover"]
+[ext_resource type="PackedScene" path="res://scenes/ui/modals/TutorialModal.tscn" id="23_tutorial"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsModal.tscn" id="24_settings"]
+
+[node name="UIDemoGallery" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_demo_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.13, 1)
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Content" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="HeaderPanel" type="PanelContainer" parent="Scroll/Content"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_panel")
+
+[node name="Margin" type="MarginContainer" parent="Scroll/Content/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Scroll/Content/HeaderPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="BranchBadge" type="Label" parent="Scroll/Content/HeaderPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.75, 0.95, 1)
+theme_override_font_sizes/font_size = 8
+text = "◆ BRANCH: interfazDEMO · KENNEY CLASSIC UI PACK ◆"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="Scroll/Content/HeaderPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "PIXELING UI SYSTEM"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Scroll/Content/HeaderPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.86, 1)
+theme_override_font_sizes/font_size = 8
+text = "Prueba de diseño: botones con relieve táctil 3D y alta legibilidad"
+horizontal_alignment = 1
+
+[node name="SwitcherBox" type="VBoxContainer" parent="Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BtnTogglePack" type="Button" parent="Scroll/Content/SwitcherBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("9_b_norm")
+theme_override_styles/hover = ExtResource("10_b_hov")
+theme_override_styles/pressed = ExtResource("11_b_press")
+text = "🎨 PACK ACTIVO: KENNEY CLASSIC (CLIC PARA ALTERNAR A SCI-FI)"
+
+[node name="SwitcherDesc" type="Label" parent="Scroll/Content/SwitcherBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.70, 0.82, 1)
+theme_override_font_sizes/font_size = 7
+text = "  * Classic: Botones sólidos con profundidad y tacto al presionar (sin franjas)."
+autowrap_mode = 2
+
+[node name="ShowroomPanel" type="PanelContainer" parent="Scroll/Content"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("5_inner")
+
+[node name="Margin" type="MarginContainer" parent="Scroll/Content/ShowroomPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="Scroll/Content/ShowroomPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Scroll/Content/ShowroomPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.8, 0.95, 1)
+theme_override_font_sizes/font_size = 8
+text = "▶ MUESTRARIO DE BOTONES Y CONTROLES (PRUEBA DE CLIC):"
+
+[node name="ButtonsGrid" type="GridContainer" parent="Scroll/Content/ShowroomPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="BtnSampleGreen" type="Button" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ButtonsGrid"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.04, 0.22, 0.08, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+text = "🟢 VERDE (OK)"
+
+[node name="BtnSampleBlue" type="Button" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ButtonsGrid"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/normal = ExtResource("9_b_norm")
+theme_override_styles/hover = ExtResource("10_b_hov")
+theme_override_styles/pressed = ExtResource("11_b_press")
+text = "🔵 AZUL (INFO)"
+
+[node name="BtnSampleYellow" type="Button" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ButtonsGrid"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.22, 0.16, 0.02, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/normal = ExtResource("12_y_norm")
+theme_override_styles/hover = ExtResource("13_y_hov")
+theme_override_styles/pressed = ExtResource("14_y_press")
+text = "🟡 AMARILLO (WARN)"
+
+[node name="BtnSampleRed" type="Button" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ButtonsGrid"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/normal = ExtResource("15_r_norm")
+theme_override_styles/hover = ExtResource("16_r_hov")
+theme_override_styles/pressed = ExtResource("17_r_press")
+text = "🔴 ROJO (ALERT)"
+
+[node name="BtnSampleGrey" type="Button" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ButtonsGrid"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
+theme_override_font_sizes/font_size = 8
+theme_override_styles/normal = ExtResource("18_n_norm")
+text = "⚪ GRIS (NEUTRAL)"
+
+[node name="StarsLabel" type="Label" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ButtonsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "★ ★ ★"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlsHBox" type="HBoxContainer" parent="Scroll/Content/ShowroomPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SliderBox" type="VBoxContainer" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ControlsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SliderLabel" type="Label" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ControlsHBox/SliderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 7
+text = "DESLIZADOR (KENNEY SLIDER):"
+
+[node name="SampleSlider" type="HSlider" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ControlsHBox/SliderBox"]
+layout_mode = 2
+value = 75.0
+
+[node name="ChecksBox" type="VBoxContainer" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ControlsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SampleCheck1" type="CheckBox" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ControlsHBox/ChecksBox"]
+layout_mode = 2
+button_pressed = true
+text = "SFX ACTIVADOS"
+
+[node name="SampleCheck2" type="CheckBox" parent="Scroll/Content/ShowroomPanel/Margin/VBox/ControlsHBox/ChecksBox"]
+layout_mode = 2
+text = "PANTALLA COMPLETA"
+
+[node name="TriggersBox" type="VBoxContainer" parent="Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LabelSection" type="Label" parent="Scroll/Content/TriggersBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "  ▶ PANTALLAS EMERGENTES DISPONIBLES:"
+
+[node name="BtnTestDiff" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.04, 0.22, 0.08, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+text = "1. SELECCIÓN DE DIFICULTAD"
+
+[node name="BtnTestPause" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("9_b_norm")
+theme_override_styles/hover = ExtResource("10_b_hov")
+theme_override_styles/pressed = ExtResource("11_b_press")
+text = "2. MENÚ DE PAUSA TÁCTICA"
+
+[node name="BtnTestVictory" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.04, 0.22, 0.08, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+text = "3. PANTALLA DE VICTORIA (3 ESTRELLAS)"
+
+[node name="BtnTestGameOver" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("15_r_norm")
+theme_override_styles/hover = ExtResource("16_r_hov")
+theme_override_styles/pressed = ExtResource("17_r_press")
+text = "4. PANTALLA DE GAME OVER"
+
+[node name="BtnTestTutorial" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.16, 0.02, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("12_y_norm")
+theme_override_styles/hover = ExtResource("13_y_hov")
+theme_override_styles/pressed = ExtResource("14_y_press")
+text = "5. MANUAL / BRIEFING (TUTORIAL)"
+
+[node name="BtnTestSettings" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = ExtResource("9_b_norm")
+theme_override_styles/hover = ExtResource("10_b_hov")
+theme_override_styles/pressed = ExtResource("11_b_press")
+text = "6. AJUSTES DEL SISTEMA (CU-01)"
+
+[node name="SepDemo" type="HSeparator" parent="Scroll/Content/TriggersBox"]
+layout_mode = 2
+
+[node name="BtnBackToLobby" type="Button" parent="Scroll/Content/TriggersBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = ExtResource("15_r_norm")
+theme_override_styles/hover = ExtResource("16_r_hov")
+theme_override_styles/pressed = ExtResource("17_r_press")
+text = "🚪 VOLVER AL CAMPUS / LOBBY"
+
+[node name="LogPanel" type="PanelContainer" parent="Scroll/Content"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("4_glass")
+
+[node name="LogMargin" type="MarginContainer" parent="Scroll/Content/LogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="LogVBox" type="VBoxContainer" parent="Scroll/Content/LogPanel/LogMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LogTitle" type="Label" parent="Scroll/Content/LogPanel/LogMargin/LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.75, 0.95, 1)
+theme_override_font_sizes/font_size = 8
+text = "TERMINAL DE EVENTOS UI EN VIVO:"
+
+[node name="LogScroll" type="ScrollContainer" parent="Scroll/Content/LogPanel/LogMargin/LogVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogLabel" type="Label" parent="Scroll/Content/LogPanel/LogMargin/LogVBox/LogScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 8
+text = "[READY] Esperando interacciones..."
+autowrap_mode = 2
+
+[node name="Modals" type="CanvasLayer" parent="."]
+layer = 50
+
+[node name="DifficultyModal" parent="Modals" instance=ExtResource("19_diff")]
+
+[node name="PauseModal" parent="Modals" instance=ExtResource("20_pause")]
+
+[node name="VictoryModal" parent="Modals" instance=ExtResource("21_victory")]
+
+[node name="GameOverModal" parent="Modals" instance=ExtResource("22_gameover")]
+
+[node name="TutorialModal" parent="Modals" instance=ExtResource("23_tutorial")]
+
+[node name="SettingsModal" parent="Modals" instance=ExtResource("24_settings")]

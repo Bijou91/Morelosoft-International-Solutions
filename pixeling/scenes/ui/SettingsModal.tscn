@@ -1,6 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://csettingsmodal01"]
+[gd_scene load_steps=12 format=3 uid="uid://csettingsmodal01"]
 
 [ext_resource type="Script" path="res://scenes/ui/SettingsModal.gd" id="1_settings"]
+[ext_resource type="Theme" path="res://scenes/ui/theme/space_ui_theme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_screws.tres" id="3_panel"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_inner_plate.tres" id="4_inner"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_normal.tres" id="5_g_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_hover.tres" id="6_g_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_pressed.tres" id="7_g_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_normal.tres" id="8_r_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_hover.tres" id="9_r_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_red_pressed.tres" id="10_r_press"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_neutral_normal.tres" id="11_n_norm"]
 
 [node name="SettingsModal" type="Control"]
 visible = false
@@ -11,6 +21,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
+theme = ExtResource("2_theme")
 script = ExtResource("1_settings")
 
 [node name="DimOverlay" type="ColorRect" parent="."]
@@ -20,7 +31,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.75)
+color = Color(0.04, 0.05, 0.09, 0.82)
 mouse_filter = 0
 
 [node name="Center" type="CenterContainer" parent="."]
@@ -32,13 +43,14 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ModalPanel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(320, 390)
+custom_minimum_size = Vector2(330, 420)
 layout_mode = 2
+theme_override_styles/panel = ExtResource("3_panel")
 
 [node name="Margin" type="MarginContainer" parent="Center/ModalPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
+theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 14
 
@@ -46,14 +58,22 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="HeaderHBox" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox"]
+[node name="HeaderHBox" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox"]
 layout_mode = 2
-alignment = 1
+theme_override_constants/separation = 3
+
+[node name="Badge" type="Label" parent="Center/ModalPanel/Margin/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "◆ PANEL DE CONFIGURACIÓN ◆"
+horizontal_alignment = 1
 
 [node name="Title" type="Label" parent="Center/ModalPanel/Margin/VBox/HeaderHBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 14
-text = "⚙ Ajustes"
+text = "AJUSTES DEL SISTEMA"
 horizontal_alignment = 1
 
 [node name="TabsHeader" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox"]
@@ -61,50 +81,56 @@ layout_mode = 2
 theme_override_constants/separation = 4
 
 [node name="BtnTabAudio" type="Button" parent="Center/ModalPanel/Margin/VBox/TabsHeader"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 11
-text = "Audio"
+theme_override_font_sizes/font_size = 10
+text = "AUDIO"
 
 [node name="BtnTabVisual" type="Button" parent="Center/ModalPanel/Margin/VBox/TabsHeader"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 11
-text = "Visual"
+theme_override_font_sizes/font_size = 10
+text = "VISUAL"
 
 [node name="BtnTabAccess" type="Button" parent="Center/ModalPanel/Margin/VBox/TabsHeader"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 11
-text = "Accesibilidad"
+theme_override_font_sizes/font_size = 10
+text = "ACCESIBILIDAD"
 
-[node name="SepTop" type="HSeparator" parent="Center/ModalPanel/Margin/VBox"]
+[node name="TabPanelContainer" type="PanelContainer" parent="Center/ModalPanel/Margin/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("4_inner")
 
-[node name="TabContent" type="Control" parent="Center/ModalPanel/Margin/VBox"]
+[node name="TabContent" type="MarginContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer"]
 custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="TabAudio" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="TabAudio" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LabelSFX" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 10
+text = "Efectos de Sonido (SFX):"
+
+[node name="SFXRow" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio"]
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="LabelSFX" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "Efectos de Sonido:"
-
-[node name="SFXRow" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="SliderSFX" type="HSlider" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio/SFXRow"]
+[node name="SliderSFX" type="HSlider" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/SFXRow"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -112,27 +138,30 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="LabelSFXVal" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio/SFXRow"]
+[node name="LabelSFXVal" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/SFXRow"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.2, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 10
 text = "100%"
 horizontal_alignment = 2
 
-[node name="SpacerAudio" type="Control" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio"]
+[node name="SpacerAudio" type="Control" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio"]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
 
-[node name="LabelMusic" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio"]
+[node name="LabelMusic" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "Música de Fondo:"
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 10
+text = "Música de Fondo (BGM):"
 
-[node name="MusicRow" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio"]
+[node name="MusicRow" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SliderMusic" type="HSlider" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio/MusicRow"]
+[node name="SliderMusic" type="HSlider" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/MusicRow"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -140,122 +169,141 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="LabelMusicVal" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAudio/MusicRow"]
+[node name="LabelMusicVal" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAudio/MusicRow"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.2, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 10
 text = "100%"
 horizontal_alignment = 2
 
-[node name="TabVisual" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent"]
+[node name="TabVisual" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent"]
 visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="LabelBlueLight" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual"]
+[node name="LabelBlueLight" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 11
 text = "Filtro de Luz Azul"
 
-[node name="DescBlueLight" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual"]
+[node name="DescBlueLight" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
 theme_override_font_sizes/font_size = 9
 text = "Aplica un tono ámbar cálido para reducir la emisión de luz azul y disminuir la fatiga visual."
 autowrap_mode = 2
 
-[node name="SpacerV" type="Control" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual"]
+[node name="SpacerV" type="Control" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual"]
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
-[node name="RowBlueLight" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual"]
+[node name="RowBlueLight" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual"]
 layout_mode = 2
 
-[node name="LabelToggle" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual/RowBlueLight"]
+[node name="LabelToggle" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual/RowBlueLight"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 10
 text = "Activar Filtro:"
 
-[node name="CheckBlueLight" type="CheckButton" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual/RowBlueLight"]
+[node name="CheckBlueLight" type="Button" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual/RowBlueLight"]
+custom_minimum_size = Vector2(130, 32)
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "ON / OFF"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.3, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("11_n_norm")
+toggle_mode = true
+text = "⚪ DESACTIVADO"
 
-[node name="LabelBlueLightHint" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabVisual"]
+[node name="LabelBlueLightHint" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabVisual"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.75, 0.88, 1)
+theme_override_font_sizes/font_size = 9
 text = "Filtro cálido: Desactivado"
 
-[node name="TabAccessibility" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent"]
+[node name="TabAccessibility" type="VBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent"]
 visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="LabelDaltonico" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility"]
+[node name="LabelDaltonico" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Modo Daltónico"
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 11
+text = "Modo Daltónico / Alto Contraste"
 
-[node name="DescDaltonico" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility"]
+[node name="DescDaltonico" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
 theme_override_font_sizes/font_size = 9
 text = "Optimiza los contrastes, luminancia y marcos perimetrales para máxima distinción visual de los elementos."
 autowrap_mode = 2
 
-[node name="SpacerA" type="Control" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility"]
+[node name="SpacerA" type="Control" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility"]
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
-[node name="RowContrast" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility"]
+[node name="RowContrast" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility"]
 layout_mode = 2
 
-[node name="LabelToggle" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility/RowContrast"]
+[node name="LabelToggle" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility/RowContrast"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 10
 text = "Activar Modo:"
 
-[node name="CheckContrast" type="CheckButton" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility/RowContrast"]
+[node name="CheckContrast" type="Button" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility/RowContrast"]
+custom_minimum_size = Vector2(130, 32)
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "ON / OFF"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.3, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("11_n_norm")
+toggle_mode = true
+text = "⚪ DESACTIVADO"
 
-[node name="LabelContrastHint" type="Label" parent="Center/ModalPanel/Margin/VBox/TabContent/TabAccessibility"]
+[node name="LabelContrastHint" type="Label" parent="Center/ModalPanel/Margin/VBox/TabPanelContainer/TabContent/TabAccessibility"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.75, 0.88, 1)
+theme_override_font_sizes/font_size = 9
 text = "Alto contraste: Desactivado"
-
-[node name="SepBottom" type="HSeparator" parent="Center/ModalPanel/Margin/VBox"]
-layout_mode = 2
 
 [node name="ActionsHBox" type="HBoxContainer" parent="Center/ModalPanel/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="BtnReset" type="Button" parent="Center/ModalPanel/Margin/VBox/ActionsHBox"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 10
-text = "Por defecto"
+theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("11_n_norm")
+text = "Por Defecto"
 
 [node name="BtnCancel" type="Button" parent="Center/ModalPanel/Margin/VBox/ActionsHBox"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("8_r_norm")
+theme_override_styles/hover = ExtResource("9_r_hov")
+theme_override_styles/pressed = ExtResource("10_r_press")
 text = "Cancelar"
 
 [node name="BtnSave" type="Button" parent="Center/ModalPanel/Margin/VBox/ActionsHBox"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.04, 0.22, 0.08, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.3, 0.05, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = ExtResource("5_g_norm")
+theme_override_styles/hover = ExtResource("6_g_hov")
+theme_override_styles/pressed = ExtResource("7_g_press")
 text = "Guardar"

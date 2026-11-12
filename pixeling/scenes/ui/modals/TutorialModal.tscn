@@ -1,0 +1,134 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/modals/TutorialModal.gd" id="1_tut_script"]
+[ext_resource type="Theme" path="res://scenes/ui/theme/space_ui_theme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/tab_grey.tres" id="3_tab"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_screws.tres" id="4_panel"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/panel_inner_plate.tres" id="5_inner"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_normal.tres" id="6_g_norm"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_hover.tres" id="7_g_hov"]
+[ext_resource type="StyleBox" path="res://scenes/ui/theme/btn_green_pressed.tres" id="8_g_press"]
+
+[node name="TutorialModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_tut_script")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.08, 0.82)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(310, 420)
+layout_mode = 2
+pivot_offset = Vector2(155, 210)
+theme_override_constants/separation = 0
+
+[node name="TabHeaderHBox" type="HBoxContainer" parent="Center/PanelContainer"]
+layout_mode = 2
+
+[node name="TabHeader" type="PanelContainer" parent="Center/PanelContainer/TabHeaderHBox"]
+custom_minimum_size = Vector2(160, 26)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_tab")
+
+[node name="TabTitle" type="Label" parent="Center/PanelContainer/TabHeaderHBox/TabHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.24, 1)
+theme_override_font_sizes/font_size = 9
+text = "📋 EXPEDIENTE TÁCTICO"
+horizontal_alignment = 1
+
+[node name="MainPanel" type="PanelContainer" parent="Center/PanelContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Center/PanelContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderBox" type="VBoxContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "MANUAL DE OPERACIONES"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 8
+text = "Especificaciones de la misión:"
+horizontal_alignment = 1
+
+[node name="InnerPlate" type="PanelContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("5_inner")
+
+[node name="Scroll" type="ScrollContainer" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ContentLabel" type="Label" parent="Center/PanelContainer/MainPanel/Margin/VBox/InnerPlate/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 10
+text = "BIENVENIDO AL SIMULADOR PIXELING
+
+1. OBJETIVO PRINCIPAL:
+Superar los retos y responder los desafíos planteados en el tiempo asignado.
+
+2. CONTROLES:
+- Pulsa sobre los botones de opción o escribe los comandos requeridos.
+- Cada acierto suma puntos al score de la ronda y racha de multiplicador.
+
+3. REGLAS DE SUPERVIVENCIA:
+- Evita agotar tus vidas: un error descontará un punto de vida o restará tiempo valioso.
+- Si logras superar el reto sin perder vidas, obtendrás la calificación de 3 ESTRELLAS.
+
+¡Buena suerte, Ingeniero!"
+autowrap_mode = 2
+
+[node name="BtnStart" type="Button" parent="Center/PanelContainer/MainPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.08, 0.26, 0.12, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+text = "▶ ¡COMENZAR MISIÓN! [↵]"
