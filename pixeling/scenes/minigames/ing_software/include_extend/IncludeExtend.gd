@@ -14,6 +14,7 @@ const RelationArrowScript = preload("res://scenes/minigames/ing_software/include
 const DATA_PATH: String = "res://scenes/minigames/ing_software/include_extend/data/escenarios.json"
 const CLASSROOM_SCENE: String = "res://scenes/classroom/AulaIngSoftware.tscn"
 const LOBBY_SCENE: String = "res://scenes/campus/Lobby.tscn"
+const ASSETS_DIR: String = "res://assets/ing_software/include_extend/"
 
 ## Duración de la retroalimentación (seg). Al fallar se da más tiempo para leer la explicación.
 const FEEDBACK_TIME_OK: float = 1.2
@@ -125,6 +126,11 @@ var victory_stars_label: Label
 var victory_score_label: Label
 var victory_stats_label: Label
 
+# Nodos puramente visuales (sprites pixel art, no intervienen en la lógica)
+var hearts_bar: HBoxContainer
+var owl_sprite: TextureRect
+var victory_stars_row: HBoxContainer
+
 # ══════════════════════════════════════════════════════════════════════════════
 # CICLO DE VIDA
 # ══════════════════════════════════════════════════════════════════════════════
@@ -222,22 +228,26 @@ func _draw_scenario() -> Dictionary:
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _build_ui() -> void:
-	# ── Fondo con líneas horizontales tipo scanline ──
+	# ── Fondo muro de aula (con respaldo de scanlines) ──
 	var bg := ColorRect.new()
 	bg.color = COL_BG
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	var vp_size: Vector2 = get_viewport_rect().size
-	for i in range(int(vp_size.y / 8.0) + 1):
-		if i % 2 == 0:
-			continue
-		var line := ColorRect.new()
-		line.color = COL_BG_LINE
-		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		line.position = Vector2(0, i * 8.0)
-		line.size = Vector2(vp_size.x, 2)
-		bg.add_child(line)
+	var bg_tex := PixelSkin.full_rect_background(ASSETS_DIR + "bg_classroom_wall.png")
+	if bg_tex != null:
+		add_child(bg_tex)
+	else:
+		var vp_size: Vector2 = get_viewport_rect().size
+		for i in range(int(vp_size.y / 8.0) + 1):
+			if i % 2 == 0:
+				continue
+			var line := ColorRect.new()
+			line.color = COL_BG_LINE
+			line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			line.position = Vector2(0, i * 8.0)
+			line.size = Vector2(vp_size.x, 2)
+			bg.add_child(line)
 
 	# ── Contenedor principal ──
 	content_root = MarginContainer.new()
@@ -247,7 +257,7 @@ func _build_ui() -> void:
 	add_child(content_root)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.add_theme_constant_override("separation", 5)
 	content_root.add_child(vbox)
 
 	vbox.add_child(_build_top_hud())
@@ -255,6 +265,7 @@ func _build_ui() -> void:
 	var board := _build_board()
 	board.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(board)
+	vbox.add_child(_build_owl_section())
 	vbox.add_child(_build_answer_buttons())
 
 	# ── Overlays (el último añadido queda encima) ──
@@ -270,12 +281,21 @@ func _build_top_hud() -> Control:
 	hud.add_theme_constant_override("separation", 6)
 
 	var btn_back := _make_button("←", COL_PANEL, 14, Vector2(40, 32))
+	btn_back.icon = PixelSkin.common("hud/icon_back.png")
+	if btn_back.icon != null:
+		btn_back.text = ""
+		btn_back.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn_back.pressed.connect(_on_hud_back_pressed)
 	hud.add_child(btn_back)
 
 	var lives_box := _make_badge()
+	var lives_row := HBoxContainer.new()
+	lives_row.add_theme_constant_override("separation", 2)
+	hearts_bar = PixelSkin.make_hearts_bar()
+	lives_row.add_child(hearts_bar)
 	lives_label = _make_label("❤ 5/5", 12, Color("ff6b6b"))
-	lives_box.add_child(lives_label)
+	lives_row.add_child(lives_label)
+	lives_box.add_child(lives_row)
 	hud.add_child(lives_box)
 
 	var spacer := Control.new()
@@ -283,11 +303,22 @@ func _build_top_hud() -> Control:
 	hud.add_child(spacer)
 
 	var score_box := _make_badge()
+	var score_row := HBoxContainer.new()
+	score_row.add_theme_constant_override("separation", 4)
+	var coin_tex := PixelSkin.common("hud/coin.png")
+	if coin_tex != null:
+		score_row.add_child(PixelSkin.icon(coin_tex))
 	score_label = _make_label("🪙 0", 12, COL_ACCENT)
-	score_box.add_child(score_label)
+	PixelSkin.style_label(score_label, PixelSkin.C_YELLOW)
+	score_row.add_child(score_label)
+	score_box.add_child(score_row)
 	hud.add_child(score_box)
 
 	var btn_pause := _make_button("II", COL_PANEL, 13, Vector2(40, 32))
+	btn_pause.icon = PixelSkin.common("hud/icon_pause.png")
+	if btn_pause.icon != null:
+		btn_pause.text = ""
+		btn_pause.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn_pause.pressed.connect(_toggle_pause)
 	hud.add_child(btn_pause)
 	return hud
@@ -297,21 +328,35 @@ func _build_global_timer() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 
-	global_fill_styles = [
-		_make_pixel_box(COL_OK, COL_OK, 0, false),
-		_make_pixel_box(COL_WARN, COL_WARN, 0, false),
-		_make_pixel_box(COL_ERR, COL_ERR, 0, false),
-	]
+	var hg := PixelSkin.common("hud/hourglass.png")
+	if hg != null:
+		row.add_child(PixelSkin.icon(hg))
+
+	var has_pixel_bar: bool = PixelSkin.bar_background() != null
+	if has_pixel_bar:
+		global_fill_styles = [
+			PixelSkin.bar_fill(PixelSkin.C_GREEN),
+			PixelSkin.bar_fill(PixelSkin.C_YELLOW),
+			PixelSkin.bar_fill(PixelSkin.C_RED),
+		]
+	else:
+		global_fill_styles = [
+			_make_pixel_box(COL_OK, COL_OK, 0, false),
+			_make_pixel_box(COL_WARN, COL_WARN, 0, false),
+			_make_pixel_box(COL_ERR, COL_ERR, 0, false),
+		]
 
 	global_bar = ProgressBar.new()
 	global_bar.show_percentage = false
-	global_bar.custom_minimum_size = Vector2(0, 14)
+	global_bar.custom_minimum_size = Vector2(0, 12)
 	global_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	global_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	global_bar.add_theme_stylebox_override("background", _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, false))
+	var bar_bg := PixelSkin.bar_background()
+	global_bar.add_theme_stylebox_override("background", bar_bg if bar_bg != null else _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, false))
 	row.add_child(global_bar)
 
 	global_time_label = _make_label("1:30", 12, COL_CHALK)
+	PixelSkin.style_label(global_time_label, PixelSkin.C_WHITE)
 	global_time_label.custom_minimum_size = Vector2(40, 0)
 	row.add_child(global_time_label)
 	return row
@@ -319,39 +364,46 @@ func _build_global_timer() -> Control:
 
 func _build_board() -> PanelContainer:
 	var board := PanelContainer.new()
-	board.add_theme_stylebox_override("panel", _make_pixel_box(COL_BOARD, COL_WOOD, 4, true))
+	var board_sb := PixelSkin.style_9(ASSETS_DIR + "chalkboard_9.png", 12)
+	board.add_theme_stylebox_override("panel", board_sb if board_sb != null else _make_pixel_box(COL_BOARD, COL_WOOD, 4, true))
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 10)
 	margin.add_theme_constant_override("margin_right", 10)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 6)
 	board.add_child(margin)
 
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 8)
+	v.add_theme_constant_override("separation", 5)
 	margin.add_child(v)
 
 	# ── Escenario (FN-01) ──
-	v.add_child(_make_label("▌ESCENARIO", 10, COL_ACCENT, false))
-	context_label = _make_label("", 13, COL_CHALK, false, true)
-	context_label.custom_minimum_size = Vector2(0, 40)
+	var esc_title := _make_label("▌ESCENARIO", 10, COL_ACCENT, false)
+	PixelSkin.style_label(esc_title, PixelSkin.C_YELLOW, 2)
+	v.add_child(esc_title)
+	context_label = _make_label("", 11, COL_CHALK, false, true)
+	context_label.custom_minimum_size = Vector2(0, 32)
 	v.add_child(context_label)
 
 	v.add_child(_make_expand_spacer())
 
-	# ── Diagrama: (Caso base) - - ? - - (Caso relacionado) ──
+	# ── Diagrama: [Actor] (Caso base) - - ? - - (Caso relacionado) ──
 	var diagram := HBoxContainer.new()
 	diagram.alignment = BoxContainer.ALIGNMENT_CENTER
 	diagram.add_theme_constant_override("separation", 2)
 	v.add_child(diagram)
+
+	var actor_tex := PixelSkin.tex(ASSETS_DIR + "chalk_actor.png")
+	if actor_tex != null:
+		diagram.add_child(PixelSkin.icon(actor_tex, Vector2(22, 42)))
 
 	var base_parts: Array = _make_use_case_oval()
 	diagram.add_child(base_parts[0])
 	uc_base_label = base_parts[1]
 
 	relation_arrow = RelationArrowScript.new()
-	relation_arrow.custom_minimum_size = Vector2(60, 70)
+	relation_arrow.custom_minimum_size = Vector2(54, 62)
 	relation_arrow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	diagram.add_child(relation_arrow)
 
@@ -359,28 +411,32 @@ func _build_board() -> PanelContainer:
 	diagram.add_child(rel_parts[0])
 	uc_related_label = rel_parts[1]
 
-	# ── Retroalimentación didáctica ──
-	feedback_label = _make_label("", 11, COL_CHALK, true, true)
-	feedback_label.custom_minimum_size = Vector2(0, 44)
-	v.add_child(feedback_label)
-
 	v.add_child(_make_expand_spacer())
 
-	# ── Regla de negocio ──
+	# ── Regla de negocio (nota de papel clavada en el pizarrón) ──
 	var rule_box := PanelContainer.new()
-	rule_box.add_theme_stylebox_override("panel", _make_pixel_box(Color(0, 0, 0, 0.25), COL_CHALK_DIM, 1, false))
+	var note_sb := PixelSkin.style_9(ASSETS_DIR + "paper_note_9.png", 8, Color.WHITE, 6)
+	rule_box.add_theme_stylebox_override("panel", note_sb if note_sb != null else _make_pixel_box(Color(0, 0, 0, 0.25), COL_CHALK_DIM, 1, false))
 	var rule_v := VBoxContainer.new()
 	rule_v.add_theme_constant_override("separation", 2)
 	rule_box.add_child(rule_v)
-	rule_v.add_child(_make_label("📜 REGLA DE NEGOCIO", 9, COL_ACCENT, false))
-	rule_label = _make_label("", 11, COL_CHALK, false, true)
+	var rule_hdr := _make_label("REGLA DE NEGOCIO", 9, PixelSkin.C_WOOD_DARK if note_sb != null else COL_ACCENT, false)
+	PixelSkin.apply_font(rule_hdr)
+	rule_v.add_child(rule_hdr)
+	rule_label = _make_label("", 10, PixelSkin.C_INK if note_sb != null else COL_CHALK, false, true)
+	if note_sb != null:
+		rule_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
 	rule_v.add_child(rule_label)
 	v.add_child(rule_box)
 
 	# ── Temporizador de reacción por pregunta ──
 	var q_row := HBoxContainer.new()
 	q_row.add_theme_constant_override("separation", 6)
-	q_row.add_child(_make_label("⏱", 12, COL_CHALK))
+	var hg := PixelSkin.common("hud/hourglass.png")
+	if hg != null:
+		q_row.add_child(PixelSkin.icon(hg, Vector2(12, 16)))
+	else:
+		q_row.add_child(_make_label("⏱", 12, COL_CHALK))
 
 	question_fill_ok = _make_pixel_box(COL_ACCENT, COL_ACCENT, 0, false)
 	question_fill_danger = _make_pixel_box(COL_ERR, COL_ERR, 0, false)
@@ -394,23 +450,99 @@ func _build_board() -> PanelContainer:
 	q_row.add_child(question_bar)
 
 	question_time_label = _make_label("7s", 12, COL_CHALK)
+	PixelSkin.style_label(question_time_label, PixelSkin.C_WHITE, 2)
 	question_time_label.custom_minimum_size = Vector2(28, 0)
 	q_row.add_child(question_time_label)
 	v.add_child(q_row)
 
+	# Repisa con gises y borrador (solo decoración)
+	var tray_tex := PixelSkin.tex(ASSETS_DIR + "chalk_tray.png")
+	if tray_tex != null:
+		var tray_center := CenterContainer.new()
+		tray_center.add_child(PixelSkin.icon(tray_tex, Vector2(160, 12)))
+		v.add_child(tray_center)
+
 	return board
+
+
+## Mascota búho profesor + globo de diálogo que envuelve a `feedback_label`
+func _build_owl_section() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var owl_tex := PixelSkin.tex(ASSETS_DIR + "owl_neutral.png")
+	if owl_tex != null:
+		owl_sprite = PixelSkin.icon(owl_tex, Vector2(46, 46))
+		row.add_child(owl_sprite)
+
+	var bubble := PanelContainer.new()
+	bubble.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var bsb := PixelSkin.style_9(ASSETS_DIR + "speech_bubble_9.png", 6, Color.WHITE, 6)
+	bubble.add_theme_stylebox_override("panel", bsb if bsb != null else _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, false))
+
+	feedback_label = _make_label("", 10, PixelSkin.C_INK if bsb != null else COL_CHALK, true, true)
+	if bsb != null:
+		# Al teñir self_modulate con negro (0,0,0), cualquier font_color claro que la lógica ponga
+		# (COL_CHALK_DIM, verde o rojo claros) se multiplica por 0 y se ve siempre en tinta oscura
+		# nítida sobre el globo blanco, sin tocar _next_scenario ni _reveal_answer.
+		feedback_label.self_modulate = PixelSkin.C_INK
+		feedback_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
+	feedback_label.custom_minimum_size = Vector2(0, 38)
+	bubble.add_child(feedback_label)
+	row.add_child(bubble)
+	_sync_owl_with_buttons()
+	return row
+
+
+## Sincroniza la expresión del búho con el texto que la lógica escribe en feedback_label,
+## sin tocar las funciones de lógica (_next_scenario / _reveal_answer).
+func _sync_owl_with_buttons() -> void:
+	if not is_instance_valid(owl_sprite):
+		return
+	var update_owl := func():
+		if not is_instance_valid(owl_sprite) or not is_instance_valid(feedback_label):
+			return
+		var t: String = feedback_label.text
+		var face: String = "owl_neutral.png"
+		if t.begins_with("✔"):
+			face = "owl_happy.png"
+		elif t.begins_with("✘") or t.begins_with("⏱"):
+			face = "owl_sad.png"
+		var tex := PixelSkin.tex(ASSETS_DIR + face)
+		if tex != null:
+			owl_sprite.texture = tex
+		if bsb_has_light_bg():
+			if face == "owl_happy.png":
+				feedback_label.self_modulate = Color("195e33")
+			elif face == "owl_sad.png":
+				feedback_label.self_modulate = Color("8f1d2c")
+			else:
+				feedback_label.self_modulate = PixelSkin.C_INK
+	feedback_label.draw.connect(update_owl)
+	feedback_label.minimum_size_changed.connect(update_owl)
+
+
+func bsb_has_light_bg() -> bool:
+	return PixelSkin.tex(ASSETS_DIR + "speech_bubble_9.png") != null
 
 
 func _build_answer_buttons() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 
-	btn_include = _make_button("«include»", COL_INCLUDE, 16, Vector2(0, 56))
+	btn_include = _make_button("INCLUDE", COL_INCLUDE, 14, Vector2(0, 54))
+	btn_include.icon = PixelSkin.tex(ASSETS_DIR + "icon_link.png")
+	PixelSkin.skin_button(btn_include, Color(0.75, 0.75, 0.75),
+		ASSETS_DIR + "btn_include_normal_9.png", ASSETS_DIR + "btn_include_pressed_9.png", "", 8)
 	btn_include.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_include.pressed.connect(func(): _on_answer_pressed("include"))
 	row.add_child(btn_include)
 
-	btn_extend = _make_button("«extend»", COL_EXTEND, 16, Vector2(0, 56))
+	btn_extend = _make_button("EXTEND", COL_EXTEND, 14, Vector2(0, 54))
+	btn_extend.icon = PixelSkin.tex(ASSETS_DIR + "icon_puzzle.png")
+	PixelSkin.skin_button(btn_extend, Color(0.75, 0.75, 0.75),
+		ASSETS_DIR + "btn_extend_normal_9.png", ASSETS_DIR + "btn_extend_pressed_9.png", "", 8)
 	btn_extend.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_extend.pressed.connect(func(): _on_answer_pressed("extend"))
 	row.add_child(btn_extend)
@@ -424,9 +556,9 @@ func _build_overlay_difficulty() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "⚖️  ¿Include o Extend?"
+	title.text = "¿Include o Extend?"
 	title.add_theme_font_size_override("font_size", 15)
-	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
@@ -443,36 +575,46 @@ func _build_overlay_difficulty() -> void:
 	var lbl_diff := Label.new()
 	lbl_diff.text = "Selecciona la dificultad:"
 	lbl_diff.add_theme_font_size_override("font_size", 10)
-	lbl_diff.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	PixelSkin.style_label(lbl_diff, PixelSkin.C_WHITE)
 	lbl_diff.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(lbl_diff)
 
 	var btn_facil := Button.new()
-	btn_facil.text = "🟢  Fácil  (10 vidas)"
+	btn_facil.text = "Fácil  (10 vidas)"
+	btn_facil.icon = PixelSkin.difficulty_icon("FACIL")
 	btn_facil.add_theme_font_size_override("font_size", 12)
 	btn_facil.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_facil, PixelSkin.C_GREEN)
 	btn_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
 	vbox.add_child(btn_facil)
 
 	var btn_normal := Button.new()
-	btn_normal.text = "🟡  Normal  (5 vidas)"
+	btn_normal.text = "Normal  (5 vidas)"
+	btn_normal.icon = PixelSkin.difficulty_icon("NORMAL")
 	btn_normal.add_theme_font_size_override("font_size", 12)
 	btn_normal.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_normal, PixelSkin.C_ORANGE)
 	btn_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
 	vbox.add_child(btn_normal)
 
 	var btn_ing := Button.new()
-	btn_ing.text = "🔴  Ingeniero  (3 vidas)"
+	btn_ing.text = "Ingeniero  (3 vidas)"
+	btn_ing.icon = PixelSkin.difficulty_icon("INGENIERO")
 	btn_ing.add_theme_font_size_override("font_size", 12)
 	btn_ing.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_ing, PixelSkin.C_RED)
 	btn_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
 	vbox.add_child(btn_ing)
 
 	var btn_back := Button.new()
-	btn_back.text = "←  Volver al Salón"
+	btn_back.text = "←  Ver Instrucciones"
 	btn_back.add_theme_font_size_override("font_size", 11)
 	btn_back.custom_minimum_size = Vector2(0, 34)
-	btn_back.pressed.connect(_go_to_classroom)
+	PixelSkin.skin_button(btn_back, PixelSkin.C_SLATE)
+	btn_back.pressed.connect(func():
+		AudioManager.play_click()
+		_show_difficulty_selector()
+	)
 	vbox.add_child(btn_back)
 
 
@@ -482,16 +624,16 @@ func _build_overlay_instructions() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "📋  INSTRUCCIONES"
+	title.text = "INSTRUCCIONES"
 	title.add_theme_font_size_override("font_size", 15)
-	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
 	instr_difficulty_label = Label.new()
-	instr_difficulty_label.text = "Dificultad: NORMAL — 5 vidas"
+	instr_difficulty_label.text = "¿Include o Extend?"
 	instr_difficulty_label.add_theme_font_size_override("font_size", 10)
-	instr_difficulty_label.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
+	PixelSkin.style_label(instr_difficulty_label, PixelSkin.C_CYAN)
 	instr_difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(instr_difficulty_label)
 
@@ -499,10 +641,10 @@ func _build_overlay_instructions() -> void:
 	vbox.add_child(sep)
 
 	var rules: Array[String] = [
-		"🟢  Seleccionar la relación correcta\n     rápidamente = +Puntos",
-		"🔴  Seleccionar la opción\n     incorrecta = -1 Vida",
-		"⚠️  Dejar que se acabe el tiempo\n     de reacción por pregunta = -1 Vida",
-		"⏱  Sobrevive hasta que el\n     temporizador global termine para ganar",
+		"[+] Seleccionar la relación correcta\n     rápidamente = +Puntos",
+		"[-] Seleccionar la opción\n     incorrecta = -1 Vida",
+		"[!] Dejar que se acabe el tiempo\n     de reacción por pregunta = -1 Vida",
+		"[T] Sobrevive hasta que el\n     temporizador global termine para ganar",
 	]
 	for rule_text in rules:
 		var rule_lbl := Label.new()
@@ -515,20 +657,19 @@ func _build_overlay_instructions() -> void:
 	vbox.add_child(sep2)
 
 	var btn_start := Button.new()
-	btn_start.text = "▶  ¡COMENZAR!"
+	btn_start.text = "▶  Elegir Dificultad"
 	btn_start.add_theme_font_size_override("font_size", 14)
 	btn_start.custom_minimum_size = Vector2(0, 42)
+	PixelSkin.skin_button(btn_start, PixelSkin.C_GREEN)
 	btn_start.pressed.connect(_on_start_pressed)
 	vbox.add_child(btn_start)
 
 	var btn_change := Button.new()
-	btn_change.text = "←  Cambiar Dificultad"
+	btn_change.text = "←  Volver al Salón"
 	btn_change.add_theme_font_size_override("font_size", 11)
 	btn_change.custom_minimum_size = Vector2(0, 34)
-	btn_change.pressed.connect(func():
-		AudioManager.play_click()
-		_show_difficulty_selector()
-	)
+	PixelSkin.skin_button(btn_change, PixelSkin.C_SLATE)
+	btn_change.pressed.connect(_go_to_classroom)
 	vbox.add_child(btn_change)
 
 
@@ -538,9 +679,9 @@ func _build_overlay_pause() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "⏸  PAUSA"
+	title.text = "PAUSA"
 	title.add_theme_font_size_override("font_size", 18)
-	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
@@ -548,6 +689,7 @@ func _build_overlay_pause() -> void:
 	btn_resume.text = "▶  Reanudar"
 	btn_resume.add_theme_font_size_override("font_size", 13)
 	btn_resume.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_resume, PixelSkin.C_GREEN)
 	btn_resume.pressed.connect(_toggle_pause)
 	vbox.add_child(btn_resume)
 
@@ -555,6 +697,7 @@ func _build_overlay_pause() -> void:
 	btn_salon.text = "←  Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 12)
 	btn_salon.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_salon, PixelSkin.C_SLATE)
 	btn_salon.pressed.connect(_go_to_classroom)
 	vbox.add_child(btn_salon)
 
@@ -565,16 +708,16 @@ func _build_overlay_game_over() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "💀  GAME OVER"
+	title.text = "GAME OVER"
 	title.add_theme_font_size_override("font_size", 20)
-	title.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
+	PixelSkin.style_label(title, PixelSkin.C_RED)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
 	game_over_score_label = Label.new()
 	game_over_score_label.text = "Puntaje: 0"
 	game_over_score_label.add_theme_font_size_override("font_size", 13)
-	game_over_score_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
+	PixelSkin.style_label(game_over_score_label, PixelSkin.C_WHITE)
 	game_over_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(game_over_score_label)
 
@@ -586,9 +729,10 @@ func _build_overlay_game_over() -> void:
 	vbox.add_child(game_over_stats_label)
 
 	var btn_retry := Button.new()
-	btn_retry.text = "🔄  Reiniciar Actividad"
+	btn_retry.text = "Reiniciar Actividad"
 	btn_retry.add_theme_font_size_override("font_size", 13)
 	btn_retry.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_retry, PixelSkin.C_ORANGE)
 	btn_retry.pressed.connect(_on_retry_pressed)
 	vbox.add_child(btn_retry)
 
@@ -596,6 +740,7 @@ func _build_overlay_game_over() -> void:
 	btn_salon.text = "←  Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 11)
 	btn_salon.custom_minimum_size = Vector2(0, 36)
+	PixelSkin.skin_button(btn_salon, PixelSkin.C_SLATE)
 	btn_salon.pressed.connect(_go_to_classroom)
 	vbox.add_child(btn_salon)
 
@@ -606,22 +751,30 @@ func _build_overlay_victory() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "🏆  ¡COMPLETADO!"
+	title.text = "¡COMPLETADO!"
 	title.add_theme_font_size_override("font_size", 20)
-	title.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
+
+	victory_stars_row = PixelSkin.make_stars_row(3)
+	vbox.add_child(victory_stars_row)
 
 	victory_stars_label = Label.new()
 	victory_stars_label.text = "⭐⭐⭐"
 	victory_stars_label.add_theme_font_size_override("font_size", 22)
 	victory_stars_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if victory_stars_row.get_child_count() > 0:
+		victory_stars_label.visible = false
+	victory_overlay.visibility_changed.connect(func():
+		if victory_overlay.visible:
+			PixelSkin.set_stars(victory_stars_row, PixelSkin.count_stars_in_text(victory_stars_label.text)))
 	vbox.add_child(victory_stars_label)
 
 	victory_score_label = Label.new()
 	victory_score_label.text = "Puntaje: 0"
 	victory_score_label.add_theme_font_size_override("font_size", 14)
-	victory_score_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	PixelSkin.style_label(victory_score_label, PixelSkin.C_WHITE)
 	victory_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(victory_score_label)
 
@@ -634,16 +787,18 @@ func _build_overlay_victory() -> void:
 
 	# Opciones de salida al finalizar la actividad
 	var btn_salon := Button.new()
-	btn_salon.text = "📚  Volver al Salón"
+	btn_salon.text = "Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 13)
 	btn_salon.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_salon, PixelSkin.C_BLUE)
 	btn_salon.pressed.connect(_go_to_classroom)
 	vbox.add_child(btn_salon)
 
 	var btn_campus := Button.new()
-	btn_campus.text = "🚪  Salir al Campus"
+	btn_campus.text = "Salir al Campus"
 	btn_campus.add_theme_font_size_override("font_size", 13)
 	btn_campus.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_campus, PixelSkin.C_SLATE)
 	btn_campus.pressed.connect(_go_to_campus)
 	vbox.add_child(btn_campus)
 
@@ -703,6 +858,7 @@ func _make_button(text: String, color: Color, font_size: int, min_size: Vector2)
 	btn.add_theme_stylebox_override("pressed", pressed_sb)
 	btn.add_theme_stylebox_override("disabled", _make_pixel_box(color.darkened(0.55), color.darkened(0.7), 2, false))
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	PixelSkin.skin_button(btn, color)
 	btn.mouse_entered.connect(func():
 		if not btn.disabled:
 			btn.pivot_offset = btn.size / 2.0
@@ -714,24 +870,29 @@ func _make_button(text: String, color: Color, font_size: int, min_size: Vector2)
 
 func _make_badge() -> PanelContainer:
 	var badge := PanelContainer.new()
-	badge.add_theme_stylebox_override("panel", _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, true))
+	var psb := PixelSkin.dark_panel(4)
+	badge.add_theme_stylebox_override("panel", psb if psb != null else _make_pixel_box(COL_PANEL, COL_PANEL_BORDER, 2, true))
 	return badge
 
 
-## Óvalo de caso de uso UML. Devuelve [panel, label].
+## Óvalo de caso de uso UML (elipse de gis en el pizarrón). Devuelve [panel, label].
 func _make_use_case_oval() -> Array:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(106, 66)
+	panel.custom_minimum_size = Vector2(98, 60)
 	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var sb := _make_pixel_box(COL_CHALK, COL_INK, 2, true, 33)
-	sb.content_margin_left = 10.0
-	sb.content_margin_right = 10.0
-	panel.add_theme_stylebox_override("panel", sb)
+	var oval_sb := PixelSkin.style_9(ASSETS_DIR + "uc_oval_9.png", 12, Color.WHITE, 8)
+	if oval_sb != null:
+		panel.add_theme_stylebox_override("panel", oval_sb)
+	else:
+		var sb := _make_pixel_box(COL_CHALK, COL_INK, 2, true, 33)
+		sb.content_margin_left = 10.0
+		sb.content_margin_right = 10.0
+		panel.add_theme_stylebox_override("panel", sb)
 
 	var lbl := Label.new()
-	lbl.custom_minimum_size = Vector2(86, 0)
-	lbl.add_theme_font_size_override("font_size", 11)
-	lbl.add_theme_color_override("font_color", COL_INK)
+	lbl.custom_minimum_size = Vector2(80, 0)
+	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.add_theme_color_override("font_color", COL_CHALK if oval_sb != null else COL_INK)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -784,7 +945,8 @@ func _create_overlay(bg_color: Color = Color(0, 0, 0, 0.75)) -> Array:
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(300, 0)
-	panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.12, 0.13, 0.18, 0.95), 12, 2, Color(0.4, 0.45, 0.55)))
+	var psb := PixelSkin.dark_panel()
+	panel.add_theme_stylebox_override("panel", psb if psb != null else _make_stylebox(Color(0.12, 0.13, 0.18, 0.95), 12, 2, Color(0.4, 0.45, 0.55)))
 	center.add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -816,13 +978,13 @@ func _show_overlay(target: ColorRect) -> void:
 		target.modulate.a = 1.0
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FLUJO PRE-PARTIDA: Dificultad → Instrucciones → Juego (Precondiciones 5 y 6)
+# FLUJO PRE-PARTIDA: Instrucciones → Dificultad → Juego (Precondiciones 5 y 6)
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _show_difficulty_selector() -> void:
-	state = State.DIFFICULTY
+	state = State.INSTRUCTIONS
 	_reset_board()
-	_show_overlay(difficulty_overlay)
+	_show_overlay(instructions_overlay)
 
 
 func _on_difficulty_selected(diff: String) -> void:
@@ -836,13 +998,13 @@ func _on_difficulty_selected(diff: String) -> void:
 
 	var diff_names := {"FACIL": "FÁCIL", "NORMAL": "NORMAL", "INGENIERO": "INGENIERO"}
 	instr_difficulty_label.text = "Dificultad: %s — %d vidas" % [diff_names.get(diff, diff), max_lives]
-	state = State.INSTRUCTIONS
-	_show_overlay(instructions_overlay)
+	_start_game_play()
 
 
 func _on_start_pressed() -> void:
 	AudioManager.play_click()
-	_start_game_play()
+	state = State.DIFFICULTY
+	_show_overlay(difficulty_overlay)
 
 
 func _start_game_play() -> void:
@@ -1067,7 +1229,11 @@ func _update_question_timer() -> void:
 
 func _update_hud() -> void:
 	lives_label.text = "❤ %d/%d" % [current_lives, max_lives]
-	score_label.text = "🪙 %d" % score
+	score_label.text = "%d" % score if PixelSkin.common("hud/coin.png") != null else "🪙 %d" % score
+	if PixelSkin.set_hearts(hearts_bar, current_lives, max_lives):
+		lives_label.visible = false
+	else:
+		lives_label.visible = true
 
 
 func _set_answer_buttons_enabled(enabled: bool) -> void:

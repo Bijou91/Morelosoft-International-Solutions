@@ -13,6 +13,7 @@ const CART_HEIGHT: float = 40.0
 const REQ_WIDTH: float = 105.0
 const REQ_HEIGHT: float = 55.0
 const PLAYER_SPEED: float = 200.0
+const ASSETS_DIR: String = "res://assets/ing_software/lluvia_requerimientos/"
 
 ## Banco de Requerimientos Funcionales (el jugador DEBE atrapar estos) ── 20 ítems
 const FUNCTIONAL_REQS = [
@@ -119,6 +120,14 @@ var final_score_label: Label
 var victory_score_label: Label
 var stars_label: Label
 
+# Nodos puramente visuales (sprites pixel art, no intervienen en la lógica)
+var hearts_bar: HBoxContainer
+var time_label: Label
+var victory_stars_row: HBoxContainer
+var dev_sprite: TextureRect
+var dev_frames: Array[Texture2D] = []
+var dev_anim_clock: float = 0.0
+
 # ══════════════════════════════════════════════════════════════════════════════
 # CICLO DE VIDA
 # ══════════════════════════════════════════════════════════════════════════════
@@ -139,16 +148,7 @@ func _apply_accessibility_mode(is_active: bool) -> void:
 	for req_node in active_requirements:
 		if is_instance_valid(req_node) and req_node is PanelContainer:
 			var is_func: bool = req_node.get_meta("is_functional", false)
-			var bg_col: Color
-			var bdr_col: Color
-			if is_func:
-				bg_col = Color("#0072B2") if is_active else Color(0.18, 0.52, 0.18)
-				bdr_col = Color("#56B4E9") if is_active else Color(0.12, 0.38, 0.12)
-			else:
-				bg_col = Color("#D55E00") if is_active else Color(0.65, 0.14, 0.14)
-				bdr_col = Color("#E69F00") if is_active else Color(0.48, 0.10, 0.10)
-			var bdr_w: int = 3 if is_active else 2
-			req_node.add_theme_stylebox_override("panel", _make_stylebox(bg_col, 5, bdr_w, bdr_col))
+			req_node.add_theme_stylebox_override("panel", _make_req_stylebox(is_func, is_active))
 
 func _process(delta: float) -> void:
 	if not is_game_active or is_paused:
@@ -202,19 +202,28 @@ func _notification(what: int) -> void:
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _build_ui() -> void:
-	# ── Fondo pergamino ──
+	# ── Fondo "Tormenta en la oficina" (con respaldo de color sólido) ──
 	var bg := ColorRect.new()
-	bg.color = Color(0.91, 0.84, 0.64) # #E8D5A3
+	bg.color = PixelSkin.C_INK
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+	var bg_tex := PixelSkin.full_rect_background(ASSETS_DIR + "bg_storm_city.png")
+	if bg_tex != null:
+		add_child(bg_tex)
 
-	# Líneas de libreta
-	for i in range(18):
-		var line := ColorRect.new()
-		line.color = Color(0.75, 0.68, 0.55, 0.35)
-		line.position = Vector2(0, 35.0 + i * 35.0)
-		line.size = Vector2(vp_size.x, 1)
-		bg.add_child(line)
+	# Franja de banqueta en la base (detrás de los controles)
+	var ground_t := PixelSkin.tex(ASSETS_DIR + "ground_tiles.png")
+	if ground_t != null:
+		var ground := TextureRect.new()
+		ground.texture = ground_t
+		ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ground.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		ground.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		ground.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ground.stretch_mode = TextureRect.STRETCH_TILE
+		ground.position = Vector2(0, vp_size.y - 68)
+		ground.size = Vector2(vp_size.x, 68)
+		add_child(ground)
 
 	# ── Top HUD ──
 	_build_top_hud()
@@ -238,50 +247,69 @@ func _build_ui() -> void:
 
 
 func _build_top_hud() -> void:
+	var hud_bg := PanelContainer.new()
+	hud_bg.position = Vector2(4, 3)
+	hud_bg.size = Vector2(vp_size.x - 8, 36)
+	var hud_sb := PixelSkin.dark_panel(4)
+	if hud_sb != null:
+		hud_bg.add_theme_stylebox_override("panel", hud_sb)
+	else:
+		hud_bg.add_theme_stylebox_override("panel", _make_stylebox(Color(0.10, 0.12, 0.18, 0.9), 4, 2, Color(0.3, 0.35, 0.45)))
+	add_child(hud_bg)
+
 	var hud := HBoxContainer.new()
-	hud.position = Vector2(8, 6)
-	hud.size = Vector2(vp_size.x - 16, 32)
-	add_child(hud)
+	hud.add_theme_constant_override("separation", 6)
+	hud_bg.add_child(hud)
 
 	var btn_back := Button.new()
-	btn_back.text = "← Volver"
-	btn_back.add_theme_font_size_override("font_size", 10)
-	btn_back.custom_minimum_size = Vector2(70, 0)
+	btn_back.text = "←"
+	btn_back.icon = PixelSkin.common("hud/icon_back.png")
+	if btn_back.icon != null:
+		btn_back.text = ""
+		btn_back.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn_back.custom_minimum_size = Vector2(34, 26)
+	PixelSkin.skin_button(btn_back, PixelSkin.C_SLATE)
 	btn_back.pressed.connect(_on_back_pressed)
 	hud.add_child(btn_back)
+
+	# Vidas (barra de corazones pixel + label existente como respaldo/lectura)
+	hearts_bar = PixelSkin.make_hearts_bar()
+	hud.add_child(hearts_bar)
+
+	lives_label = Label.new()
+	lives_label.text = "VIDAS: 5"
+	lives_label.add_theme_font_size_override("font_size", 11)
+	PixelSkin.style_label(lives_label, PixelSkin.C_WHITE)
+	hud.add_child(lives_label)
+	if PixelSkin.set_hearts(hearts_bar, current_lives, max_lives):
+		lives_label.visible = false
 
 	var spacer1 := Control.new()
 	spacer1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hud.add_child(spacer1)
 
-	# Vidas
-	var heart_lbl := Label.new()
-	heart_lbl.text = "♥"
-	heart_lbl.add_theme_font_size_override("font_size", 14)
-	heart_lbl.add_theme_color_override("font_color", Color(0.85, 0.15, 0.15))
-	hud.add_child(heart_lbl)
-
-	lives_label = Label.new()
-	lives_label.text = "VIDAS: 5"
-	lives_label.add_theme_font_size_override("font_size", 11)
-	lives_label.add_theme_color_override("font_color", Color(0.2, 0.15, 0.1))
-	hud.add_child(lives_label)
+	# Reloj + tiempo restante (solo lectura de time_remaining)
+	var hg := PixelSkin.common("hud/hourglass.png")
+	if hg != null:
+		hud.add_child(PixelSkin.icon(hg))
+	time_label = Label.new()
+	time_label.text = "01:15"
+	time_label.add_theme_font_size_override("font_size", 11)
+	PixelSkin.style_label(time_label, PixelSkin.C_WHITE)
+	hud.add_child(time_label)
 
 	var spacer2 := Control.new()
 	spacer2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hud.add_child(spacer2)
 
-	# Puntos
-	var coin_lbl := Label.new()
-	coin_lbl.text = "PTS:"
-	coin_lbl.add_theme_font_size_override("font_size", 11)
-	coin_lbl.add_theme_color_override("font_color", Color(0.70, 0.50, 0.10))
-	hud.add_child(coin_lbl)
-
+	# Puntos (moneda pixel + label existente)
+	var coin_tex := PixelSkin.common("hud/coin.png")
+	if coin_tex != null:
+		hud.add_child(PixelSkin.icon(coin_tex))
 	score_label = Label.new()
 	score_label.text = "0"
-	score_label.add_theme_font_size_override("font_size", 11)
-	score_label.add_theme_color_override("font_color", Color(0.2, 0.15, 0.1))
+	score_label.add_theme_font_size_override("font_size", 12)
+	PixelSkin.style_label(score_label, PixelSkin.C_YELLOW)
 	hud.add_child(score_label)
 
 
@@ -292,8 +320,13 @@ func _build_timer_bar() -> void:
 	timer_bar.max_value = 100.0
 	timer_bar.value = 100.0
 	timer_bar.show_percentage = false
-	timer_bar.add_theme_stylebox_override("fill", _make_stylebox(Color(0.22, 0.65, 0.30), 3))
-	timer_bar.add_theme_stylebox_override("background", _make_stylebox(Color(0.35, 0.28, 0.18), 3))
+	var bar_bg := PixelSkin.bar_background()
+	if bar_bg != null:
+		timer_bar.add_theme_stylebox_override("background", bar_bg)
+		timer_bar.add_theme_stylebox_override("fill", PixelSkin.bar_fill(PixelSkin.C_GREEN))
+	else:
+		timer_bar.add_theme_stylebox_override("fill", _make_stylebox(Color(0.22, 0.65, 0.30), 3))
+		timer_bar.add_theme_stylebox_override("background", _make_stylebox(Color(0.35, 0.28, 0.18), 3))
 	add_child(timer_bar)
 
 
@@ -304,33 +337,86 @@ func _build_game_area() -> void:
 	game_area.clip_contents = true
 	add_child(game_area)
 
-	# Nube decorativa
+	# Lluvia decorativa (CPUParticles2D ligera, sin colisiones)
+	var drop_tex := PixelSkin.tex(ASSETS_DIR + "rain_drop.png")
+	if drop_tex != null:
+		var rain := CPUParticles2D.new()
+		rain.position = Vector2(vp_size.x * 0.55, -10)
+		rain.amount = 28
+		rain.lifetime = 1.6
+		rain.preprocess = 1.0
+		rain.texture = drop_tex
+		rain.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+		rain.emission_rect_extents = Vector2(vp_size.x * 0.65, 4)
+		rain.direction = Vector2(-0.25, 1.0).normalized()
+		rain.spread = 4.0
+		rain.gravity = Vector2.ZERO
+		rain.initial_velocity_min = 340.0
+		rain.initial_velocity_max = 420.0
+		rain.color = Color(1, 1, 1, 0.55)
+		game_area.add_child(rain)
+
+	# Franja de nubes pixel (reemplaza visualmente el bloque "~ NUBES ~")
 	cloud_panel = PanelContainer.new()
-	cloud_panel.position = Vector2(vp_size.x / 2.0 - 100, 2)
-	cloud_panel.custom_minimum_size = Vector2(200, 38)
-	cloud_panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.78, 0.82, 0.88, 0.85), 16))
-	var cloud_lbl := Label.new()
-	cloud_lbl.text = "~ ~ ~ NUBES ~ ~ ~"
-	cloud_lbl.add_theme_font_size_override("font_size", 12)
-	cloud_lbl.add_theme_color_override("font_color", Color(0.55, 0.62, 0.70))
-	cloud_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cloud_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cloud_panel.add_child(cloud_lbl)
+	cloud_panel.position = Vector2(0, 0)
+	cloud_panel.custom_minimum_size = Vector2(vp_size.x, 38)
+	var cloud_tex := PixelSkin.tex(ASSETS_DIR + "clouds_strip.png")
+	if cloud_tex != null:
+		cloud_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		var clouds_rect := TextureRect.new()
+		clouds_rect.texture = cloud_tex
+		clouds_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		clouds_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		clouds_rect.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		clouds_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		clouds_rect.stretch_mode = TextureRect.STRETCH_TILE
+		clouds_rect.custom_minimum_size = Vector2(vp_size.x, 36)
+		cloud_panel.add_child(clouds_rect)
+	else:
+		cloud_panel.position = Vector2(vp_size.x / 2.0 - 100, 2)
+		cloud_panel.custom_minimum_size = Vector2(200, 38)
+		cloud_panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.78, 0.82, 0.88, 0.85), 16))
+		var cloud_lbl := Label.new()
+		cloud_lbl.text = "~ ~ ~ NUBES ~ ~ ~"
+		cloud_lbl.add_theme_font_size_override("font_size", 12)
+		cloud_lbl.add_theme_color_override("font_color", Color(0.55, 0.62, 0.70))
+		cloud_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cloud_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		cloud_panel.add_child(cloud_lbl)
 	game_area.add_child(cloud_panel)
 
-	# Vagoneta del jugador
+	# Caja "BACKLOG" + desarrollador (el nodo player_cart conserva CART_WIDTH x CART_HEIGHT exactos)
 	player_cart = PanelContainer.new()
-	player_cart.position = Vector2(vp_size.x / 2.0 - CART_WIDTH / 2.0, game_area_height - CART_HEIGHT - 8)
+	player_cart.position = Vector2(vp_size.x / 2.0 - CART_WIDTH / 2.0, game_area_height - CART_HEIGHT - 28)
 	player_cart.custom_minimum_size = Vector2(CART_WIDTH, CART_HEIGHT)
-	var cart_style := _make_stylebox(Color(0.40, 0.26, 0.13), 5, 2, Color(0.28, 0.18, 0.08))
-	player_cart.add_theme_stylebox_override("panel", cart_style)
-	var cart_lbl := Label.new()
-	cart_lbl.text = "[ VAGONETA ]"
-	cart_lbl.add_theme_font_size_override("font_size", 11)
-	cart_lbl.add_theme_color_override("font_color", Color(0.95, 0.90, 0.75))
-	cart_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cart_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	player_cart.add_child(cart_lbl)
+	var crate_tex := PixelSkin.tex(ASSETS_DIR + "backlog_crate.png")
+	if crate_tex != null:
+		var crate_sb := StyleBoxTexture.new()
+		crate_sb.texture = crate_tex
+		player_cart.add_theme_stylebox_override("panel", crate_sb)
+		# Desarrollador chibi debajo de la caja (hijo visual fuera de la hitbox; las colisiones
+		# usan Rect2(player_cart.position, Vector2(CART_WIDTH, CART_HEIGHT)), por lo que no las altera)
+		dev_frames.clear()
+		for i in range(4):
+			var ft := PixelSkin.tex(ASSETS_DIR + "dev_carry_%d.png" % i)
+			if ft != null:
+				dev_frames.append(ft)
+		if not dev_frames.is_empty():
+			var holder := Node2D.new()
+			holder.position = Vector2(CART_WIDTH / 2.0 - 20.0, CART_HEIGHT - 4.0)
+			dev_sprite = PixelSkin.icon(dev_frames[0], Vector2(40, 32))
+			holder.add_child(dev_sprite)
+			player_cart.add_child(holder)
+	else:
+		var cart_style := _make_stylebox(Color(0.40, 0.26, 0.13), 5, 2, Color(0.28, 0.18, 0.08))
+		player_cart.add_theme_stylebox_override("panel", cart_style)
+		var cart_lbl := Label.new()
+		cart_lbl.text = "[ VAGONETA ]"
+		cart_lbl.add_theme_font_size_override("font_size", 11)
+		cart_lbl.add_theme_color_override("font_color", Color(0.95, 0.90, 0.75))
+		cart_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cart_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		player_cart.add_child(cart_lbl)
 	game_area.add_child(player_cart)
 
 
@@ -342,10 +428,11 @@ func _build_controls_hud() -> void:
 	add_child(controls)
 
 	var btn_left := Button.new()
-	btn_left.text = "◀  ←"
-	btn_left.add_theme_font_size_override("font_size", 14)
+	btn_left.text = "◀"
+	btn_left.add_theme_font_size_override("font_size", 16)
 	btn_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_left.custom_minimum_size = Vector2(0, 42)
+	PixelSkin.skin_button(btn_left, PixelSkin.C_NAVY)
 	btn_left.button_down.connect(func(): move_direction = -1)
 	btn_left.button_up.connect(func():
 		if move_direction == -1: move_direction = 0)
@@ -353,16 +440,21 @@ func _build_controls_hud() -> void:
 
 	var btn_pause := Button.new()
 	btn_pause.text = "⏸"
-	btn_pause.add_theme_font_size_override("font_size", 14)
+	btn_pause.icon = PixelSkin.common("hud/icon_pause.png")
+	if btn_pause.icon != null:
+		btn_pause.text = ""
+		btn_pause.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn_pause.custom_minimum_size = Vector2(44, 42)
+	PixelSkin.skin_button(btn_pause, PixelSkin.C_SLATE)
 	btn_pause.pressed.connect(_toggle_pause)
 	controls.add_child(btn_pause)
 
 	var btn_right := Button.new()
-	btn_right.text = "→  ▶"
-	btn_right.add_theme_font_size_override("font_size", 14)
+	btn_right.text = "▶"
+	btn_right.add_theme_font_size_override("font_size", 16)
 	btn_right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_right.custom_minimum_size = Vector2(0, 42)
+	PixelSkin.skin_button(btn_right, PixelSkin.C_NAVY)
 	btn_right.button_down.connect(func(): move_direction = 1)
 	btn_right.button_up.connect(func():
 		if move_direction == 1: move_direction = 0)
@@ -384,7 +476,11 @@ func _create_overlay(bg_color: Color = Color(0, 0, 0, 0.75)) -> Array:
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(300, 0)
-	panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.12, 0.13, 0.18, 0.95), 12, 2, Color(0.4, 0.45, 0.55)))
+	var psb := PixelSkin.dark_panel()
+	if psb != null:
+		panel.add_theme_stylebox_override("panel", psb)
+	else:
+		panel.add_theme_stylebox_override("panel", _make_stylebox(Color(0.12, 0.13, 0.18, 0.95), 12, 2, Color(0.4, 0.45, 0.55)))
 	center.add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -411,7 +507,7 @@ func _build_overlay_difficulty() -> void:
 	var title := Label.new()
 	title.text = "Lluvia de Requerimientos"
 	title.add_theme_font_size_override("font_size", 15)
-	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
@@ -428,36 +524,46 @@ func _build_overlay_difficulty() -> void:
 	var lbl_diff := Label.new()
 	lbl_diff.text = "Selecciona la dificultad:"
 	lbl_diff.add_theme_font_size_override("font_size", 10)
-	lbl_diff.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	PixelSkin.style_label(lbl_diff, PixelSkin.C_WHITE)
 	lbl_diff.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(lbl_diff)
 
 	var btn_facil := Button.new()
 	btn_facil.text = "[FÁCIL]  10 vidas"
+	btn_facil.icon = PixelSkin.difficulty_icon("FACIL")
 	btn_facil.add_theme_font_size_override("font_size", 12)
 	btn_facil.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_facil, PixelSkin.C_GREEN)
 	btn_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
 	vbox.add_child(btn_facil)
 
 	var btn_normal := Button.new()
 	btn_normal.text = "[NORMAL]  5 vidas"
+	btn_normal.icon = PixelSkin.difficulty_icon("NORMAL")
 	btn_normal.add_theme_font_size_override("font_size", 12)
 	btn_normal.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_normal, PixelSkin.C_ORANGE)
 	btn_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
 	vbox.add_child(btn_normal)
 
 	var btn_ing := Button.new()
 	btn_ing.text = "[INGENIERO]  3 vidas"
+	btn_ing.icon = PixelSkin.difficulty_icon("INGENIERO")
 	btn_ing.add_theme_font_size_override("font_size", 12)
 	btn_ing.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_ing, PixelSkin.C_RED)
 	btn_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
 	vbox.add_child(btn_ing)
 
 	var btn_back := Button.new()
-	btn_back.text = "←  Volver al Salón"
+	btn_back.text = "←  Ver Instrucciones"
 	btn_back.add_theme_font_size_override("font_size", 11)
 	btn_back.custom_minimum_size = Vector2(0, 34)
-	btn_back.pressed.connect(_on_back_pressed)
+	PixelSkin.skin_button(btn_back, PixelSkin.C_SLATE)
+	btn_back.pressed.connect(func():
+		AudioManager.play_click()
+		_show_difficulty_selector()
+	)
 	vbox.add_child(btn_back)
 
 
@@ -469,14 +575,14 @@ func _build_overlay_instructions() -> void:
 	var title := Label.new()
 	title.text = "INSTRUCCIONES"
 	title.add_theme_font_size_override("font_size", 15)
-	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
 	instr_difficulty_label = Label.new()
-	instr_difficulty_label.text = "Dificultad: NORMAL — 5 vidas"
+	instr_difficulty_label.text = "Lluvia de Requerimientos"
 	instr_difficulty_label.add_theme_font_size_override("font_size", 10)
-	instr_difficulty_label.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
+	PixelSkin.style_label(instr_difficulty_label, PixelSkin.C_CYAN)
 	instr_difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(instr_difficulty_label)
 
@@ -484,8 +590,8 @@ func _build_overlay_instructions() -> void:
 	vbox.add_child(sep)
 
 	var rules: Array[String] = [
-		"[+] Atrapa cofres VERDES\n     (Req. Funcionales) = +Puntos",
-		"[-] Esquiva cofres ROJOS\n     (Req. No Funcionales) = -1 Vida",
+		"[+] Atrapa tarjetas VERDES\n     (Req. Funcionales) = +Puntos",
+		"[-] Esquiva bloques NARANJAS\n     (Req. No Funcionales) = -1 Vida",
 		"[!] Si un Req. Funcional se\n     escapa por abajo = -1 Vida",
 		"[T] Sobrevive hasta que el\n     tiempo termine para ganar",
 	]
@@ -500,20 +606,19 @@ func _build_overlay_instructions() -> void:
 	vbox.add_child(sep2)
 
 	var btn_start := Button.new()
-	btn_start.text = "▶  ¡COMENZAR!"
+	btn_start.text = "▶  Elegir Dificultad"
 	btn_start.add_theme_font_size_override("font_size", 14)
 	btn_start.custom_minimum_size = Vector2(0, 42)
+	PixelSkin.skin_button(btn_start, PixelSkin.C_GREEN)
 	btn_start.pressed.connect(_on_start_pressed)
 	vbox.add_child(btn_start)
 
 	var btn_change := Button.new()
-	btn_change.text = "←  Cambiar Dificultad"
+	btn_change.text = "←  Volver al Salón"
 	btn_change.add_theme_font_size_override("font_size", 11)
 	btn_change.custom_minimum_size = Vector2(0, 34)
-	btn_change.pressed.connect(func():
-		AudioManager.play_click()
-		_show_difficulty_selector()
-	)
+	PixelSkin.skin_button(btn_change, PixelSkin.C_SLATE)
+	btn_change.pressed.connect(_on_back_pressed)
 	vbox.add_child(btn_change)
 
 
@@ -523,9 +628,9 @@ func _build_overlay_pause() -> void:
 	var vbox: VBoxContainer = parts[1]
 
 	var title := Label.new()
-	title.text = "⏸  PAUSA"
+	title.text = "PAUSA"
 	title.add_theme_font_size_override("font_size", 18)
-	title.add_theme_color_override("font_color", Color(1, 0.92, 0.6))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
@@ -533,6 +638,7 @@ func _build_overlay_pause() -> void:
 	btn_resume.text = "▶  Reanudar"
 	btn_resume.add_theme_font_size_override("font_size", 13)
 	btn_resume.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_resume, PixelSkin.C_GREEN)
 	btn_resume.pressed.connect(_toggle_pause)
 	vbox.add_child(btn_resume)
 
@@ -540,6 +646,7 @@ func _build_overlay_pause() -> void:
 	btn_salon.text = "←  Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 12)
 	btn_salon.custom_minimum_size = Vector2(0, 38)
+	PixelSkin.skin_button(btn_salon, PixelSkin.C_SLATE)
 	btn_salon.pressed.connect(_on_back_pressed)
 	vbox.add_child(btn_salon)
 
@@ -552,14 +659,14 @@ func _build_overlay_game_over() -> void:
 	var title := Label.new()
 	title.text = "GAME OVER"
 	title.add_theme_font_size_override("font_size", 20)
-	title.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
+	PixelSkin.style_label(title, PixelSkin.C_RED)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
 	final_score_label = Label.new()
 	final_score_label.text = "Puntaje: 0"
 	final_score_label.add_theme_font_size_override("font_size", 13)
-	final_score_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
+	PixelSkin.style_label(final_score_label, PixelSkin.C_WHITE)
 	final_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(final_score_label)
 
@@ -567,6 +674,7 @@ func _build_overlay_game_over() -> void:
 	btn_retry.text = "Reiniciar Actividad"
 	btn_retry.add_theme_font_size_override("font_size", 13)
 	btn_retry.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_retry, PixelSkin.C_ORANGE)
 	btn_retry.pressed.connect(_on_retry_pressed)
 	vbox.add_child(btn_retry)
 
@@ -574,6 +682,7 @@ func _build_overlay_game_over() -> void:
 	btn_salon.text = "←  Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 11)
 	btn_salon.custom_minimum_size = Vector2(0, 36)
+	PixelSkin.skin_button(btn_salon, PixelSkin.C_SLATE)
 	btn_salon.pressed.connect(_on_back_pressed)
 	vbox.add_child(btn_salon)
 
@@ -586,21 +695,27 @@ func _build_overlay_victory() -> void:
 	var title := Label.new()
 	title.text = "¡COMPLETADO!"
 	title.add_theme_font_size_override("font_size", 20)
-	title.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	PixelSkin.style_label(title, PixelSkin.C_YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
+
+	victory_stars_row = PixelSkin.make_stars_row(3)
+	vbox.add_child(victory_stars_row)
 
 	stars_label = Label.new()
 	stars_label.text = "★ ★ ★"
 	stars_label.add_theme_font_size_override("font_size", 22)
 	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 	stars_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if victory_stars_row.get_child_count() > 0:
+		stars_label.visible = false
+	stats_sync_stars(stars_label, victory_stars_row)
 	vbox.add_child(stars_label)
 
 	victory_score_label = Label.new()
 	victory_score_label.text = "Puntaje: 0"
 	victory_score_label.add_theme_font_size_override("font_size", 14)
-	victory_score_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	PixelSkin.style_label(victory_score_label, PixelSkin.C_WHITE)
 	victory_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(victory_score_label)
 
@@ -609,6 +724,7 @@ func _build_overlay_victory() -> void:
 	btn_salon.text = "←  Volver al Salón"
 	btn_salon.add_theme_font_size_override("font_size", 13)
 	btn_salon.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_salon, PixelSkin.C_BLUE)
 	btn_salon.pressed.connect(_on_back_pressed)
 	vbox.add_child(btn_salon)
 
@@ -616,8 +732,37 @@ func _build_overlay_victory() -> void:
 	btn_campus.text = "←  Salir al Campus"
 	btn_campus.add_theme_font_size_override("font_size", 13)
 	btn_campus.custom_minimum_size = Vector2(0, 40)
+	PixelSkin.skin_button(btn_campus, PixelSkin.C_SLATE)
 	btn_campus.pressed.connect(_on_exit_to_campus)
 	vbox.add_child(btn_campus)
+
+
+func stats_sync_stars(lbl: Label, row: HBoxContainer) -> void:
+	victory_overlay.visibility_changed.connect(func():
+		if victory_overlay.visible:
+			PixelSkin.set_stars(row, PixelSkin.count_stars_in_text(lbl.text)))
+
+
+## StyleBox para tarjeta de requerimiento (textura 9-slice pixel art con respaldo plano)
+func _make_req_stylebox(is_functional: bool, is_acc: bool) -> StyleBox:
+	var tex_name: String
+	if is_functional:
+		tex_name = "card_rf_hc_9.png" if is_acc else "card_rf_9.png"
+	else:
+		tex_name = "card_rnf_hc_9.png" if is_acc else "card_rnf_9.png"
+	var sb_tex := PixelSkin.style_9(ASSETS_DIR + tex_name, 6, Color.WHITE, 4)
+	if sb_tex != null:
+		return sb_tex
+	var bg_col: Color
+	var bdr_col: Color
+	if is_functional:
+		bg_col = Color("#0072B2") if is_acc else Color(0.18, 0.52, 0.18)
+		bdr_col = Color("#56B4E9") if is_acc else Color(0.12, 0.38, 0.12)
+	else:
+		bg_col = Color("#D55E00") if is_acc else Color(0.65, 0.14, 0.14)
+		bdr_col = Color("#E69F00") if is_acc else Color(0.48, 0.10, 0.10)
+	var bdr_w: int = 3 if is_acc else 2
+	return _make_stylebox(bg_col, 5, bdr_w, bdr_col)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPERS DE UI
@@ -640,13 +785,13 @@ func _make_stylebox(color: Color, corner_radius: int = 4, border_width: int = 0,
 	return sb
 
 # ══════════════════════════════════════════════════════════════════════════════
-# FLUJO PRE-PARTIDA: Dificultad → Instrucciones → Juego
+# FLUJO PRE-PARTIDA: Instrucciones → Dificultad → Juego
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _show_difficulty_selector() -> void:
 	is_game_active = false
-	difficulty_overlay.visible = true
-	instructions_overlay.visible = false
+	difficulty_overlay.visible = false
+	instructions_overlay.visible = true
 	pause_overlay.visible = false
 	game_over_overlay.visible = false
 	victory_overlay.visible = false
@@ -662,13 +807,14 @@ func _on_difficulty_selected(diff: String) -> void:
 	instr_difficulty_label.text = "Dificultad: %s — %d vidas" % [diff_names.get(diff, diff), max_lives]
 
 	difficulty_overlay.visible = false
-	instructions_overlay.visible = true
+	instructions_overlay.visible = false
+	_start_game_play()
 
 
 func _on_start_pressed() -> void:
 	AudioManager.play_click()
 	instructions_overlay.visible = false
-	_start_game_play()
+	difficulty_overlay.visible = true
 
 
 func _configure_difficulty(diff: String) -> void:
@@ -739,43 +885,41 @@ func _spawn_requirement() -> void:
 	var text_pool: Array = FUNCTIONAL_REQS if is_functional else NON_FUNCTIONAL_REQS
 	var req_text: String = text_pool[randi() % text_pool.size()]
 
-	# ── Crear nodo visual del requerimiento ──
+	# ── Crear nodo visual del requerimiento (mantiene REQ_WIDTH x REQ_HEIGHT exactos) ──
 	var req_node := PanelContainer.new()
 	req_node.custom_minimum_size = Vector2(REQ_WIDTH, REQ_HEIGHT)
 	req_node.set_meta("is_functional", is_functional)
 
-	# Estilo del cofre
-	var bg_color: Color
-	var border_color: Color
-	var type_text: String
+	var type_text: String = "RF" if is_functional else "RNF"
 	var is_acc: bool = StateManager.is_high_contrast_active() if StateManager else false
-	if is_functional:
-		bg_color = Color("#0072B2") if is_acc else Color(0.18, 0.52, 0.18)
-		border_color = Color("#56B4E9") if is_acc else Color(0.12, 0.38, 0.12)
-		type_text = "✓ REQ FUN"
-	else:
-		bg_color = Color("#D55E00") if is_acc else Color(0.65, 0.14, 0.14)
-		border_color = Color("#E69F00") if is_acc else Color(0.48, 0.10, 0.10)
-		type_text = "✗ REQ NO FUN"
+	req_node.add_theme_stylebox_override("panel", _make_req_stylebox(is_functional, is_acc))
 
-	var border_width: int = 3 if is_acc else 2
-	req_node.add_theme_stylebox_override("panel", _make_stylebox(bg_color, 5, border_width, border_color))
-
-	# Contenido del cofre
+	# Contenido de la tarjeta: encabezado con icono pixel (engranaje RF / cronómetro RNF) + texto
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 1)
 
+	var header := HBoxContainer.new()
+	header.alignment = BoxContainer.ALIGNMENT_CENTER
+	header.add_theme_constant_override("separation", 3)
+	var icon_name: String = "icon_gear.png" if is_functional else "icon_stopwatch.png"
+	var icon_tex := PixelSkin.tex(ASSETS_DIR + icon_name)
+	if icon_tex != null:
+		header.add_child(PixelSkin.icon(icon_tex, Vector2(14, 14)))
+
 	var type_label := Label.new()
 	type_label.text = type_text
-	type_label.add_theme_font_size_override("font_size", 8)
-	type_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+	type_label.add_theme_font_size_override("font_size", 9)
+	PixelSkin.style_label(type_label, PixelSkin.C_WHITE, 2)
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(type_label)
+	header.add_child(type_label)
+	vbox.add_child(header)
 
 	var text_label := Label.new()
 	text_label.text = req_text
-	text_label.add_theme_font_size_override("font_size", 7)
-	text_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.80))
+	text_label.add_theme_font_size_override("font_size", 8)
+	text_label.add_theme_color_override("font_color", Color.WHITE)
+	text_label.add_theme_color_override("font_outline_color", PixelSkin.C_INK)
+	text_label.add_theme_constant_override("outline_size", 2)
 	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	vbox.add_child(text_label)
@@ -933,19 +1077,36 @@ func _get_current_spawn_interval() -> float:
 
 func _update_hud() -> void:
 	lives_label.text = "VIDAS: %d" % current_lives
-	score_label.text = "PUNTOS: %d" % score
+	score_label.text = "%d" % score
+	if PixelSkin.set_hearts(hearts_bar, current_lives, max_lives):
+		lives_label.visible = false
+	else:
+		lives_label.visible = true
 
 
 func _update_timer_bar() -> void:
 	timer_bar.value = maxf(time_remaining, 0.0)
+	if is_instance_valid(time_label):
+		var secs: int = maxi(int(ceil(time_remaining)), 0)
+		time_label.text = "%02d:%02d" % [secs / 60, secs % 60]
 
 	# Cambiar color cuando queda poco tiempo
+	var has_pixel_bar: bool = PixelSkin.bar_background() != null
 	if time_remaining < game_duration * 0.25:
-		timer_bar.add_theme_stylebox_override("fill", _make_stylebox(Color(0.85, 0.2, 0.15), 3))
+		timer_bar.add_theme_stylebox_override("fill", PixelSkin.bar_fill(PixelSkin.C_RED) if has_pixel_bar else _make_stylebox(Color(0.85, 0.2, 0.15), 3))
 	elif time_remaining < game_duration * 0.50:
-		timer_bar.add_theme_stylebox_override("fill", _make_stylebox(Color(0.85, 0.65, 0.1), 3))
+		timer_bar.add_theme_stylebox_override("fill", PixelSkin.bar_fill(PixelSkin.C_YELLOW) if has_pixel_bar else _make_stylebox(Color(0.85, 0.65, 0.1), 3))
 	else:
-		timer_bar.add_theme_stylebox_override("fill", _make_stylebox(Color(0.22, 0.65, 0.30), 3))
+		timer_bar.add_theme_stylebox_override("fill", PixelSkin.bar_fill(PixelSkin.C_GREEN) if has_pixel_bar else _make_stylebox(Color(0.22, 0.65, 0.30), 3))
+
+	# Animación visual de pasos del desarrollador mientras se mueve
+	if is_instance_valid(dev_sprite) and not dev_frames.is_empty():
+		var moving: bool = move_direction != 0 or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)
+		if moving:
+			dev_anim_clock += get_process_delta_time() * 9.0
+			dev_sprite.texture = dev_frames[int(dev_anim_clock) % dev_frames.size()]
+		else:
+			dev_sprite.texture = dev_frames[0]
 
 
 func _clear_active_requirements() -> void:

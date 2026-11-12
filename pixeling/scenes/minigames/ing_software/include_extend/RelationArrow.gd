@@ -8,14 +8,14 @@ extends Control
 
 enum Mode { HIDDEN, NEUTRAL, INCLUDE, EXTEND }
 
-const DASH_LENGTH: float = 5.0
+const DASH_LENGTH: float = 4.0
 const LINE_WIDTH: float = 2.0
-const HEAD_LENGTH: float = 9.0
-const HEAD_HALF_WIDTH: float = 6.0
+const HEAD_LENGTH: float = 8.0
+const HEAD_HALF_WIDTH: float = 5.0
 
 var mode: int = Mode.NEUTRAL
 var line_color: Color = Color("e8e6d9")
-var accent_color: Color = Color("f2c14e")
+var accent_color: Color = Color("ffcd75")
 
 
 func _ready() -> void:
@@ -60,7 +60,7 @@ func _draw_dependency_arrow(from: Vector2, to: Vector2) -> void:
 
 
 func _draw_centered_text(text: String, baseline_y: float, font_size: int, color: Color) -> void:
-	var font: Font = get_theme_default_font()
+	var font: Font = PixelSkin.font() if PixelSkin.font() != null else get_theme_default_font()
 	if font == null:
 		return
 	draw_string(font, Vector2(0.0, baseline_y), text, HORIZONTAL_ALIGNMENT_CENTER, size.x, font_size, color)

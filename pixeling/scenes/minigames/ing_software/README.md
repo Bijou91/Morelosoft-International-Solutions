@@ -14,3 +14,10 @@ Esta carpeta aloja los minijuegos didácticos asociados a la ingeniería de requ
 1. Cada nuevo minijuego debe ubicarse en su propia subcarpeta con nombre semántico de alto nivel (`nombre_minijuego/`).
 2. El script principal debe heredar de `MiniGameBase` (`extends MiniGameBase`).
 3. Debe implementar `start_game(dificultad)` y llamar a `finish_game(exito, puntaje, estrellas)` al terminar.
+
+## Assets Pixel Art y Estilo Visual:
+* **Paleta:** *Sweetie-16 extendida* (mismos tonos de madera, pizarrón y pergamino en los 3 minijuegos + variantes Okabe-Ito para alto contraste).
+* **Ubicación:** `res://assets/ing_software/` (`comun/`, `lluvia_requerimientos/`, `include_extend/`, `planning_poker/`).
+* **Helper compartido:** `res://scripts/ui/PixelSkin.gd` (`class_name PixelSkin`) provee carga con caché, `StyleBoxTexture` 9-slice, barra de corazones, estrellas y fuente pixel (*Pixelify Sans*, licencia OFL). Si algún asset no existe, cada juego conserva su estilo plano de respaldo.
+* **Regenerar los sprites:** ejecutar `powershell -ExecutionPolicy Bypass -File pixeling/tools/pixelart/build_all.ps1`.
+* **Verificar que la lógica no se alteró:** ejecutar `powershell -ExecutionPolicy Bypass -File pixeling/tools/pixelart/verify_logic.ps1`.
