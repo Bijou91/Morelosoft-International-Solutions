@@ -6,6 +6,91 @@
 extends MiniGameBase
 
 # ══════════════════════════════════════════════════════════════════════════════
+# FONDO ESTRELLADO DINÁMICO
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Estrellas (cuadritos pixel-art) con posición, velocidad, tamaño, parpadeo y deriva
+## lateral aleatorios. Caen despacio (como si la nave avanzara) y se reciclan al salir.
+class StarField extends Control:
+	const STAR_COUNT: int = 90
+	const SPEED_MIN: float = 8.0     # estrellas lejanas (pequeñas y lentas)
+	const SPEED_MAX: float = 60.0    # estrellas cercanas (grandes y rápidas)
+	const DRIFT_MAX: float = 7.0     # deriva lateral máxima (px/s)
+
+	var running: bool = true         # false = estrellas congeladas (p. ej. en pausa)
+	var _stars: Array = []
+	var _rng := RandomNumberGenerator.new()
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		clip_contents = true
+
+	func _ready() -> void:
+		_rng.randomize()
+		resized.connect(_regenerate)
+		_regenerate()
+
+	func _regenerate() -> void:
+		if size.x <= 1.0 or size.y <= 1.0:
+			return
+		_stars.clear()
+		for i in range(STAR_COUNT):
+			_stars.append(_new_star(true))
+
+	func _new_star(anywhere: bool) -> Dictionary:
+		var depth: float = _rng.randf()   # 0 = lejana, 1 = cercana
+		var tint: float = _rng.randf()
+		var col := Color(1.0, 1.0, 1.0)
+		if tint > 0.80:
+			col = Color(0.65, 0.80, 1.0)      # azulada
+		elif tint > 0.65:
+			col = Color(1.0, 0.92, 0.70)      # amarillenta
+		return {
+			"pos": Vector2(_rng.randf_range(0.0, size.x), _rng.randf_range(0.0, size.y) if anywhere else -4.0),
+			"speed": lerpf(SPEED_MIN, SPEED_MAX, depth) * _rng.randf_range(0.8, 1.2),
+			"size": 1.0 if depth < 0.6 else (2.0 if depth < 0.9 else 3.0),
+			"drift": _rng.randf_range(-DRIFT_MAX, DRIFT_MAX),
+			"drift_target": _rng.randf_range(-DRIFT_MAX, DRIFT_MAX),
+			"drift_timer": _rng.randf_range(1.0, 4.0),
+			"phase": _rng.randf_range(0.0, TAU),
+			"twinkle": _rng.randf_range(1.0, 4.0),
+			"color": col,
+		}
+
+	func _process(delta: float) -> void:
+		if not running or _stars.is_empty():
+			return
+		for i in range(_stars.size()):
+			var st: Dictionary = _stars[i]
+			# Deriva lateral: cambia de objetivo al azar cada cierto tiempo y se suaviza
+			st["drift_timer"] = float(st["drift_timer"]) - delta
+			if float(st["drift_timer"]) <= 0.0:
+				st["drift_target"] = _rng.randf_range(-DRIFT_MAX, DRIFT_MAX)
+				st["drift_timer"] = _rng.randf_range(1.0, 4.0)
+			st["drift"] = lerpf(float(st["drift"]), float(st["drift_target"]), minf(1.0, delta * 0.8))
+
+			var pos: Vector2 = st["pos"]
+			pos.y += float(st["speed"]) * delta
+			pos.x += float(st["drift"]) * delta
+			st["phase"] = float(st["phase"]) + float(st["twinkle"]) * delta
+
+			if pos.y > size.y + 4.0:
+				# Sale por abajo: reaparece arriba como una estrella nueva (valores al azar)
+				_stars[i] = _new_star(false)
+				continue
+			pos.x = wrapf(pos.x, 0.0, size.x)
+			st["pos"] = pos
+		queue_redraw()
+
+	func _draw() -> void:
+		for st in _stars:
+			var tw: float = 0.5 + 0.5 * sin(float(st["phase"]))
+			var c: Color = st["color"]
+			c.a = 0.30 + 0.70 * tw
+			var sz: float = float(st["size"])
+			draw_rect(Rect2((st["pos"] as Vector2).floor(), Vector2(sz, sz)), c)
+
+# ══════════════════════════════════════════════════════════════════════════════
 # CONSTANTES
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -22,6 +107,19 @@ const SFX_DISPARO_PATH: String = "res://assets/logica/cinturon_hipotesis/sfx/dis
 const SFX_VIDA_MENOS_PATH: String = "res://assets/logica/cinturon_hipotesis/sfx/vidaMenos.wav"
 const SFX_EXPLOSION_PATH: String = "res://assets/logica/cinturon_hipotesis/sfx/explosion.wav"
 const SFX_CORRECTO_PATH: String = "res://assets/logica/cinturon_hipotesis/sfx/correcto.wav"
+
+# Sprites y texturas (van directo en assets/logica/cinturon_hipotesis/)
+const TEX_SHIP_PATH: String = "res://assets/logica/cinturon_hipotesis/nave_galaga.png"
+const TEX_AST_CORRECT_PATH: String = "res://assets/logica/cinturon_hipotesis/textura_terreno_verde.png"
+const TEX_AST_WRONG_PATH: String = "res://assets/logica/cinturon_hipotesis/textura_terreno_rojo.png"
+const SHIP_DRAW_SIZE: Vector2 = Vector2(30, 32)   # tamaño en pantalla de la nave (la imagen es una cuadrícula de 15x16)
+const AST_TEX_TILE_PX: float = 128.0              # tamaño en pantalla de UN mosaico de textura (256 px de origen -> 2 px por "pixel" del arte)
+const AST_BORDER_CORRECT: Color = Color(0.45, 0.85, 0.50)
+const AST_BORDER_WRONG: Color = Color(1.0, 0.55, 0.35)
+
+var ship_texture: Texture2D
+var ast_tex_correct: Texture2D
+var ast_tex_wrong: Texture2D
 
 var sfx_disparo_stream: AudioStream
 var sfx_vida_menos_stream: AudioStream
@@ -119,6 +217,7 @@ var hud_step_badges_container: HBoxContainer
 var hypothesis_title_label: Label
 
 var game_area: Control
+var star_field: StarField
 var warning_overlay: ColorRect
 
 # Overlays
@@ -148,6 +247,7 @@ func _ready() -> void:
 	subject_name = "Lógica y Algoritmos"
 
 	_init_audio()
+	_init_textures()
 	_build_ui()
 	_show_overlay("DIFFICULTY_SELECT")
 
@@ -164,6 +264,17 @@ func _init_audio() -> void:
 		sfx_explosion_stream = load(SFX_EXPLOSION_PATH)
 	if ResourceLoader.exists(SFX_CORRECTO_PATH):
 		sfx_correcto_stream = load(SFX_CORRECTO_PATH)
+
+func _init_textures() -> void:
+	ship_texture = _load_texture(TEX_SHIP_PATH)
+	ast_tex_correct = _load_texture(TEX_AST_CORRECT_PATH)
+	ast_tex_wrong = _load_texture(TEX_AST_WRONG_PATH)
+
+func _load_texture(path: String) -> Texture2D:
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	push_warning("[CinturonHipotesis] No se encontró la textura: " + path + " (abre el proyecto en el editor para importarla). Se usa el dibujo por defecto.")
+	return null
 
 func _play_sfx(stream: AudioStream) -> void:
 	if not stream or not sfx_player:
@@ -225,11 +336,16 @@ func _process(delta: float) -> void:
 func _build_ui() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 
-	# Fondo espacial profundo
+	# Fondo espacial: negro puro con estrellas dinámicas (detrás de la nave)
 	var bg := ColorRect.new()
 	bg.set_anchors_preset(PRESET_FULL_RECT)
-	bg.color = Color(0.04, 0.05, 0.09, 1.0)
+	bg.color = Color(0.0, 0.0, 0.0, 1.0)
 	add_child(bg)
+
+	star_field = StarField.new()
+	star_field.name = "StarField"
+	star_field.set_anchors_preset(PRESET_FULL_RECT)
+	add_child(star_field)
 
 	# Área de juego interactiva (Dibuja estrellas, nave, disparos y asteroides)
 	game_area = Control.new()
@@ -606,6 +722,8 @@ func _create_overlay_vbox(parent: Control, title: String, subtitle: String) -> V
 
 func _show_overlay(state_name: String) -> void:
 	current_state = state_name
+	if star_field:
+		star_field.running = (state_name != "PAUSED")   # las estrellas se congelan solo en pausa
 	difficulty_overlay.visible = (state_name == "DIFFICULTY_SELECT")
 	instructions_overlay.visible = (state_name == "INSTRUCTIONS")
 	pause_overlay.visible = (state_name == "PAUSED")
@@ -814,6 +932,7 @@ func _spawn_asteroid_wave() -> void:
 			"is_correct": is_this_correct,
 			"step_idx": step_idx,
 			"size": ast_size,
+			"tex_off": Vector2(randi_range(0, 63) * 2.0, randi_range(0, 63) * 2.0),
 			"active": true
 		})
 
@@ -980,6 +1099,15 @@ func _on_game_area_draw() -> void:
 			_draw_asteroid(a)
 
 func _draw_spaceship(pos: Vector2) -> void:
+	# Sprite de la nave (si falta la imagen se usa el dibujo vectorial de respaldo de abajo)
+	if ship_texture != null:
+		var tint := Color.WHITE
+		if is_invulnerable and int(Time.get_ticks_msec() / 100) % 2 == 0:
+			tint = Color(1.0, 1.0, 1.0, 0.5)   # parpadeo de invulnerabilidad
+		var ship_rect := Rect2((pos - SHIP_DRAW_SIZE * 0.5).round(), SHIP_DRAW_SIZE)
+		game_area.draw_texture_rect(ship_texture, ship_rect, false, tint)
+		return
+
 	var body_color := Color(0.3, 0.7, 1.0)
 	if is_invulnerable:
 		# Parpadeo de invulnerabilidad
@@ -1015,8 +1143,14 @@ func _draw_asteroid(a: Dictionary) -> void:
 		base_col = Color(0.18, 0.28, 0.38)
 		border_col = Color(0.4, 0.8, 1.0)
 
-	# Dibujar base del asteroide con bordes redondeados
-	game_area.draw_rect(rect, base_col, true)
+	# Dibujar base del asteroide: textura verde (correcto) o naranja/roja (incorrecto)
+	var ast_tex: Texture2D = ast_tex_correct if a["is_correct"] else ast_tex_wrong
+	if ast_tex != null:
+		var snapped_rect := Rect2(rect.position.round(), rect.size)
+		_draw_tiled_texture(ast_tex, snapped_rect, AST_TEX_TILE_PX, a.get("tex_off", Vector2.ZERO))
+		border_col = AST_BORDER_CORRECT if a["is_correct"] else AST_BORDER_WRONG
+	else:
+		game_area.draw_rect(rect, base_col, true)
 	game_area.draw_rect(rect, border_col, false, 2.0)
 
 	# Texto del paso o distractor en el interior del asteroide
@@ -1047,8 +1181,27 @@ func _draw_asteroid(a: Dictionary) -> void:
 	for line in lines:
 		var line_w := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		var line_x := rect.position.x + (rect.size.x - line_w) * 0.5
+		if ast_tex != null:
+			# Contorno oscuro para que el texto se lea sobre la textura
+			game_area.draw_string_outline(font, Vector2(line_x, start_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, 4, Color(0, 0, 0, 0.95))
 		game_area.draw_string(font, Vector2(line_x, start_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0.95, 0.95, 1.0))
 		start_y += font_size + 2
+
+## Rellena `rect` repitiendo `tex` en mosaicos de `tile_px` (sin deformar). `off` desplaza el patrón
+## para que cada asteroide se vea distinto (usar múltiplos de 2 px para no romper el pixel-art).
+func _draw_tiled_texture(tex: Texture2D, rect: Rect2, tile_px: float, off: Vector2) -> void:
+	var k: float = float(tex.get_width()) / tile_px   # px de la imagen por px de pantalla
+	var origin: Vector2 = rect.position - Vector2(fposmod(off.x, tile_px), fposmod(off.y, tile_px))
+	var ty: float = origin.y
+	while ty < rect.end.y:
+		var tx: float = origin.x
+		while tx < rect.end.x:
+			var tile := Rect2(Vector2(tx, ty), Vector2(tile_px, tile_px))
+			var part: Rect2 = tile.intersection(rect)
+			if part.size.x > 0.0 and part.size.y > 0.0:
+				game_area.draw_texture_rect_region(tex, part, Rect2((part.position - tile.position) * k, part.size * k))
+			tx += tile_px
+		ty += tile_px
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ACTUALIZACIÓN DE ESTADO Y HUD
