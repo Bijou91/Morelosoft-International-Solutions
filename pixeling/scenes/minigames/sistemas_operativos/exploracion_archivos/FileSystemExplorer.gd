@@ -82,7 +82,7 @@ func _ready() -> void:
 
 	_connect_signals()
 	_hide_all_modals()
-	_show_difficulty_selection()
+	_show_tutorial()
 
 func _connect_signals() -> void:
 	btn_pause.pressed.connect(_on_pause_pressed)
@@ -94,8 +94,8 @@ func _connect_signals() -> void:
 	btn_diff_normal.pressed.connect(func(): _on_difficulty_chosen("NORMAL"))
 	btn_diff_ing.pressed.connect(func(): _on_difficulty_chosen("INGENIERO"))
 
-	# Tutorial
-	btn_tutorial_start.pressed.connect(_start_match)
+	# Tutorial avanza a Selección de Dificultad
+	btn_tutorial_start.pressed.connect(_show_difficulty_selection)
 
 	# Pausa
 	btn_pause_resume.pressed.connect(_resume_game)
@@ -126,11 +126,39 @@ func _process(delta: float) -> void:
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
+func _show_tutorial() -> void:
+	_hide_all_modals()
+	modal_tutorial.visible = true
+	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
+
+	teacher_label.text = "¡Bienvenido a la Práctica de Exploración de Archivos (CU-17)!\nLee las instrucciones del desafío antes de elegir tu dificultad."
+	terminal_prompt_label.text = "user@is-pixelverse:~$ [MODO INSTRUCCIONES]"
+
+	var rules_text: String = """INSTRUCCIONES DEL DESAFÍO:
+Usa comandos de Linux para explorar el sistema de archivos, inspeccionar directorios y leer documentos hasta localizar la FLAG oculta.
+
+CÓMO JUGAR:
+1. Lee la situación planteada por el profesor en la parte superior.
+2. Utiliza los botones de comandos interactivos ubicados en la parte inferior (ls, cd, cat, head, tail, etc.).
+3. Al presionar comandos con destino (como 'cd' o 'cat'), podrás seleccionar el archivo o carpeta deseada.
+4. Cuando encuentres la flag dentro de los archivos, escríbela en el campo inferior SUBMIT FLAG tal como aparece: Flag{...} y presiona ENVIAR.
+
+NIVELES DE DIFICULTAD:
+• Fácil: 3 vidas · 60s · 250 puntos (Exploración guiada)
+• Normal: 2 vidas · 30s · 500 puntos (Archivos ocultos)
+• Ingeniero: 1 vida · 40s · 750 puntos (Rutas complejas y permisos)
+
+REGLAS DE PARTIDA:
+• Si el tiempo se agota o envías una flag incorrecta, perderás 1 vida."""
+
+	tutorial_body.text = rules_text
+
 func _show_difficulty_selection() -> void:
+	AudioManager.play_click()
 	_hide_all_modals()
 	modal_difficulty.visible = true
-	teacher_label.text = "¡Bienvenido a la Práctica de Exploración de Archivos (CU-17)!\nSelecciona el nivel de dificultad para comenzar."
-	terminal_prompt_label.text = "user@is-pixelverse:~$ [MODO INACTIVO]"
+	teacher_label.text = "Selecciona el nivel de dificultad para iniciar el desafío."
+	terminal_prompt_label.text = "user@is-pixelverse:~$ [SELECCIÓN DIFICULTAD]"
 
 func _on_difficulty_chosen(diff: String) -> void:
 	AudioManager.play_click()
@@ -151,29 +179,7 @@ func _on_difficulty_chosen(diff: String) -> void:
 			total_score = 750
 
 	current_lives = max_lives
-	_show_tutorial()
-
-func _show_tutorial() -> void:
-	_hide_all_modals()
-	modal_tutorial.visible = true
-
-	var diff_name: String = current_difficulty.capitalize()
-	var rules_text: String = """INSTRUCCIONES DEL DESAFÍO:
-Usa comandos de Linux para explorar el sistema de archivos, inspeccionar directorios y leer documentos hasta localizar la FLAG oculta.
-
-CÓMO JUGAR:
-1. Lee la situación planteada por el profesor en la parte superior.
-2. Utiliza los botones de comandos interactivos ubicados en la parte inferior (ls, cd, cat, head, tail, etc.).
-3. Al presionar comandos con destino (como 'cd' o 'cat'), podrás seleccionar el archivo o carpeta deseada.
-4. Cuando encuentres la flag dentro de los archivos, escríbela en el campo inferior SUBMIT FLAG tal como aparece: Flag{...} y presiona ENVIAR.
-
-REGLAS DE PARTIDA:
-• Dificultad: %s (%d vidas)
-• Puntuación de recompensa: %d puntos
-• Tiempo por intento: %d segundos
-• Si el tiempo se agota o envías una flag incorrecta, perderás 1 vida.""" % [diff_name, max_lives, total_score, int(time_limit)]
-
-	tutorial_body.text = rules_text
+	_start_match()
 
 func _start_match() -> void:
 	AudioManager.play_click()

@@ -313,7 +313,7 @@ static func evaluate_objectives(shell: VirtualLinuxShell, objectives: Array) -> 
 
 			"file_executable":
 				# Verdadero si el archivo tiene 'x' en permisos de propietario (índice 3 de -rwxr-xr-x)
-				var f_info := shell._resolve_file_entry(target)
+				var f_info := shell.resolve_objective_file(target) if shell.has_method("resolve_objective_file") else shell._resolve_file_entry(target)
 				if not f_info.is_empty():
 					var perms: String = str(f_info.get("perms", ""))
 					if perms.length() >= 4 and perms.substr(3, 1) == "x":
@@ -321,14 +321,14 @@ static func evaluate_objectives(shell: VirtualLinuxShell, objectives: Array) -> 
 
 			"file_not_executable":
 				# Verdadero si ni el propietario, ni el grupo, ni otros tienen 'x'
-				var f_info := shell._resolve_file_entry(target)
+				var f_info := shell.resolve_objective_file(target) if shell.has_method("resolve_objective_file") else shell._resolve_file_entry(target)
 				if not f_info.is_empty():
 					var perms: String = str(f_info.get("perms", ""))
 					ok = not perms.contains("x")
 
 			"file_no_other_read":
 				# Verdadero si 'otros' no tienen permiso de lectura ('-' en índice 7) y tampoco escritura
-				var f_info := shell._resolve_file_entry(target)
+				var f_info := shell.resolve_objective_file(target) if shell.has_method("resolve_objective_file") else shell._resolve_file_entry(target)
 				if not f_info.is_empty():
 					var perms: String = str(f_info.get("perms", ""))
 					if perms.length() >= 10:
@@ -339,7 +339,7 @@ static func evaluate_objectives(shell: VirtualLinuxShell, objectives: Array) -> 
 
 			"file_group_exec":
 				# Verdadero si el grupo tiene permiso 'x' (índice 6 de drwxr-x---)
-				var f_info := shell._resolve_file_entry(target)
+				var f_info := shell.resolve_objective_file(target) if shell.has_method("resolve_objective_file") else shell._resolve_file_entry(target)
 				if not f_info.is_empty():
 					var perms: String = str(f_info.get("perms", ""))
 					if perms.length() >= 7 and perms.substr(6, 1) == "x":
@@ -347,7 +347,7 @@ static func evaluate_objectives(shell: VirtualLinuxShell, objectives: Array) -> 
 
 			"file_writable":
 				# Verdadero si el dueño o grupo tiene permiso de escritura 'w'
-				var f_info := shell._resolve_file_entry(target)
+				var f_info := shell.resolve_objective_file(target) if shell.has_method("resolve_objective_file") else shell._resolve_file_entry(target)
 				if not f_info.is_empty():
 					var perms: String = str(f_info.get("perms", ""))
 					if perms.length() >= 3 and perms.substr(2, 1) == "w":
@@ -356,7 +356,7 @@ static func evaluate_objectives(shell: VirtualLinuxShell, objectives: Array) -> 
 			"file_owner":
 				# Verdadero si el propietario coincide con expected
 				var expected_owner: String = str(obj.get("expected", "admin"))
-				var f_info := shell._resolve_file_entry(target)
+				var f_info := shell.resolve_objective_file(target) if shell.has_method("resolve_objective_file") else shell._resolve_file_entry(target)
 				if not f_info.is_empty():
 					if str(f_info.get("owner", "")) == expected_owner:
 						ok = true

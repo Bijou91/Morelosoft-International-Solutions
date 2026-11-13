@@ -12,6 +12,7 @@ signal risky_action_detected(reason: String)
 var current_user: String = "user"
 var hostname: String = "is-pixelverse"
 var current_path: String = "/home/user"
+var base_path: String = "/home/user"
 
 # Procesos simulados en memoria:
 # Array de diccionarios: { "pid": int, "user": String, "cpu": float, "mem": float, "cmd": String, "critical": bool, "target": bool }
@@ -39,6 +40,7 @@ var _snapshot_path: String = "/home/user"
 func initialize(initial_processes: Array, initial_fs: Dictionary, start_path: String = "/home/user", user_name: String = "user") -> void:
 	current_user = user_name
 	current_path = start_path
+	base_path = start_path
 	processes = initial_processes.duplicate(true)
 	simulated_fs = initial_fs.duplicate(true)
 	command_history.clear()
@@ -364,26 +366,27 @@ func _cmd_chmod(args: Array[String]) -> Dictionary:
 		var err := "chmod: no se puede acceder a '%s': No existe el archivo o el directorio" % file_arg
 		return { "output": "[color=#ff6666]" + err + "[/color]", "is_risky": false, "is_error": true, "error_message": err }
 
-	# FA-04.01: Comprobación de acciones riesgosas con permisos
-	# Ejemplo: darle permisos 777 a un backdoor peligroso, o quitar permisos a carpetas raíz
+	# 1. Calcular nueva cadena de permisos (ej. -rwxr-xr-x)
+	var new_perms: String = _calculate_permissions(file_info.get("perms", "-rw-r--r--"), mode_arg, file_info.get("is_dir", false))
+	if new_perms == "":
+		var err := "chmod: modo inválido: '%s'. Usa notación octal con dígitos del 0 al 7 (ej. 755, 644, 600) o simbólica (+x, -x, u+w, o-r)." % mode_arg
+		return { "output": "[color=#ff6666]" + err + "[/color]", "is_risky": false, "is_error": true, "error_message": err }
+
 	var fname: String = file_arg.get_file()
-	if fname.contains("backdoor") and (mode_arg == "777" or mode_arg == "+x" or mode_arg == "u+x" or mode_arg == "a+rwx"):
-		var danger_msg := "[⚠️ ACCIÓN RIESGOSA]\n¡Has otorgado permisos de ejecución máxima a un script malicioso (%s)!\nEsto compromete por completo la seguridad del servidor. (-1 Vida)" % fname
+
+	# FA-04.01: Comprobación de acciones riesgosas con permisos
+	# Evaluar directamente si el bit de ejecución ('x') resultante se activa sobre archivos maliciosos
+	if fname.contains("backdoor") and new_perms.substr(1).contains("x"):
+		var danger_msg := "[⚠️ ACCIÓN RIESGOSA]\n¡Has otorgado o conservado permisos de ejecución en un script malicioso (%s)!\nCualquier modo ejecutable (ej. 755, 750, 711, 777, +x) compromete el servidor. (-1 Vida)" % fname
 		restore_snapshot()
 		risky_action_detected.emit(danger_msg)
-		return { "output": "[color=#ff2222]" + danger_msg + "[/color]", "is_risky": true, "is_error": false, "error_message": "Permiso riesgoso a malware" }
+		return { "output": "[color=#ff2222]" + danger_msg + "[/color]", "is_risky": true, "is_error": false, "error_message": "Permiso de ejecución a malware" }
 
-	if mode_arg == "000" and (fname == "bin" or fname == "etc" or fname == "/" or fname == "start_server.sh"):
+	if (mode_arg == "000" or new_perms.substr(1) == "---------") and (fname == "bin" or fname == "etc" or fname == "/" or fname == "start_server.sh"):
 		var danger_msg := "[⚠️ ACCIÓN RIESGOSA]\n¡Has revocado todos los permisos (000) a un recurso vital del sistema (%s)!\nEl servicio no puede iniciarse. (-1 Vida)" % fname
 		restore_snapshot()
 		risky_action_detected.emit(danger_msg)
 		return { "output": "[color=#ff2222]" + danger_msg + "[/color]", "is_risky": true, "is_error": false, "error_message": "Permisos 000 en archivo vital" }
-
-	# Calcular nueva cadena de permisos (ej. -rwxr-xr-x)
-	var new_perms: String = _calculate_permissions(file_info.get("perms", "-rw-r--r--"), mode_arg, file_info.get("is_dir", false))
-	if new_perms == "":
-		var err := "chmod: modo inválido: '%s'. Usa notación octal (ej. 755, 644, 600) o simbólica (+x, -x, u+w, o-r)." % mode_arg
-		return { "output": "[color=#ff6666]" + err + "[/color]", "is_risky": false, "is_error": true, "error_message": err }
 
 	# Aplicar permisos al archivo simulado
 	file_info["perms"] = new_perms
@@ -584,41 +587,106 @@ func _cmd_help() -> Dictionary:
 
 # ==================== UTILIDADES DE PARSEO Y PERMISOS ====================
 
-func _resolve_file_entry(filepath: String) -> Dictionary:
-	var dir_info: Dictionary = simulated_fs.get(current_path, {})
-	var files: Dictionary = dir_info.get("files", {})
+## Resuelve una entrada (archivo o carpeta) dentro de un directorio específico de simulated_fs
+func _resolve_entry_in_dir(filepath: String, dir_path: String) -> Dictionary:
+	var dir_info: Dictionary = simulated_fs.get(dir_path, {})
+	if dir_info.is_empty():
+		return {}
 
-	# Archivo directo en directorio actual
+	# 1. ¿Es un archivo en dir_path?
+	var files: Dictionary = dir_info.get("files", {})
 	if files.has(filepath):
 		var f: Dictionary = files[filepath]
 		f["is_dir"] = false
 		return f
 
-	# Carpeta en directorio actual
+	# 2. ¿Es una subcarpeta en dir_path?
 	var dirs: Array = dir_info.get("dirs", [])
 	if dirs.has(filepath):
-		var full_d: String = (current_path + "/" + filepath) if current_path != "/" else ("/" + filepath)
+		var full_d: String = (dir_path + "/" + filepath) if dir_path != "/" else ("/" + filepath)
 		var d_info: Dictionary = simulated_fs.get(full_d, {})
-		d_info["is_dir"] = true
-		return d_info
-
-	# Ruta absoluta
-	if simulated_fs.has(filepath):
-		var d_info: Dictionary = simulated_fs[filepath]
 		d_info["is_dir"] = true
 		return d_info
 
 	return {}
 
+## Resuelve una entrada de archivo o directorio en el sistema de archivos simulado.
+## Si force_base_path es true, busca directamente en la ruta raíz de la misión (base_path).
+## Si es false, busca primero en el directorio actual (current_path) y, si no lo encuentra,
+## evalúa tomando como referencia la ruta base de la misión (base_path).
+func _resolve_file_entry(filepath: String, force_base_path: bool = false) -> Dictionary:
+	if filepath == "":
+		return {}
+
+	# 1. Ruta absoluta
+	if filepath.begins_with("/"):
+		if simulated_fs.has(filepath):
+			var d_info: Dictionary = simulated_fs[filepath]
+			d_info["is_dir"] = true
+			return d_info
+		var last_slash := filepath.rfind("/")
+		var p_dir := filepath.substr(0, last_slash)
+		if p_dir == "":
+			p_dir = "/"
+		var fname := filepath.substr(last_slash + 1)
+		return _resolve_entry_in_dir(fname, p_dir)
+
+	# 2. Si se fuerza la búsqueda en base_path (para evaluación de objetivos)
+	if force_base_path:
+		var entry_base := _resolve_entry_in_dir(filepath, base_path)
+		if not entry_base.is_empty():
+			return entry_base
+
+	# 3. Búsqueda en el directorio actual (current_path)
+	var entry_current := _resolve_entry_in_dir(filepath, current_path)
+	if not entry_current.is_empty():
+		return entry_current
+
+	# 4. Si no se encontró en el directorio actual, evaluar tomando como referencia
+	# la ruta raíz de la misión (base_path). Esto asegura que al navegar con 'cd'
+	# no se desmarquen los objetivos globales ya completados.
+	if base_path != "" and current_path != base_path:
+		var entry_fallback := _resolve_entry_in_dir(filepath, base_path)
+		if not entry_fallback.is_empty():
+			return entry_fallback
+
+	return {}
+
+## Resuelve un archivo u objetivo global tomando siempre como referencia la ruta base de la misión
+func resolve_objective_file(filepath: String) -> Dictionary:
+	return _resolve_file_entry(filepath, true)
+
+## Valida si una cadena corresponde exclusivamente a 3 dígitos en rango octal (0 al 7)
+## o 4 dígitos con 0 inicial (ej. 0755)
+func _is_valid_octal_mode(mode: String) -> bool:
+	var clean := mode
+	if clean.length() == 4 and clean.begins_with("0"):
+		clean = clean.substr(1)
+	if clean.length() != 3:
+		return false
+	for i in range(3):
+		var ch := clean.substr(i, 1)
+		if ch < "0" or ch > "7":
+			return false
+	return true
+
 func _calculate_permissions(old_perms: String, mode: String, is_dir: bool) -> String:
 	var prefix: String = "d" if is_dir else "-"
 
-	# Notación octal de 3 dígitos (ej. 755, 644, 600, 777, 700)
-	if mode.length() == 3 and mode.is_valid_int():
-		var u := mode.substr(0, 1).to_int()
-		var g := mode.substr(1, 1).to_int()
-		var o := mode.substr(2, 1).to_int()
+	# Notación octal válida exclusivamente con dígitos del 0 al 7 (ej. 755, 644, 600, 700)
+	var octal_str := mode
+	if octal_str.length() == 4 and octal_str.begins_with("0"):
+		octal_str = octal_str.substr(1)
+
+	if _is_valid_octal_mode(octal_str):
+		var u := octal_str.substr(0, 1).to_int()
+		var g := octal_str.substr(1, 1).to_int()
+		var o := octal_str.substr(2, 1).to_int()
 		return prefix + _octal_to_rwx(u) + _octal_to_rwx(g) + _octal_to_rwx(o)
+
+	# Si el argumento tiene caracteres numéricos pero contiene dígitos fuera del rango octal (ej. 999, 888)
+	if mode.is_valid_int():
+		return ""
 
 	# Notación simbólica (+x, -x, u+x, u-w, g+w, o-r, etc.)
 	var clean_old: String = old_perms
@@ -638,6 +706,14 @@ func _calculate_permissions(old_perms: String, mode: String, is_dir: bool) -> St
 			user_part = _set_bit(user_part, 2, "-")
 			group_part = _set_bit(group_part, 2, "-")
 			other_part = _set_bit(other_part, 2, "-")
+		"+r", "a+r":
+			user_part = _set_bit(user_part, 0, "r")
+			group_part = _set_bit(group_part, 0, "r")
+			other_part = _set_bit(other_part, 0, "r")
+		"+w", "a+w":
+			user_part = _set_bit(user_part, 1, "w")
+			group_part = _set_bit(group_part, 1, "w")
+			other_part = _set_bit(other_part, 1, "w")
 		"u+x":
 			user_part = _set_bit(user_part, 2, "x")
 		"u-x":
@@ -646,6 +722,10 @@ func _calculate_permissions(old_perms: String, mode: String, is_dir: bool) -> St
 			user_part = _set_bit(user_part, 1, "w")
 		"u-w":
 			user_part = _set_bit(user_part, 1, "-")
+		"u+r":
+			user_part = _set_bit(user_part, 0, "r")
+		"u-r":
+			user_part = _set_bit(user_part, 0, "-")
 		"g+w":
 			group_part = _set_bit(group_part, 1, "w")
 		"g-w":
@@ -657,28 +737,22 @@ func _calculate_permissions(old_perms: String, mode: String, is_dir: bool) -> St
 			group_part = _set_bit(group_part, 2, "x")
 		"g-x":
 			group_part = _set_bit(group_part, 2, "-")
+		"g+r":
+			group_part = _set_bit(group_part, 0, "r")
 		"o-r":
 			other_part = _set_bit(other_part, 0, "-")
+		"o+r":
+			other_part = _set_bit(other_part, 0, "r")
 		"o-w":
 			other_part = _set_bit(other_part, 1, "-")
+		"o+w":
+			other_part = _set_bit(other_part, 1, "w")
 		"o-x":
 			other_part = _set_bit(other_part, 2, "-")
+		"o+x":
+			other_part = _set_bit(other_part, 2, "x")
 		"o-rwx", "o-rx", "o-rw":
 			other_part = "---"
-		"600":
-			return prefix + "rw-------"
-		"644":
-			return prefix + "rw-r--r--"
-		"664":
-			return prefix + "rw-rw-r--"
-		"755":
-			return prefix + "rwxr-xr-x"
-		"700":
-			return prefix + "rwx------"
-		"750":
-			return prefix + "rwxr-x---"
-		"777":
-			return prefix + "rwxrwxrwx"
 		_:
 			return "" # Inválido
 

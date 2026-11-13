@@ -139,7 +139,7 @@ func _ready() -> void:
 	_setup_token_styles()
 	_connect_signals()
 	_hide_all_modals()
-	_show_difficulty_selection()
+	_show_tutorial()
 
 func _setup_token_styles() -> void:
 	style_normal_token = StyleBoxEmpty.new()
@@ -189,8 +189,8 @@ func _connect_signals() -> void:
 	btn_diff_normal.pressed.connect(func(): _on_difficulty_chosen("NORMAL"))
 	btn_diff_ing.pressed.connect(func(): _on_difficulty_chosen("INGENIERO"))
 
-	# Tutorial
-	btn_tutorial_start.pressed.connect(_start_match)
+	# Tutorial avanza a Selección de Dificultad
+	btn_tutorial_start.pressed.connect(_show_difficulty_selection)
 
 	# Pausa
 	btn_pause_resume.pressed.connect(_resume_game)
@@ -242,11 +242,42 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
+func _show_tutorial() -> void:
+	_hide_all_modals()
+	modal_tutorial.visible = true
+	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
+	
+	teacher_label.text = "¡Bienvenido al Desafío de Terminal Linux!\nLee atentamente las instrucciones antes de elegir tu dificultad."
+	terminal_log_label.text = "ROBCO INDUSTRIES (TM) TERMLINK - INSTRUCCIONES"
+
+	var rules_text: String = """INSTRUCCIONES DEL DESAFÍO:
+Descifra la memoria de la terminal hacker retro y ejecuta el comando de Linux solicitado.
+
+CÓMO JUGAR:
+1. Lee la situación problemática que te plantea el profesor en el globo superior.
+2. En la terminal verás datos entremezclados: palabras en inglés, códigos hexadecimales, bloques de símbolos y varios comandos de Linux.
+3. Solo UNO de los comandos de Linux es el correcto para la situación.
+4. Usa el D-Pad (o las teclas W/A/S/D / flechas) para navegar entre los datos resaltados en verde.
+5. Presiona ENTER (o la barra espaciadora) para ejecutar el comando seleccionado.
+
+NIVELES DE DIFICULTAD:
+• Fácil: 5 vidas · 30s por desafío · 1 columna (fácil de escanear)
+• Normal: 3 vidas · 25s por desafío · 2 columnas
+• Ingeniero: 1 vida · 20s por desafío · 2 columnas y 2 comandos por fila
+
+REGLAS DE PARTIDA:
+• Si el tiempo se agota, equivale a perder 1 vida.
+• Seleccionar un comando erróneo o basura de memoria descontará 1 vida.
+• ¡Completa los 5 desafíos para ganar estrellas y puntos para tu perfil!"""
+
+	tutorial_body.text = rules_text
+
 func _show_difficulty_selection() -> void:
+	AudioManager.play_click()
 	_hide_all_modals()
 	modal_difficulty.visible = true
-	teacher_label.text = "¡Bienvenido al Desafío de Terminal Linux!\nSelecciona el nivel de dificultad para comenzar."
-	terminal_log_label.text = "ROBCO INDUSTRIES (TM) TERMLINK - INACTIVO"
+	teacher_label.text = "Selecciona el nivel de dificultad para iniciar el desafío."
+	terminal_log_label.text = "ROBCO INDUSTRIES (TM) TERMLINK - SELECCIÓN DIFICULTAD"
 
 func _on_difficulty_chosen(diff: String) -> void:
 	AudioManager.play_click()
@@ -270,39 +301,7 @@ func _on_difficulty_chosen(diff: String) -> void:
 			layout_slots = 2
 
 	current_lives = max_lives
-	_show_tutorial()
-
-func _show_tutorial() -> void:
-	_hide_all_modals()
-	modal_tutorial.visible = true
-	
-	var diff_name: String = current_difficulty.capitalize()
-	var layout_desc: String
-	match current_difficulty:
-		"FACIL":
-			layout_desc = "1 columna · 1 opción por fila — más fácil de escanear"
-		"NORMAL":
-			layout_desc = "2 columnas · 1 opción por fila — nivel medio"
-		_:
-			layout_desc = "2 columnas · 2 opciones por fila — máxima dificultad"
-
-	var rules_text: String = """INSTRUCCIONES:
-Descifra la memoria de la terminal hacker retro y ejecuta el comando de Linux solicitado.
-
-CÓMO JUGAR:
-1. Lee la situación problemática que te plantea el profesor en el globo superior.
-2. En la terminal verás datos entremezclados: palabras en inglés, códigos hexadecimales, bloques de símbolos y varios comandos de Linux.
-3. Solo UNO de los comandos de Linux es el correcto para la situación.
-4. Usa el D-Pad (o las teclas W/A/S/D / flechas) para navegar entre los datos resaltados en verde.
-5. Presiona ENTER (o la barra espaciadora) para ejecutar el comando seleccionado.
-
-REGLAS DE PARTIDA:
-• Dificultad: %s (%d vidas) — %s
-• Tiempo por desafío: %d segundos. Si el tiempo se agota, equivale a perder 1 vida.
-• Seleccionar un comando erróneo o basura de memoria descontará 1 vida.
-• ¡Completa los 5 desafíos para ganar estrellas y puntos para tu perfil!""" % [diff_name, max_lives, layout_desc, int(time_limit_per_question)]
-
-	tutorial_body.text = rules_text
+	_start_match()
 
 func _start_match() -> void:
 	AudioManager.play_click()

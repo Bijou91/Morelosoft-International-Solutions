@@ -102,7 +102,7 @@ func _ready() -> void:
 	_connect_signals()
 	_setup_virtual_keyboard()
 	_hide_all_modals()
-	_show_difficulty_selection()
+	_show_tutorial()
 
 func _connect_signals() -> void:
 	btn_pause.pressed.connect(_on_pause_pressed)
@@ -112,8 +112,8 @@ func _connect_signals() -> void:
 	btn_diff_normal.pressed.connect(func(): _on_difficulty_chosen("NORMAL"))
 	btn_diff_ing.pressed.connect(func(): _on_difficulty_chosen("INGENIERO"))
 
-	# Tutorial
-	btn_tutorial_start.pressed.connect(_start_match)
+	# Tutorial avanza a Selección de Dificultad
+	btn_tutorial_start.pressed.connect(_show_difficulty_selection)
 
 	# Pausa
 	btn_pause_resume.pressed.connect(_resume_game)
@@ -154,11 +154,44 @@ func _process(delta: float) -> void:
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
+func _show_tutorial() -> void:
+	_hide_all_modals()
+	modal_tutorial.visible = true
+	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
+
+	teacher_label.text = "¡Bienvenido a la Misión de Permisos y Procesos (CU-18)!\nLee las instrucciones del desafío antes de seleccionar tu dificultad."
+	terminal_prompt_label.text = "user@is-pixelverse:~$ [MODO INSTRUCCIONES]"
+
+	var rules_text: String = """INSTRUCCIONES DE LA MISIÓN:
+En este desafío administrarás permisos y procesos de un sistema GNU/Linux mediante comandos en una terminal simulada completamente segura.
+
+COMANDOS CLAVE:
+• ps aux  o  top : Inspecciona procesos activos, PIDs y consumo de recursos.
+• kill <PID>  o  killall <nombre> : Termina procesos maliciosos o rebeldes.
+• ls -l : Inspecciona archivos con sus permisos detallados (rwx) y dueños.
+• chmod <modo> <archivo> : Cambia permisos en notación octal (755, 600) o simbólica (+x, -x, u+w, o-r).
+• chown <usuario> <archivo> : Modifica el dueño de un archivo.
+• cat <archivo> : Lee el contenido de un archivo.
+• ./script.sh : Ejecuta un script verificando que tenga permisos 'x'.
+
+NIVELES DE DIFICULTAD:
+• Fácil: 3 vidas · 90s · 300 puntos (Servidor web y scripts)
+• Normal: 2 vidas · 60s · 600 puntos (Base de datos y claves)
+• Ingeniero: 1 vida · 45s · 900 puntos (Cluster, logs y chown)
+
+REGLAS DE PARTIDA:
+• Si el tiempo se agota, perderás 1 vida y el contador se reiniciará.
+• ¡CUIDADO! Si ejecutas una acción riesgosa (como terminar procesos vitales del kernel como systemd o asignar permisos inseguros a malware), el sistema revertirá la acción y perderás 1 vida.
+• Completa todos los objetivos en pantalla para cumplir la misión."""
+
+	tutorial_body.text = rules_text
+
 func _show_difficulty_selection() -> void:
+	AudioManager.play_click()
 	_hide_all_modals()
 	modal_difficulty.visible = true
-	teacher_label.text = "¡Bienvenido a la Misión de Permisos y Procesos (CU-18)!\nSelecciona tu nivel de dificultad para comenzar."
-	terminal_prompt_label.text = "user@is-pixelverse:~$ [MODO ESPERA]"
+	teacher_label.text = "Selecciona la dificultad de la misión para comenzar."
+	terminal_prompt_label.text = "user@is-pixelverse:~$ [SELECCIÓN DIFICULTAD]"
 
 func _on_difficulty_chosen(diff: String) -> void:
 	AudioManager.play_click()
@@ -179,33 +212,7 @@ func _on_difficulty_chosen(diff: String) -> void:
 			time_limit = 45.0
 
 	current_lives = max_lives
-	_show_tutorial()
-
-func _show_tutorial() -> void:
-	_hide_all_modals()
-	modal_tutorial.visible = true
-
-	var diff_name: String = current_difficulty.capitalize()
-	var rules_text: String = """INSTRUCCIONES DE LA MISIÓN:
-En este desafío administrarás permisos y procesos de un sistema GNU/Linux mediante comandos en una terminal simulada completamente segura.
-
-COMANDOS CLAVE:
-• ps aux  o  top : Inspecciona procesos activos, PIDs y consumo de recursos.
-• kill <PID>  o  killall <nombre> : Termina procesos maliciosos o rebeldes.
-• ls -l : Inspecciona archivos con sus permisos detallados (rwx) y dueños.
-• chmod <modo> <archivo> : Cambia permisos en notación octal (755, 600) o simbólica (+x, -x, u+w, o-r).
-• chown <usuario> <archivo> : Modifica el dueño de un archivo.
-• cat <archivo> : Lee el contenido de un archivo.
-• ./script.sh : Ejecuta un script verificando que tenga permisos 'x'.
-
-REGLAS DE PARTIDA:
-• Dificultad: %s (%d vidas)
-• Puntos de recompensa: %d puntos
-• Tiempo disponible: %d segundos
-• Si el tiempo se agota, perderás 1 vida y el contador se reiniciará.
-• ¡CUIDADO! Si ejecutas una acción riesgosa (como terminar procesos vitales del kernel como systemd o asignar permisos inseguros), el sistema revertirá la acción y perderás 1 vida.""" % [diff_name, max_lives, total_score, int(time_limit)]
-
-	tutorial_body.text = rules_text
+	_start_match()
 
 func _start_match() -> void:
 	AudioManager.play_click()
