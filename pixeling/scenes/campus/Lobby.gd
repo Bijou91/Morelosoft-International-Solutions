@@ -27,6 +27,11 @@ extends Control
 @onready var btn_ajustes: Button = $VBox/TopHUD/BtnAjustes
 @onready var settings_modal: Control = $SettingsModal
 
+const StudentNPCClass = preload("res://scenes/campus/LobbyStudentNPC.gd")
+@onready var npcs_center: Control = get_node_or_null("NPCContainer/NPCsCenter")
+@onready var npcs_left: Control = get_node_or_null("NPCContainer/NPCsLeft")
+@onready var npcs_right: Control = get_node_or_null("NPCContainer/NPCsRight")
+
 const TEX_PANEL_INNER = preload("res://scenes/ui/theme/classic/panel_inner_plate.tres")
 const TEX_BTN_NEUT_NORM = preload("res://scenes/ui/theme/classic/btn_neutral_normal.tres")
 const TEX_BTN_NEUT_HOV = preload("res://scenes/ui/theme/classic/btn_neutral_hover.tres")
@@ -37,6 +42,18 @@ func _ready() -> void:
 	update_hud()
 	EventBus.points_updated.connect(func(_new_tot, _delta): update_hud())
 
+	# Permitir que los clics en el espacio abierto del suelo pasen hacia los NPCs interactivos
+	if has_node("VBox"):
+		$VBox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if has_node("VBox/RoomsContainer"):
+		$VBox/RoomsContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if has_node("VBox/RoomsContainer/RoomCenter"):
+		$VBox/RoomsContainer/RoomCenter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if has_node("VBox/RoomsContainer/RoomLeft"):
+		$VBox/RoomsContainer/RoomLeft.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if has_node("VBox/RoomsContainer/RoomRight"):
+		$VBox/RoomsContainer/RoomRight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	# Modal de Ajustes (CU-01)
 	btn_ajustes.pressed.connect(_open_settings)
 
@@ -45,8 +62,14 @@ func _ready() -> void:
 	_load_left_background()
 	_load_right_background()
 
+	# Inicializar estudiantes universitarios (NPCs con reacciones de emoji)
+	_setup_students()
+
 	# Configuración inicial: Mostrar Centro (Lobby principal)
 	_show_room(room_center)
+
+	# Reproducir música de fondo del campus en bucle
+	_play_lobby_music()
 
 	# Efecto de respiración y flotación sutil en las flechas de navegación
 	_setup_arrow_breathing()
@@ -170,6 +193,14 @@ func _show_room(target_room: Control) -> void:
 	if bg_right:
 		bg_right.visible = (target_room == room_right)
 
+	# Sincronizar población de estudiantes con el ala visible
+	if npcs_center:
+		npcs_center.visible = (target_room == room_center)
+	if npcs_left:
+		npcs_left.visible = (target_room == room_left)
+	if npcs_right:
+		npcs_right.visible = (target_room == room_right)
+
 func update_hud() -> void:
 	lbl_user.text = StateManager.get_username()
 	lbl_points.text = "Puntos: %d" % StateManager.get_points()
@@ -266,8 +297,15 @@ func _apply_classic_lobby_assets() -> void:
 		lbl_ala.add_theme_color_override("font_color", Color(0.75, 0.94, 1.0, 1.0))
 		plate.add_child(lbl_ala)
 
+const LOBBY_MUSIC_PATH := "res://assets/lobby/musica/Geometry_of_Thought.mp3"
+
+func _play_lobby_music() -> void:
+	if AudioManager:
+		AudioManager.play_music(LOBBY_MUSIC_PATH, true)
+
 func _open_classroom(classroom_name: String, scene_path: String) -> void:
 	AudioManager.play_click()
+	# La música del campus continúa durante la estancia en el salón, lectura de instrucciones y selección de dificultad
 	if scene_path != "" and ResourceLoader.exists(scene_path):
 		get_tree().change_scene_to_file(scene_path)
 	else:
@@ -276,6 +314,8 @@ func _open_classroom(classroom_name: String, scene_path: String) -> void:
 func _open_settings() -> void:
 	AudioManager.play_click()
 	if settings_modal:
+		settings_modal.z_index = 1000
+		settings_modal.z_as_relative = false
 		settings_modal.open_modal()
 
 func _setup_arrow_breathing() -> void:
@@ -332,3 +372,66 @@ func _apply_classroom_arrow_breathing(btn: Control) -> void:
 	tween.tween_property(btn, "offset_top", base_top + amplitude_y, cycle_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.parallel().tween_property(btn, "offset_bottom", base_bottom + amplitude_y, cycle_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.parallel().tween_property(btn, "scale", Vector2(0.98, 0.98), cycle_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _setup_students() -> void:
+	# 1. Estudiantes del Lobby Central (8 estudiantes en amplia zona del pasillo central)
+	if npcs_center:
+		for child in npcs_center.get_children():
+			child.queue_free()
+
+		var center_configs := [
+			{ "variant": 9, "pos": Vector2(120, 230), "bounds": Rect2(45, 190, 270, 370) }, # Científica bata blanca
+			{ "variant": 10, "pos": Vector2(220, 275), "bounds": Rect2(45, 190, 270, 370) }, # Científico bata blanca
+			{ "variant": 1, "pos": Vector2(85, 340), "bounds": Rect2(45, 190, 270, 370) }, # Estudiante vestido verde
+			{ "variant": 8, "pos": Vector2(235, 385), "bounds": Rect2(45, 190, 270, 370) }, # Estudiante beanie azul
+			{ "variant": 3, "pos": Vector2(140, 430), "bounds": Rect2(45, 190, 270, 370) }, # Estudiante mochila roja
+			{ "variant": 2, "pos": Vector2(75, 480), "bounds": Rect2(45, 190, 270, 370) }, # Estudiante overol
+			{ "variant": 7, "pos": Vector2(210, 510), "bounds": Rect2(45, 190, 270, 370) }, # Estudiante camisa leñadora
+			{ "variant": 16, "pos": Vector2(150, 545), "bounds": Rect2(45, 190, 270, 370) }  # Estudiante ambiental verde
+		]
+		for cfg in center_configs:
+			_create_student_in_container(npcs_center, cfg)
+
+	# 2. Estudiantes del Ala Izquierda (7 estudiantes en Aulas 101 y 102)
+	if npcs_left:
+		for child in npcs_left.get_children():
+			child.queue_free()
+
+		var left_configs := [
+			{ "variant": 5, "pos": Vector2(65, 170), "bounds": Rect2(40, 140, 280, 400) },  # Biología F chaleco
+			{ "variant": 13, "pos": Vector2(230, 220), "bounds": Rect2(40, 140, 280, 400) }, # Scout M pañuelo
+			{ "variant": 11, "pos": Vector2(110, 290), "bounds": Rect2(40, 140, 280, 400) }, # Filosofía M bohemio
+			{ "variant": 12, "pos": Vector2(215, 350), "bounds": Rect2(40, 140, 280, 400) }, # Música F
+			{ "variant": 4, "pos": Vector2(80, 420), "bounds": Rect2(40, 140, 280, 400) },  # Senderismo F mochila naranja
+			{ "variant": 14, "pos": Vector2(195, 470), "bounds": Rect2(40, 140, 280, 400) }, # Scout F coletas
+			{ "variant": 9, "pos": Vector2(140, 520), "bounds": Rect2(40, 140, 280, 400) }  # Química F bata
+		]
+		for cfg in left_configs:
+			_create_student_in_container(npcs_left, cfg)
+
+	# 3. Estudiantes del Ala Derecha (7 estudiantes en el pasillo superior, antes del muro de las aulas 103 y 104)
+	if npcs_right:
+		for child in npcs_right.get_children():
+			child.queue_free()
+
+		var right_bounds := Rect2(35, 145, 285, 171)
+		var right_configs := [
+			{ "variant": 6, "pos": Vector2(60, 160), "bounds": right_bounds },  # Biología M explorador
+			{ "variant": 15, "pos": Vector2(140, 175), "bounds": right_bounds }, # Guardián M uniforme
+			{ "variant": 10, "pos": Vector2(220, 165), "bounds": right_bounds }, # Física M bata lentes
+			{ "variant": 8, "pos": Vector2(95, 215), "bounds": right_bounds },  # Beanie azul casual
+			{ "variant": 1, "pos": Vector2(180, 225), "bounds": right_bounds },  # Botánica vestido verde
+			{ "variant": 7, "pos": Vector2(250, 210), "bounds": right_bounds },  # Arquitectura cuadros
+			{ "variant": 3, "pos": Vector2(135, 255), "bounds": right_bounds }   # Senderismo M mochila roja
+		]
+		for cfg in right_configs:
+			_create_student_in_container(npcs_right, cfg)
+
+func _create_student_in_container(container: Control, cfg: Dictionary) -> void:
+	if not container or not StudentNPCClass:
+		return
+	var npc = StudentNPCClass.new()
+	npc.variant_id = cfg["variant"]
+	npc.position = cfg["pos"]
+	npc.wander_bounds = cfg["bounds"]
+	container.add_child(npc)

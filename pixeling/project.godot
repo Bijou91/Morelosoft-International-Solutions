@@ -15,8 +15,8 @@ config/description="PixelIng - Aplicación móvil educativa interactiva para Ing
 config/version="1.0.0"
 run/main_scene="res://scenes/ui/LoadingScreen.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
-boot_splash/show_image=false
 boot_splash/bg_color=Color(0.04, 0.05, 0.08, 1)
+boot_splash/show_image=false
 config/icon="res://icon.svg"
 
 [autoload]
@@ -38,6 +38,7 @@ window/handheld/orientation=1
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-renderer/rendering_method="mobile"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.0588235, 0.0666667, 0.101961, 1)

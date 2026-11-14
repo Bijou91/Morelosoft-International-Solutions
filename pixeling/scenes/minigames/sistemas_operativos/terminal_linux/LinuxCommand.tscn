@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://linuxcommandcu16uaz"]
+[gd_scene load_steps=6 format=3 uid="uid://linuxcommandcu16uaz"]
 
 [ext_resource type="Script" path="res://scenes/minigames/sistemas_operativos/terminal_linux/LinuxCommand.gd" id="1_lc01"]
-[ext_resource type="Texture2D" path="res://assets/terminal_linux/teacher_linux.png" id="2_teach"]
-[ext_resource type="Texture2D" path="res://assets/terminal_linux/crt_bezel.png" id="3_bezel"]
-[ext_resource type="Texture2D" path="res://assets/terminal_linux/student_hands_keyboard.png" id="4_hands"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/PrimerMinijuego/ProfesorNormal.png" id="2_teach"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/PrimerMinijuego/Monitor.jpg" id="3_bezel"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/PrimerMinijuego/TecladoManos.jpg" id="4_hands"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_term"]
 
 [node name="LinuxCommand" type="Control"]
 layout_mode = 3
@@ -92,7 +94,7 @@ autowrap_mode = 2
 vertical_alignment = 1
 
 [node name="TeacherTexture" type="TextureRect" parent="TeacherSection"]
-custom_minimum_size = Vector2(68, 68)
+custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("2_teach")
@@ -109,7 +111,7 @@ offset_right = -8.0
 offset_bottom = 398.0
 grow_horizontal = 2
 
-[node name="BezelTexture" type="NinePatchRect" parent="CRTContainer"]
+[node name="BezelTexture" type="TextureRect" parent="CRTContainer"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -117,22 +119,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("3_bezel")
-patch_margin_left = 24
-patch_margin_top = 24
-patch_margin_right = 24
-patch_margin_bottom = 24
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TerminalPanel" type="Panel" parent="CRTContainer"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = 12.0
-offset_right = -14.0
-offset_bottom = -14.0
+offset_left = 32.0
+offset_top = 22.0
+offset_right = -32.0
+offset_bottom = -26.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_term")
 
 [node name="TerminalLogLabel" type="Label" parent="CRTContainer/TerminalPanel"]
 layout_mode = 1
@@ -190,7 +191,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("4_hands")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
 [node name="DPad" type="Control" parent="ControlsSection"]
 layout_mode = 1
