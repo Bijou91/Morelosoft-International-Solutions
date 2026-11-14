@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640">
+  <defs>
+    <!-- Patrón Cuadrícula de Libreta -->
+    <pattern id="quad_grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d5e0e8" stroke-width="0.8" />
+    </pattern>
+    <!-- Gradiente de profundidad en el lomo espiral -->
+    <linearGradient id="spine_shadow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2a2520" stop-opacity="0.35" />
+      <stop offset="10%" stop-color="#555048" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <!-- Anillo espiral metálico -->
+    <linearGradient id="spiral_metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#909ca8" />
+      <stop offset="40%" stop-color="#e8edf2" />
+      <stop offset="70%" stop-color="#505a66" />
+      <stop offset="100%" stop-color="#2c333a" />
+    </linearGradient>
+  </defs>
+
+  <!-- Papel base color marfil claro / libreta -->
+  <rect width="360" height="640" fill="#f8f7f2" />
+
+  <!-- Cuadrícula matemática / programación en toda la hoja -->
+  <rect x="0" y="0" width="360" height="640" fill="url(#quad_grid)" />
+
+  <!-- Sombra del lomo izquierdo -->
+  <rect x="0" y="0" width="45" height="640" fill="url(#spine_shadow)" />
+
+  <!-- Margen vertical de libreta (Doble línea roja/rosa clásica) -->
+  <line x1="48" y1="0" x2="48" y2="640" stroke="#f07178" stroke-width="1.2" stroke-opacity="0.75" />
+  <line x1="51" y1="0" x2="51" y2="640" stroke="#f07178" stroke-width="0.6" stroke-opacity="0.45" />
+
+  <!-- Cabecera de fecha/tema superior -->
+  <line x1="48" y1="40" x2="350" y2="40" stroke="#82aaff" stroke-width="1.0" stroke-opacity="0.5" />
+  <line x1="48" y1="60" x2="350" y2="60" stroke="#82aaff" stroke-width="0.8" stroke-opacity="0.3" />
+
+  <!-- Perforaciones y espiral metálico en el borde izquierdo -->
+  <!-- Agujeros de espiral (20 anillos a lo largo de 640px) -->
+  <g id="spiral_rings">
+    <!-- Repetir espirales cada 30px -->
+    <!-- y = 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480, 510, 540, 570, 600 -->
+    <!-- Agujeros perforados circulares oscuros -->
+    <circle cx="16" cy="30" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="60" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="90" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="120" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="150" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="180" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="210" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="240" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="270" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="300" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="330" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="360" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="390" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="420" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="450" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="480" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="510" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="540" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="570" r="4.5" fill="#3a332a" opacity="0.85" />
+    <circle cx="16" cy="600" r="4.5" fill="#3a332a" opacity="0.85" />
+
+    <!-- Anillos espirales dobles de alambre plateado/metálico -->
+    <path d="M 0 25 C 10 25, 20 28, 16 33 C 12 37, 2 31, 0 31" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 55 C 10 55, 20 58, 16 63 C 12 67, 2 61, 0 61" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 85 C 10 85, 20 88, 16 93 C 12 97, 2 91, 0 91" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 115 C 10 115, 20 118, 16 123 C 12 127, 2 121, 0 121" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 145 C 10 145, 20 148, 16 153 C 12 157, 2 151, 0 151" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 175 C 10 175, 20 178, 16 183 C 12 187, 2 181, 0 181" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 205 C 10 205, 20 208, 16 213 C 12 217, 2 211, 0 211" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 235 C 10 235, 20 238, 16 243 C 12 247, 2 241, 0 241" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 265 C 10 265, 20 268, 16 273 C 12 277, 2 271, 0 271" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 295 C 10 295, 20 298, 16 303 C 12 307, 2 301, 0 301" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 325 C 10 325, 20 328, 16 333 C 12 337, 2 331, 0 331" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 355 C 10 355, 20 358, 16 363 C 12 367, 2 361, 0 361" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 385 C 10 385, 20 388, 16 393 C 12 397, 2 391, 0 391" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 415 C 10 415, 20 418, 16 423 C 12 427, 2 421, 0 421" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 445 C 10 445, 20 448, 16 453 C 12 457, 2 451, 0 451" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 475 C 10 475, 20 478, 16 483 C 12 487, 2 481, 0 481" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 505 C 10 505, 20 508, 16 513 C 12 517, 2 511, 0 511" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 535 C 10 535, 20 538, 16 543 C 12 547, 2 541, 0 541" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 565 C 10 565, 20 568, 16 573 C 12 577, 2 571, 0 571" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+    <path d="M 0 595 C 10 595, 20 598, 16 603 C 12 607, 2 601, 0 601" fill="none" stroke="url(#spiral_metal)" stroke-width="2.5" />
+  </g>
+</svg>

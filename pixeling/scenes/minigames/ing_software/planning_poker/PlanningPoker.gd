@@ -154,6 +154,7 @@ var victory_stats_label: Label
 # Nodos puramente visuales (sprites pixel art, no intervienen en la lógica)
 var hearts_bar: HBoxContainer
 var victory_stars_row: HBoxContainer
+var flow_template: Control
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CICLO DE VIDA
@@ -168,6 +169,7 @@ func _ready() -> void:
 
 	_load_stories()
 	_build_ui()
+	_build_flow_template()
 	_show_difficulty_selector()
 
 
@@ -321,6 +323,7 @@ func _build_top_hud() -> Control:
 	lives_row.add_child(hearts_bar)
 	lives_label = _make_label("❤ 5/5", 12, Color("ff6b6b"))
 	lives_row.add_child(lives_label)
+	stabilize_hud_label(lives_label, 48.0)
 	lives_box.add_child(lives_row)
 	hud.add_child(lives_box)
 
@@ -337,6 +340,7 @@ func _build_top_hud() -> Control:
 	score_label = _make_label("0 Pts", 12, COL_ACCENT)
 	PixelSkin.style_label(score_label, PixelSkin.C_YELLOW)
 	score_row.add_child(score_label)
+	stabilize_hud_label(score_label, 52.0)
 	score_box.add_child(score_row)
 	hud.add_child(score_box)
 
@@ -385,6 +389,7 @@ func _build_global_timer() -> Control:
 	PixelSkin.style_label(global_time_label, PixelSkin.C_WHITE)
 	global_time_label.custom_minimum_size = Vector2(38, 0)
 	row.add_child(global_time_label)
+	stabilize_hud_label(global_time_label, 40.0)
 	return row
 
 
@@ -423,6 +428,7 @@ func _build_board() -> PanelContainer:
 		story_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
 	story_label.custom_minimum_size = Vector2(0, 46)
 	v.add_child(story_label)
+	lock_dynamic_label_box(story_label, null, 60.0, 11, 7, 0.0, 0.0, true, true)
 
 	v.add_child(_make_expand_spacer())
 
@@ -441,6 +447,7 @@ func _build_board() -> PanelContainer:
 	if is_scroll:
 		criteria_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
 	crit_v.add_child(criteria_label)
+	lock_dynamic_label_box(criteria_label, null, 38.0, 9, 7, 0.0, 0.0, true, true)
 	v.add_child(crit_box)
 
 	v.add_child(_make_expand_spacer())
@@ -469,6 +476,7 @@ func _build_board() -> PanelContainer:
 	PixelSkin.style_label(question_time_label, PixelSkin.C_WHITE, 2)
 	question_time_label.custom_minimum_size = Vector2(30, 0)
 	q_row.add_child(question_time_label)
+	stabilize_hud_label(question_time_label, 32.0)
 	v.add_child(q_row)
 
 	return board
@@ -954,10 +962,54 @@ func _show_overlay(target: ColorRect) -> void:
 # FLUJO PRE-PARTIDA: Instrucciones → Dificultad → Juego (Precondiciones 5, 6 y 7)
 # ══════════════════════════════════════════════════════════════════════════════
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Planning Poker",
+		"subtitle": "CU-09 · Ingeniería de Software",
+		"classroom_path": CLASSROOM_SCENE,
+		"objective": "Analiza historias de usuario y estima su esfuerzo en puntos de historia (escala Fibonacci).",
+		"rules": [
+			"[+] Analizar la historia de usuario y seleccionar el valor de Story Points en escala Fibonacci [1, 2, 3, 5, 8, 13] según su complejidad = +Puntos",
+			"[-] Seleccionar una estimación incorrecta = -1 Vida",
+			"[!] Si el tiempo de respuesta por historia se agota = -1 Vida",
+			"[T] Sobrevive hasta que el tiempo global termine para ganar"
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 5 vidas · 120s totales · 15s por historia · 15 pts/acierto"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 3 vidas · 90s totales · 12s por historia · 30 pts/acierto"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 2 vidas · 60s totales · 10s por historia · 50 pts/acierto"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			_on_difficulty_selected(diff),
+		"on_back": func():
+			_go_to_classroom(),
+		"on_resume": func():
+			if state == State.PAUSED:
+				state = state_before_pause
+				_show_overlay(null),
+		"on_restart": func():
+			_start_game_play()
+	})
+
+
 func _show_difficulty_selector() -> void:
 	state = State.INSTRUCTIONS
 	_reset_board()
-	_show_overlay(instructions_overlay)
+	_show_overlay(null)
+	if flow_template:
+		flow_template.show_instructions()
+	else:
+		_show_overlay(instructions_overlay)
 
 
 func _on_difficulty_selected(diff: String) -> void:
@@ -1093,7 +1145,12 @@ func _handle_game_over() -> void:
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 
-	finish_game(false, score, 0, "Sin vidas — %d/%d estimaciones correctas" % [total_correct, total_answered])
+	var reason := "Sin vidas — %d/%d estimaciones correctas" % [total_correct, total_answered]
+	finish_game(false, score, 0, reason)
+
+	if flow_template:
+		flow_template.show_game_over(reason, score)
+		return
 
 	if is_instance_valid(game_over_score_label):
 		game_over_score_label.text = "Puntaje: %d" % score
@@ -1111,7 +1168,14 @@ func _handle_victory() -> void:
 	AudioManager.play_success()
 
 	var stars: int = _calculate_stars()
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = score > prev_high
 	finish_game(true, score, stars, "¡Historias estimadas! %d/%d aciertos" % [total_correct, total_answered])
+
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else score
+		flow_template.show_victory(score, stars, total_accum, is_record, "¡HISTORIAS ESTIMADAS!")
+		return
 
 	if is_instance_valid(victory_stars_label):
 		victory_stars_label.text = "⭐".repeat(stars) + "☆".repeat(3 - stars)
@@ -1146,12 +1210,18 @@ func _stats_text() -> String:
 func _toggle_pause() -> void:
 	if state == State.PAUSED:
 		state = state_before_pause
-		_show_overlay(null)
+		if flow_template:
+			flow_template.hide_pause()
+		else:
+			_show_overlay(null)
 		AudioManager.play_click()
 	elif _is_playing():
 		state_before_pause = state
 		state = State.PAUSED
-		_show_overlay(pause_overlay)
+		if flow_template:
+			flow_template.show_pause()
+		else:
+			_show_overlay(pause_overlay)
 		AudioManager.play_click()
 
 

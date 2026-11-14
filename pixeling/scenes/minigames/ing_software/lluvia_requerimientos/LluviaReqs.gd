@@ -127,6 +127,7 @@ var victory_stars_row: HBoxContainer
 var dev_sprite: TextureRect
 var dev_frames: Array[Texture2D] = []
 var dev_anim_clock: float = 0.0
+var flow_template: Control
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CICLO DE VIDA
@@ -141,6 +142,7 @@ func _ready() -> void:
 
 	vp_size = get_viewport_rect().size
 	_build_ui()
+	_build_flow_template()
 	_show_difficulty_selector()
 
 func _apply_accessibility_mode(is_active: bool) -> void:
@@ -281,6 +283,7 @@ func _build_top_hud() -> void:
 	lives_label.add_theme_font_size_override("font_size", 11)
 	PixelSkin.style_label(lives_label, PixelSkin.C_WHITE)
 	hud.add_child(lives_label)
+	stabilize_hud_label(lives_label, 52.0)
 	if PixelSkin.set_hearts(hearts_bar, current_lives, max_lives):
 		lives_label.visible = false
 
@@ -297,6 +300,7 @@ func _build_top_hud() -> void:
 	time_label.add_theme_font_size_override("font_size", 11)
 	PixelSkin.style_label(time_label, PixelSkin.C_WHITE)
 	hud.add_child(time_label)
+	stabilize_hud_label(time_label, 42.0)
 
 	var spacer2 := Control.new()
 	spacer2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -311,6 +315,7 @@ func _build_top_hud() -> void:
 	score_label.add_theme_font_size_override("font_size", 12)
 	PixelSkin.style_label(score_label, PixelSkin.C_YELLOW)
 	hud.add_child(score_label)
+	stabilize_hud_label(score_label, 48.0)
 
 
 func _build_timer_bar() -> void:
@@ -788,13 +793,55 @@ func _make_stylebox(color: Color, corner_radius: int = 4, border_width: int = 0,
 # FLUJO PRE-PARTIDA: Instrucciones → Dificultad → Juego
 # ══════════════════════════════════════════════════════════════════════════════
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Lluvia de Requerimientos",
+		"subtitle": "CU-07 · Ingeniería de Software",
+		"classroom_path": "res://scenes/classroom/AulaIngSoftware.tscn",
+		"objective": "Atrapa los requerimientos funcionales y esquiva los no funcionales.",
+		"rules": [
+			"[+] Atrapa tarjetas VERDES (Req. Funcionales) = +Puntos",
+			"[-] Esquiva bloques NARANJAS (Req. No Funcionales) = -1 Vida",
+			"[!] Si un Req. Funcional se escapa por abajo = -1 Vida",
+			"[T] Sobrevive hasta que el tiempo termine para ganar"
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 10 vidas · 90s · Caída 100-140 px/s · 55% Funcionales"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 5 vidas · 75s · Caída 120-180 px/s · 50% Funcionales"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 3 vidas · 60s · Caída 150-220 px/s · 40% Funcionales"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			_on_difficulty_selected(diff),
+		"on_back": func():
+			_on_back_pressed(),
+		"on_resume": func():
+			is_paused = false,
+		"on_restart": func():
+			_start_game_play()
+	})
+
+
 func _show_difficulty_selector() -> void:
 	is_game_active = false
 	difficulty_overlay.visible = false
-	instructions_overlay.visible = true
+	instructions_overlay.visible = false
 	pause_overlay.visible = false
 	game_over_overlay.visible = false
 	victory_overlay.visible = false
+	if flow_template:
+		flow_template.show_instructions()
+	else:
+		instructions_overlay.visible = true
 
 
 func _on_difficulty_selected(diff: String) -> void:
@@ -923,8 +970,10 @@ func _spawn_requirement() -> void:
 	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	vbox.add_child(text_label)
+	lock_dynamic_label_box(text_label, null, 28.0, 8, 6, 0.0, 0.0, true, true)
 
 	req_node.add_child(vbox)
+	req_node.size = Vector2(REQ_WIDTH, REQ_HEIGHT)
 
 	# Posición inicial: bajo la nube, X aleatorio
 	var max_x: float = game_area.size.x - REQ_WIDTH
@@ -1017,11 +1066,15 @@ func _handle_game_over() -> void:
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 
+	var reason := "Game Over — Sin vidas restantes"
 	# Registrar resultado en StateManager (diagrama: "Registra el resultado" → "Guarda los datos")
-	finish_game(false, score, 0, "Game Over — Sin vidas restantes")
+	finish_game(false, score, 0, reason)
 
 	# Mostrar overlay (diagrama: "Ofrece salir al menú o reiniciar")
 	_clear_active_requirements()
+	if flow_template:
+		flow_template.show_game_over(reason, score)
+		return
 	final_score_label.text = "Puntaje: %d" % score
 	game_over_overlay.visible = true
 
@@ -1032,12 +1085,18 @@ func _handle_victory() -> void:
 	AudioManager.play_success()
 
 	var earned_stars: int = _calculate_stars()
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = score > prev_high
 
 	# Registrar resultado en StateManager
 	finish_game(true, score, earned_stars, "¡Requerimientos clasificados correctamente!")
 
 	# Mostrar overlay de victoria
 	_clear_active_requirements()
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else score
+		flow_template.show_victory(score, earned_stars, total_accum, is_record, "¡REQUERIMIENTOS CLASIFICADOS!")
+		return
 	victory_score_label.text = "Puntaje: %d" % score
 	stars_label.text = "★".repeat(earned_stars) + "☆".repeat(3 - earned_stars)
 	victory_overlay.visible = true
@@ -1058,7 +1117,13 @@ func _toggle_pause() -> void:
 	if not is_game_active:
 		return
 	is_paused = !is_paused
-	pause_overlay.visible = is_paused
+	if flow_template:
+		if is_paused:
+			flow_template.show_pause()
+		else:
+			flow_template.hide_pause()
+	else:
+		pause_overlay.visible = is_paused
 	AudioManager.play_click()
 
 # ══════════════════════════════════════════════════════════════════════════════

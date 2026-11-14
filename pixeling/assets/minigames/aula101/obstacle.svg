@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Gradiente de advertencia peligro / obstáculo -->
+    <radialGradient id="obs_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff1744" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#b71c1c" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Aura de peligro -->
+  <circle cx="32" cy="32" r="26" fill="url(#obs_glow)" />
+
+  <!-- Caja / bloque cibernético de barrera -->
+  <rect x="10" y="10" width="44" height="44" rx="6" fill="#1e1014" stroke="#ff5252" stroke-width="2.5" />
+  <rect x="14" y="14" width="36" height="36" rx="4" fill="#2d141a" stroke="#ff1744" stroke-width="1.2" />
+
+  <!-- Marca 'X' luminosa de bloqueo -->
+  <line x1="20" y1="20" x2="44" y2="44" stroke="#ff1744" stroke-width="4.5" stroke-linecap="round" />
+  <line x1="44" y1="20" x2="20" y2="44" stroke="#ff1744" stroke-width="4.5" stroke-linecap="round" />
+  <line x1="20" y1="20" x2="44" y2="44" stroke="#ff8a80" stroke-width="2" stroke-linecap="round" />
+  <line x1="44" y1="20" x2="20" y2="44" stroke="#ff8a80" stroke-width="2" stroke-linecap="round" />
+</svg>

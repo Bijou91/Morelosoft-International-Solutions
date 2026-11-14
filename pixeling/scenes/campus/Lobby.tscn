@@ -1,7 +1,26 @@
-[gd_scene format=3 uid="uid://b0xlobbyua001"]
+[gd_scene load_steps=7 format=3 uid="uid://b0xlobbyua001"]
 
 [ext_resource type="Script" uid="uid://dtcviy1y1kqnm" path="res://scenes/campus/Lobby.gd" id="1_lob01"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsModal.tscn" id="2_settings"]
+[ext_resource type="Texture2D" uid="uid://dy316lt1jcgkv" path="res://assets/lobby/arrow_blue_left.svg" id="3_arrow_l"]
+[ext_resource type="Texture2D" uid="uid://csc0ousayxsy4" path="res://assets/lobby/arrow_blue_right.svg" id="4_arrow_r"]
+[ext_resource type="Texture2D" uid="uid://c3vf1xfyoc05p" path="res://assets/lobby/arrow_yellow_up.svg" id="5_arrow_up"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge"]
+bg_color = Color(0.08, 0.1, 0.15, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.75, 0.2, 0.75)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -29,7 +48,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 6
 mouse_filter = 2
 
 [node name="BackgroundLeft" type="TextureRect" parent="."]
@@ -41,7 +60,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 6
 mouse_filter = 2
 
 [node name="BackgroundRight" type="TextureRect" parent="."]
@@ -53,7 +72,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 6
 mouse_filter = 2
 
 [node name="VBox" type="VBoxContainer" parent="."]
@@ -71,6 +90,7 @@ theme_override_constants/separation = 12
 
 [node name="TopHUD" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="BtnAjustes" type="Button" parent="VBox/TopHUD"]
 layout_mode = 2
@@ -97,16 +117,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 11
 text = "Puntos: 0"
 
-[node name="PanelNPC" type="PanelContainer" parent="VBox"]
-layout_mode = 2
-
-[node name="DialogueBubble" type="Label" parent="VBox/PanelNPC"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "¡Bienvenido al Campus Virtual! Explora las alas del edificio."
-horizontal_alignment = 1
-autowrap_mode = 2
-
 [node name="RoomsContainer" type="Control" parent="VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -122,23 +132,91 @@ grow_vertical = 2
 
 [node name="BtnAulaProg" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
 layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 140.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 10
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 136.0
+offset_bottom = 100.0
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="VBox" type="VBoxContainer" parent="VBox/RoomsContainer/RoomLeft/BtnAulaProg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="ArrowIcon" type="TextureRect" parent="VBox/RoomsContainer/RoomLeft/BtnAulaProg/VBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("5_arrow_up")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameBadge" type="PanelContainer" parent="VBox/RoomsContainer/RoomLeft/BtnAulaProg/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomLeft/BtnAulaProg/VBox/NameBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
 text = "Aula 101
 (Programación)"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BtnAulaSoft" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
 layout_mode = 0
-offset_left = 180.0
-offset_top = 10.0
-offset_right = 310.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 10
+offset_left = 200.0
+offset_top = 8.0
+offset_right = 320.0
+offset_bottom = 100.0
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="VBox" type="VBoxContainer" parent="VBox/RoomsContainer/RoomLeft/BtnAulaSoft"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="ArrowIcon" type="TextureRect" parent="VBox/RoomsContainer/RoomLeft/BtnAulaSoft/VBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("5_arrow_up")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameBadge" type="PanelContainer" parent="VBox/RoomsContainer/RoomLeft/BtnAulaSoft/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomLeft/BtnAulaSoft/VBox/NameBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
 text = "Aula 102
 (Ing. Software)"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomLeft"]
 layout_mode = 1
@@ -157,20 +235,23 @@ theme_override_constants/outline_size = 4
 text = "ALA IZQUIERDA"
 horizontal_alignment = 1
 
-[node name="BtnToCenter" type="Button" parent="VBox/RoomsContainer/RoomLeft"]
+[node name="BtnToCenter" type="TextureButton" parent="VBox/RoomsContainer/RoomLeft"]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
-anchor_top = 0.5
+anchor_top = 0.28
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -50.0
-offset_top = -25.0
-offset_bottom = 25.0
+anchor_bottom = 0.28
+offset_left = -56.0
+offset_top = -28.0
+offset_right = -4.0
+offset_bottom = 28.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_override_font_sizes/font_size = 20
-text = "->"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("4_arrow_r")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="RoomCenter" type="Control" parent="VBox/RoomsContainer"]
 layout_mode = 1
@@ -197,32 +278,38 @@ theme_override_constants/outline_size = 4
 text = "CENTRO"
 horizontal_alignment = 1
 
-[node name="BtnToLeft" type="Button" parent="VBox/RoomsContainer/RoomCenter"]
+[node name="BtnToLeft" type="TextureButton" parent="VBox/RoomsContainer/RoomCenter"]
 layout_mode = 1
 anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_top = -25.0
-offset_right = 50.0
-offset_bottom = 25.0
+anchor_top = 0.28
+anchor_bottom = 0.28
+offset_left = 4.0
+offset_top = -28.0
+offset_right = 56.0
+offset_bottom = 28.0
 grow_vertical = 2
-theme_override_font_sizes/font_size = 20
-text = "<-"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("3_arrow_l")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="BtnToRight" type="Button" parent="VBox/RoomsContainer/RoomCenter"]
+[node name="BtnToRight" type="TextureButton" parent="VBox/RoomsContainer/RoomCenter"]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
-anchor_top = 0.5
+anchor_top = 0.28
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -50.0
-offset_top = -25.0
-offset_bottom = 25.0
+anchor_bottom = 0.28
+offset_left = -56.0
+offset_top = -28.0
+offset_right = -4.0
+offset_bottom = 28.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_override_font_sizes/font_size = 20
-text = "->"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("4_arrow_r")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="RoomRight" type="Control" parent="VBox/RoomsContainer"]
 visible = false
@@ -235,23 +322,91 @@ grow_vertical = 2
 
 [node name="BtnAulaLogic" type="Button" parent="VBox/RoomsContainer/RoomRight"]
 layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 140.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 10
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 136.0
+offset_bottom = 100.0
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="VBox" type="VBoxContainer" parent="VBox/RoomsContainer/RoomRight/BtnAulaLogic"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="ArrowIcon" type="TextureRect" parent="VBox/RoomsContainer/RoomRight/BtnAulaLogic/VBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("5_arrow_up")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameBadge" type="PanelContainer" parent="VBox/RoomsContainer/RoomRight/BtnAulaLogic/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomRight/BtnAulaLogic/VBox/NameBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
 text = "Aula 103
 (Lógica)"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BtnAulaLinux" type="Button" parent="VBox/RoomsContainer/RoomRight"]
 layout_mode = 0
-offset_left = 180.0
-offset_top = 10.0
-offset_right = 310.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 10
+offset_left = 200.0
+offset_top = 8.0
+offset_right = 320.0
+offset_bottom = 100.0
+mouse_default_cursor_shape = 2
+flat = true
+
+[node name="VBox" type="VBoxContainer" parent="VBox/RoomsContainer/RoomRight/BtnAulaLinux"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="ArrowIcon" type="TextureRect" parent="VBox/RoomsContainer/RoomRight/BtnAulaLinux/VBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("5_arrow_up")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameBadge" type="PanelContainer" parent="VBox/RoomsContainer/RoomRight/BtnAulaLinux/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+
+[node name="Label" type="Label" parent="VBox/RoomsContainer/RoomRight/BtnAulaLinux/VBox/NameBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
 text = "Aula 104
 (Linux)"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="LabelAla" type="Label" parent="VBox/RoomsContainer/RoomRight"]
 layout_mode = 1
@@ -270,17 +425,20 @@ theme_override_constants/outline_size = 4
 text = "ALA DERECHA"
 horizontal_alignment = 1
 
-[node name="BtnToCenter" type="Button" parent="VBox/RoomsContainer/RoomRight"]
+[node name="BtnToCenter" type="TextureButton" parent="VBox/RoomsContainer/RoomRight"]
 layout_mode = 1
 anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_top = -25.0
-offset_right = 50.0
-offset_bottom = 25.0
+anchor_top = 0.28
+anchor_bottom = 0.28
+offset_left = 4.0
+offset_top = -28.0
+offset_right = 56.0
+offset_bottom = 28.0
 grow_vertical = 2
-theme_override_font_sizes/font_size = 20
-text = "<-"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("3_arrow_l")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="SettingsModal" parent="." instance=ExtResource("2_settings")]
 visible = false

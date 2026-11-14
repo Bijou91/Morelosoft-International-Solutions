@@ -130,6 +130,7 @@ var victory_stats_label: Label
 var hearts_bar: HBoxContainer
 var owl_sprite: TextureRect
 var victory_stars_row: HBoxContainer
+var flow_template: Control
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CICLO DE VIDA
@@ -144,6 +145,7 @@ func _ready() -> void:
 
 	_load_scenarios()
 	_build_ui()
+	_build_flow_template()
 	_show_difficulty_selector()
 
 
@@ -295,6 +297,7 @@ func _build_top_hud() -> Control:
 	lives_row.add_child(hearts_bar)
 	lives_label = _make_label("❤ 5/5", 12, Color("ff6b6b"))
 	lives_row.add_child(lives_label)
+	stabilize_hud_label(lives_label, 48.0)
 	lives_box.add_child(lives_row)
 	hud.add_child(lives_box)
 
@@ -311,6 +314,7 @@ func _build_top_hud() -> Control:
 	score_label = _make_label("🪙 0", 12, COL_ACCENT)
 	PixelSkin.style_label(score_label, PixelSkin.C_YELLOW)
 	score_row.add_child(score_label)
+	stabilize_hud_label(score_label, 48.0)
 	score_box.add_child(score_row)
 	hud.add_child(score_box)
 
@@ -359,6 +363,7 @@ func _build_global_timer() -> Control:
 	PixelSkin.style_label(global_time_label, PixelSkin.C_WHITE)
 	global_time_label.custom_minimum_size = Vector2(40, 0)
 	row.add_child(global_time_label)
+	stabilize_hud_label(global_time_label, 40.0)
 	return row
 
 
@@ -385,6 +390,7 @@ func _build_board() -> PanelContainer:
 	context_label = _make_label("", 11, COL_CHALK, false, true)
 	context_label.custom_minimum_size = Vector2(0, 32)
 	v.add_child(context_label)
+	lock_dynamic_label_box(context_label, null, 44.0, 11, 7, 0.0, 0.0, true, true)
 
 	v.add_child(_make_expand_spacer())
 
@@ -427,6 +433,7 @@ func _build_board() -> PanelContainer:
 	if note_sb != null:
 		rule_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
 	rule_v.add_child(rule_label)
+	lock_dynamic_label_box(rule_label, null, 34.0, 10, 7, 0.0, 0.0, true, true)
 	v.add_child(rule_box)
 
 	# ── Temporizador de reacción por pregunta ──
@@ -453,6 +460,7 @@ func _build_board() -> PanelContainer:
 	PixelSkin.style_label(question_time_label, PixelSkin.C_WHITE, 2)
 	question_time_label.custom_minimum_size = Vector2(28, 0)
 	q_row.add_child(question_time_label)
+	stabilize_hud_label(question_time_label, 30.0)
 	v.add_child(q_row)
 
 	# Repisa con gises y borrador (solo decoración)
@@ -490,6 +498,7 @@ func _build_owl_section() -> Control:
 		feedback_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0))
 	feedback_label.custom_minimum_size = Vector2(0, 38)
 	bubble.add_child(feedback_label)
+	lock_dynamic_label_box(feedback_label, bubble, 50.0, 10, 7, 4.0, 2.0, true, true)
 	row.add_child(bubble)
 	_sync_owl_with_buttons()
 	return row
@@ -897,6 +906,7 @@ func _make_use_case_oval() -> Array:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel.add_child(lbl)
+	lock_dynamic_label_box(lbl, panel, 60.0, 10, 7, 0.0, 0.0, true, true)
 	return [panel, lbl]
 
 
@@ -981,10 +991,54 @@ func _show_overlay(target: ColorRect) -> void:
 # FLUJO PRE-PARTIDA: Instrucciones → Dificultad → Juego (Precondiciones 5 y 6)
 # ══════════════════════════════════════════════════════════════════════════════
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "¿Include o Extend?",
+		"subtitle": "CU-08 · Ingeniería de Software",
+		"classroom_path": CLASSROOM_SCENE,
+		"objective": "Evalúa escenarios y determina rápidamente si su relación es Include o Extend.",
+		"rules": [
+			"[+] Seleccionar la relación correcta rápidamente = +Puntos",
+			"[-] Seleccionar la opción incorrecta = -1 Vida",
+			"[!] Dejar que se acabe el tiempo de reacción por pregunta = -1 Vida",
+			"[T] Sobrevive hasta que el temporizador global termine para ganar"
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 10 vidas · 90s totales · 10s reacción · 10 pts/acierto"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 5 vidas · 75s totales · 7s reacción · 20 pts/acierto"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 3 vidas · 60s totales · 5s reacción · 30 pts/acierto"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			_on_difficulty_selected(diff),
+		"on_back": func():
+			_go_to_classroom(),
+		"on_resume": func():
+			if state == State.PAUSED:
+				state = state_before_pause
+				_show_overlay(null),
+		"on_restart": func():
+			_start_game_play()
+	})
+
+
 func _show_difficulty_selector() -> void:
 	state = State.INSTRUCTIONS
 	_reset_board()
-	_show_overlay(instructions_overlay)
+	_show_overlay(null)
+	if flow_template:
+		flow_template.show_instructions()
+	else:
+		_show_overlay(instructions_overlay)
 
 
 func _on_difficulty_selected(diff: String) -> void:
@@ -1125,7 +1179,12 @@ func _handle_game_over() -> void:
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 
-	finish_game(false, score, 0, "Sin vidas — %d/%d aciertos" % [total_correct, total_answered])
+	var reason := "Sin vidas — %d/%d aciertos" % [total_correct, total_answered]
+	finish_game(false, score, 0, reason)
+
+	if flow_template:
+		flow_template.show_game_over(reason, score)
+		return
 
 	if is_instance_valid(game_over_score_label):
 		game_over_score_label.text = "Puntaje: %d" % score
@@ -1141,8 +1200,15 @@ func _handle_victory() -> void:
 	AudioManager.play_success()
 
 	var stars: int = _calculate_stars()
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = score > prev_high
 	# Registra resultado → StateManager guarda partida (user://pixeling_save.json) → EventBus notifica
 	finish_game(true, score, stars, "¡Relaciones UML identificadas! %d/%d aciertos" % [total_correct, total_answered])
+
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else score
+		flow_template.show_victory(score, stars, total_accum, is_record, "¡RELACIONES UML COMPLETADAS!")
+		return
 
 	if is_instance_valid(victory_stars_label):
 		victory_stars_label.text = "⭐".repeat(stars) + "☆".repeat(3 - stars)
@@ -1177,12 +1243,18 @@ func _stats_text() -> String:
 func _toggle_pause() -> void:
 	if state == State.PAUSED:
 		state = state_before_pause
-		_show_overlay(null)
+		if flow_template:
+			flow_template.hide_pause()
+		else:
+			_show_overlay(null)
 		AudioManager.play_click()
 	elif _is_playing():
 		state_before_pause = state
 		state = State.PAUSED
-		_show_overlay(pause_overlay)
+		if flow_template:
+			flow_template.show_pause()
+		else:
+			_show_overlay(pause_overlay)
 		AudioManager.play_click()
 
 

@@ -128,6 +128,7 @@ var style_active_token_dim: StyleBoxFlat
 var style_normal_token: StyleBoxEmpty
 var blink_timer: float = 0.0
 var blink_state: bool = true
+var flow_template: Control
 
 func _ready() -> void:
 	super._ready()
@@ -138,6 +139,11 @@ func _ready() -> void:
 
 	_setup_token_styles()
 	_connect_signals()
+	lock_dynamic_label_box(teacher_label, teacher_label.get_parent() as Control, 88.0, 12, 7, 4.0, 2.0, true, true, 4.0)
+	lock_dynamic_label_box(terminal_log_label, null, 24.0, 8, 6, 0.0, 0.0, true, true)
+	stabilize_hud_label(time_label, 42.0)
+	stabilize_hud_label(question_counter_label, 38.0)
+	_build_flow_template()
 	_hide_all_modals()
 	_show_tutorial()
 
@@ -242,8 +248,49 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Linux Command",
+		"subtitle": "CU-16 · Terminal Linux Retro",
+		"classroom_path": "res://scenes/classroom/SistemaOperativoLinux.tscn",
+		"objective": "Descifra la memoria de la terminal hacker retro y ejecuta el comando de Linux solicitado.",
+		"rules": [
+			"1. Lee la situación problemática que te plantea el profesor en el globo superior.",
+			"2. En la terminal verás datos entremezclados y varios comandos de Linux: solo UNO es correcto.",
+			"3. Usa el D-Pad (o W/A/S/D / flechas) para navegar entre los datos resaltados y pulsa ENTER.",
+			"4. Tiempo agotado o comando erróneo = -1 vida. ¡Completa los 5 desafíos para ganar!"
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 5 vidas · 30s por desafío · 1 columna (fácil de escanear)"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 3 vidas · 25s por desafío · 2 columnas"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 1 vida · 20s por desafío · 2 columnas y 2 comandos por fila"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			_on_difficulty_chosen(diff),
+		"on_back": func():
+			_exit_to_classroom(),
+		"on_resume": func():
+			_resume_game(),
+		"on_restart": func():
+			_restart_match()
+	})
+
+
 func _show_tutorial() -> void:
 	_hide_all_modals()
+	if flow_template:
+		flow_template.show_instructions()
+		return
 	modal_tutorial.visible = true
 	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
 	
@@ -275,6 +322,9 @@ REGLAS DE PARTIDA:
 func _show_difficulty_selection() -> void:
 	AudioManager.play_click()
 	_hide_all_modals()
+	if flow_template:
+		flow_template.show_difficulty()
+		return
 	modal_difficulty.visible = true
 	teacher_label.text = "Selecciona el nivel de dificultad para iniciar el desafío."
 	terminal_log_label.text = "ROBCO INDUSTRIES (TM) TERMLINK - SELECCIÓN DIFICULTAD"
@@ -306,6 +356,8 @@ func _on_difficulty_chosen(diff: String) -> void:
 func _start_match() -> void:
 	AudioManager.play_click()
 	_hide_all_modals()
+	if flow_template:
+		flow_template.hide_all()
 	super.start_game(current_difficulty)
 
 	current_match_generation += 1
@@ -699,6 +751,10 @@ func _handle_game_over(reason: String) -> void:
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 
+	if flow_template:
+		flow_template.show_game_over("Causa: %s\nTe has quedado sin vidas en dificultad %s." % [reason, current_difficulty], 0)
+		return
+
 	game_over_desc.text = "Causa: %s.\nTe has quedado sin vidas en dificultad %s.\n(No se registrará puntuación según el reglamento)." % [reason, current_difficulty]
 	modal_game_over.visible = true
 
@@ -714,7 +770,14 @@ func _handle_victory() -> void:
 	elif current_lives >= 2:
 		stars = 2
 
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = total_score > prev_high
 	finish_game(true, total_score, stars, "Desafío de Comandos Linux completado con éxito")
+
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else total_score
+		flow_template.show_victory(total_score, stars, total_accum, is_record, "¡TERMINAL DESCIFRADA!")
+		return
 
 	victory_summary.text = """¡Ronda de 5 desafíos superada con éxito!
 
@@ -755,11 +818,16 @@ func _update_lives_hud() -> void:
 func _on_pause_pressed() -> void:
 	AudioManager.play_click()
 	is_game_paused = true
-	modal_pause.visible = true
+	if flow_template:
+		flow_template.show_pause()
+	else:
+		modal_pause.visible = true
 
 func _resume_game() -> void:
 	AudioManager.play_click()
 	is_game_paused = false
+	if flow_template:
+		flow_template.hide_pause()
 	modal_pause.visible = false
 
 func _restart_match() -> void:

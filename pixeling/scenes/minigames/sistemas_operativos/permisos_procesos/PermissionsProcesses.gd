@@ -87,6 +87,7 @@ var cursor_timer: float = 0.0
 # Estado del Teclado Virtual: "ABC" o "123"
 var keyboard_mode: String = "ABC"
 var history_index: int = -1
+var flow_template: Control
 
 func _ready() -> void:
 	super._ready()
@@ -101,6 +102,11 @@ func _ready() -> void:
 
 	_connect_signals()
 	_setup_virtual_keyboard()
+	lock_dynamic_label_box(teacher_label, teacher_label.get_parent() as Control, 74.0, 11, 7, 4.0, 2.0, true, true, 4.0)
+	lock_dynamic_label_box(terminal_prompt_label, null, 20.0, 10, 7, 0.0, 0.0, false, true)
+	stabilize_hud_label(time_label, 42.0)
+	stabilize_hud_label(challenge_label, 68.0)
+	_build_flow_template()
 	_hide_all_modals()
 	_show_tutorial()
 
@@ -154,8 +160,49 @@ func _process(delta: float) -> void:
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Permisos y Procesos",
+		"subtitle": "CU-18 · Administración GNU/Linux",
+		"classroom_path": "res://scenes/classroom/SistemaOperativoLinux.tscn",
+		"objective": "Administra permisos (chmod/chown) y procesos (ps/kill) en la terminal Linux simulada.",
+		"rules": [
+			"• ps aux / top: Inspecciona procesos activos y PIDs; kill <PID> / killall: Termina procesos rebeldes.",
+			"• ls -l: Revisa permisos y dueños; chmod / chown: Ajusta permisos (755, +x, 600) o propietario; ./script.sh: Ejecuta script.",
+			"• Si el tiempo se agota, pierdes 1 vida y el contador se reinicia.",
+			"• ¡CUIDADO! Acciones riesgosas (kill a systemd o chmod inseguro a malware) se revierten y cuestan 1 vida."
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 3 vidas · 90s · 300 puntos (Servidor web y scripts)"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 2 vidas · 60s · 600 puntos (Base de datos y claves)"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 1 vida · 45s · 900 puntos (Cluster, logs y chown)"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			_on_difficulty_chosen(diff),
+		"on_back": func():
+			_exit_to_classroom(),
+		"on_resume": func():
+			_resume_game(),
+		"on_restart": func():
+			_restart_match()
+	})
+
+
 func _show_tutorial() -> void:
 	_hide_all_modals()
+	if flow_template:
+		flow_template.show_instructions()
+		return
 	modal_tutorial.visible = true
 	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
 
@@ -189,6 +236,9 @@ REGLAS DE PARTIDA:
 func _show_difficulty_selection() -> void:
 	AudioManager.play_click()
 	_hide_all_modals()
+	if flow_template:
+		flow_template.show_difficulty()
+		return
 	modal_difficulty.visible = true
 	teacher_label.text = "Selecciona la dificultad de la misión para comenzar."
 	terminal_prompt_label.text = "user@is-pixelverse:~$ [SELECCIÓN DIFICULTAD]"
@@ -217,6 +267,8 @@ func _on_difficulty_chosen(diff: String) -> void:
 func _start_match() -> void:
 	AudioManager.play_click()
 	_hide_all_modals()
+	if flow_template:
+		flow_template.hide_all()
 	super.start_game(current_difficulty)
 
 	current_lives = max_lives
@@ -577,6 +629,10 @@ func _handle_game_over(reason: String) -> void:
 	EventBus.game_over.emit(minigame_id)
 	finish_game(false, 0, 0, "Misión fallida: " + reason)
 
+	if flow_template:
+		flow_template.show_game_over("Causa: %s\nDificultad: %s" % [reason, current_difficulty], 0)
+		return
+
 	game_over_desc.text = "Causa: %s.\nHas agotado todas tus vidas en dificultad %s.\n(No se registrarán puntos según las reglas del caso de uso)." % [reason, current_difficulty]
 	modal_game_over.visible = true
 
@@ -598,7 +654,14 @@ func _handle_victory() -> void:
 	elif current_lives >= 2:
 		stars = 2
 
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = total_score > prev_high
 	finish_game(true, total_score, stars, "Misión de administración de permisos y procesos completada")
+
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else total_score
+		flow_template.show_victory(total_score, stars, total_accum, is_record, "¡SISTEMA ASEGURADO!")
+		return
 
 	victory_summary.text = """¡Misión de Administración de Permisos y Procesos Superada!
 
@@ -638,11 +701,16 @@ func _update_lives_hud() -> void:
 func _on_pause_pressed() -> void:
 	AudioManager.play_click()
 	is_game_paused = true
-	modal_pause.visible = true
+	if flow_template:
+		flow_template.show_pause()
+	else:
+		modal_pause.visible = true
 
 func _resume_game() -> void:
 	AudioManager.play_click()
 	is_game_paused = false
+	if flow_template:
+		flow_template.hide_pause()
 	modal_pause.visible = false
 
 func _restart_match() -> void:

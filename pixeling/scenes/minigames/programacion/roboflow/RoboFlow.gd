@@ -10,10 +10,10 @@ var grid_rows: int = 6
 var max_instructions: int = 15
 var max_lives: int = 3
 var current_lives: int = 3
-var start_pos := Vector2i(2, 0)
-var current_pos := Vector2i(2, 0)
-var current_dir: String = "S" # N, E, S, O
-var goal_pos := Vector2i(2, 5)
+var start_pos := Vector2i(4, 4)
+var current_pos := Vector2i(4, 4)
+var current_dir: String = "N" # N, E, S, O
+var goal_pos := Vector2i(0, 0)
 var obstacles: Array[Vector2i] = []
 
 var instructions: Array[String] = []
@@ -37,13 +37,27 @@ var selected_diff: String = "NORMAL"
 @onready var diff_label: Label = $ScreenStart/VBox/DiffLabel
 @onready var diff_selector: HBoxContainer = $ScreenStart/VBox/DiffSelector
 
-# Nodos creados por código para el flujo de 2 pasos
-var instructions_box: VBoxContainer
-var lbl_diff_info: Label
-var btn_to_diff: Button
-var btn_inst_back: Button
-var btn_to_inst: Button
-var btn_diff_back: Button
+var flow_template: Control
+var dir_chip: Label
+var hearts_bar: HBoxContainer
+var hud_mode_label: Label
+
+const DIR_DELTAS := {
+	"N": Vector2i(0, -1),
+	"E": Vector2i(1, 0),
+	"S": Vector2i(0, 1),
+	"O": Vector2i(-1, 0)
+}
+const DIR_LABELS := {
+	"N": "🧭 Vista: ▲ Arriba",
+	"E": "🧭 Vista: ▶ Derecha",
+	"S": "🧭 Vista: ▼ Abajo",
+	"O": "🧭 Vista: ◀ Izquierda"
+}
+
+const TEX_ROBOT = preload("res://assets/minigames/aula101/robot.svg")
+const TEX_FLAG = preload("res://assets/minigames/aula101/flag_meta.svg")
+const TEX_OBSTACLE = preload("res://assets/minigames/aula101/obstacle.svg")
 
 # Nodos - Pantalla de Juego
 @onready var status_label: Label = $ScreenGame/Margin/VBox/StatusBanner/Label
@@ -75,13 +89,125 @@ func _ready() -> void:
 	minigame_title = "RoboFlow"
 	subject_name = "Introducción a la Programación"
 
-	_init_start_flow_ui()
+	# Desactivar pantallas estáticas redundantes del .tscn
+	screen_start.visible = false
+	screen_pause.visible = false
 
-	# Conexiones: Pantalla de Inicio
-	btn_diff_facil.pressed.connect(func(): select_difficulty_ui("FACIL"))
-	btn_diff_normal.pressed.connect(func(): select_difficulty_ui("NORMAL"))
-	btn_diff_ing.pressed.connect(func(): select_difficulty_ui("INGENIERO"))
-	btn_iniciar.pressed.connect(_on_iniciar_pressed)
+	# Fondo didáctico de hoja de libreta con 80% opacidad / 20% transparencia
+	$ColorRect.visible = false
+	attach_notebook_background(self, 0.80)
+
+	# Estilos Kenney UI para los 6 botones de ejecución y pausa
+	style_kenney_button(btn_fwd, "blue", 42.0)
+	style_kenney_button(btn_left, "yellow", 42.0)
+	style_kenney_button(btn_right, "yellow", 42.0)
+	style_kenney_button(btn_del, "red", 42.0)
+	style_kenney_button(btn_clear, "neutral", 42.0)
+	style_kenney_button(btn_run, "green", 42.0)
+
+	# Estandarización del TopHUD del Aula 101 (misma barra, botón "||" y corazones pixel-art)
+	var game_margin := get_node_or_null("ScreenGame/Margin") as MarginContainer
+	if is_instance_valid(game_margin):
+		game_margin.add_theme_constant_override("margin_left", 10)
+		game_margin.add_theme_constant_override("margin_top", 10)
+		game_margin.add_theme_constant_override("margin_right", 10)
+		game_margin.add_theme_constant_override("margin_bottom", 10)
+	var top_hud := get_node_or_null("ScreenGame/Margin/VBox/TopHUD") as HBoxContainer
+	if is_instance_valid(top_hud):
+		var lead_spacer := top_hud.get_node_or_null("Spacer") as Control
+		if is_instance_valid(lead_spacer):
+			lead_spacer.visible = false
+		style_aula101_pause_button(btn_pause)
+		hud_mode_label = Label.new()
+		hud_mode_label.name = "ModeLabel"
+		hud_mode_label.text = "NIVEL: NORMAL"
+		hud_mode_label.add_theme_font_size_override("font_size", 10)
+		hud_mode_label.add_theme_color_override("font_color", Color("ffd54f"))
+		hud_mode_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		stabilize_hud_label(hud_mode_label, 110.0)
+		top_hud.add_child(hud_mode_label)
+		top_hud.move_child(hud_mode_label, btn_pause.get_index() + 1)
+		hearts_bar = create_aula101_hearts_bar(current_lives, max_lives, 14.0)
+		top_hud.add_child(hearts_bar)
+		wrap_hbox_in_aula101_hud_panel(top_hud)
+	else:
+		style_aula101_pause_button(btn_pause)
+
+	btn_fwd.text = "▲ AVANZAR"
+	btn_left.text = "↶ GIRO IZQ"
+	btn_right.text = "↷ GIRO DER"
+	btn_del.text = "⌫ BORRAR"
+	btn_clear.text = "↺ REINICIAR"
+	btn_run.text = "▶ EJECUTAR"
+
+	for b in [btn_fwd, btn_left, btn_right, btn_del, btn_clear, btn_run]:
+		b.modulate.a = 0.90
+
+	# Recuadro de estado y título de rutina + chip de orientación fijos (sin redimensionar la pantalla)
+	var status_banner := $ScreenGame/Margin/VBox/StatusBanner as PanelContainer
+	if is_instance_valid(status_banner):
+		style_kenney_panel(status_banner, "inner")
+	lock_dynamic_label_box(status_label, status_banner, 48.0, 12, 7, 2.0, 0.0, true, true, 6.0)
+
+	var pipe_sec := pipeline_title.get_parent()
+	if pipe_sec:
+		var title_idx := pipeline_title.get_index()
+		var pipe_header := HBoxContainer.new()
+		pipe_header.name = "PipelineHeader"
+		pipe_header.add_theme_constant_override("separation", 6)
+		pipe_sec.add_child(pipe_header)
+		pipe_sec.move_child(pipe_header, title_idx)
+
+		pipe_sec.remove_child(pipeline_title)
+		pipeline_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pipe_header.add_child(pipeline_title)
+		lock_dynamic_label_box(pipeline_title, null, 22.0, 11, 7, 0.0, 0.0, false, true)
+
+		var chip_panel := PanelContainer.new()
+		chip_panel.name = "DirChipPanel"
+		chip_panel.custom_minimum_size = Vector2(142, 24)
+		chip_panel.size_flags_horizontal = Control.SIZE_SHRINK_END
+		chip_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var chip_sb := StyleBoxFlat.new()
+		chip_sb.bg_color = Color(0.05, 0.14, 0.24, 0.92)
+		chip_sb.border_color = Color(0.15, 0.90, 1.0, 0.90)
+		chip_sb.set_border_width_all(1)
+		chip_sb.set_corner_radius_all(6)
+		chip_sb.content_margin_left = 6
+		chip_sb.content_margin_right = 6
+		chip_sb.content_margin_top = 1
+		chip_sb.content_margin_bottom = 1
+		chip_panel.add_theme_stylebox_override("panel", chip_sb)
+		pipe_header.add_child(chip_panel)
+
+		dir_chip = Label.new()
+		dir_chip.name = "DirChipLabel"
+		dir_chip.text = DIR_LABELS["N"]
+		dir_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dir_chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		dir_chip.add_theme_color_override("font_color", Color(0.55, 0.96, 1.0))
+		dir_chip.add_theme_font_size_override("font_size", 10)
+		chip_panel.add_child(dir_chip)
+		lock_dynamic_label_box(dir_chip, chip_panel, 22.0, 10, 7, 4.0, 0.0, false, true, 1.0)
+	else:
+		lock_dynamic_label_box(pipeline_title, null, 20.0, 11, 8, 0.0, 0.0, false, true)
+	update_lives_display()
+
+	# Marco cybernetico para el tablero del laberinto
+	var parent_panel: CenterContainer = board_grid.get_parent() as CenterContainer
+	if parent_panel and not board_grid.get_parent().is_class("PanelContainer"):
+		var cyber_panel := PanelContainer.new()
+		var cp_style := StyleBoxFlat.new()
+		cp_style.bg_color = Color(0.03, 0.06, 0.12, 0.85)
+		cp_style.border_color = Color(0.0, 0.90, 1.0, 0.85)
+		cp_style.set_border_width_all(2)
+		cp_style.set_corner_radius_all(8)
+		cp_style.set_content_margin_all(8)
+		cyber_panel.add_theme_stylebox_override("panel", cp_style)
+		
+		parent_panel.remove_child(board_grid)
+		cyber_panel.add_child(board_grid)
+		parent_panel.add_child(cyber_panel)
 
 	# Conexiones: Pantalla de Juego
 	btn_fwd.pressed.connect(func(): add_instruction("FORWARD"))
@@ -92,144 +218,53 @@ func _ready() -> void:
 	btn_run.pressed.connect(run_program)
 	btn_pause.pressed.connect(_on_pause_pressed)
 
-	# Conexiones: Pantallas Finales y Pausa
+	# Conexiones: Pantallas Finales
 	btn_victory_back.pressed.connect(_on_back_pressed)
-	btn_gameover_restart.pressed.connect(_on_iniciar_pressed)
+	btn_gameover_restart.pressed.connect(func(): start_game(selected_diff))
 	btn_gameover_back.pressed.connect(_on_back_pressed)
-	btn_pause_resume.pressed.connect(_on_resume_pressed)
-	btn_pause_restart.pressed.connect(func():
-		is_running = false
-		is_game_paused = false
-		reiniciar_nivel()
-		_show_screen(screen_game)
-	)
-	btn_pause_back.pressed.connect(_on_back_pressed)
 
-	_show_screen(screen_start)
-	select_difficulty_ui("NORMAL")
-	_show_instructions_step()
+	# Plantilla Universal de Flujo (Instrucciones -> Dificultad -> Pausa)
+	flow_template = create_flow_template({
+		"title": "RoboFlow",
+		"subtitle": "CU-10: Control de Flujos",
+		"classroom_path": "res://scenes/classroom/AulaProgramacion.tscn",
+		"objective": "Guía al robot desde su posición inicial hasta la casilla META.",
+		"rules": [
+			"Usa los botones AVANZAR, GIRAR IZQUIERDA y GIRAR DERECHA para armar tu rutina sin exceder el límite de pasos.",
+			"Puedes borrar el último paso o limpiar la rutina antes de ejecutar.",
+			"Si el robot choca contra un obstáculo [X], sale del tablero o termina sin llegar a la META, pierdes 1 vida."
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 3 vidas, máx. 15 pasos, 245 pts\nTablero 5x5 • Obstáculos básicos"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 3 vidas, máx. 25 pasos, 490 pts\nTablero 6x6 • Ruta en 'S'"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 1 vida, máx. 45 pasos, 735 pts\nTablero 7x7 • Ruta serpiente estricta"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			selected_diff = diff
+			start_game(diff),
+		"on_back": func():
+			_on_back_pressed(),
+		"on_resume": func():
+			is_game_paused = false,
+		"on_restart": func():
+			start_game(selected_diff)
+	})
 
-func _init_start_flow_ui() -> void:
-	var vbox: VBoxContainer = $ScreenStart/VBox
-	vbox.offset_left = -160.0
-	vbox.offset_right = 160.0
-	vbox.offset_top = -240.0
-	vbox.offset_bottom = 240.0
-	vbox.add_theme_constant_override("separation", 10)
-
-	# 1. Contenedor del Paso 1: Instrucciones
-	instructions_box = VBoxContainer.new()
-	instructions_box.name = "InstructionsBox"
-	instructions_box.add_theme_constant_override("separation", 12)
-
-	var inst_label := Label.new()
-	inst_label.name = "InstructionsLabel"
-	inst_label.text = "🎯 Objetivo: Guía al robot desde su posición inicial hasta la casilla META.\n\n• Usa los botones AVANZAR, GIRAR IZQUIERDA y GIRAR DERECHA para armar tu rutina sin exceder el límite de pasos.\n• Puedes borrar el último paso o limpiar la rutina antes de ejecutar.\n• Si el robot choca contra un obstáculo [X], sale del tablero o termina sin llegar a la META, pierdes 1 vida."
-	inst_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	inst_label.add_theme_font_size_override("font_size", 11)
-	inst_label.add_theme_color_override("font_color", Color(0.85, 0.90, 0.98, 1.0))
-	instructions_box.add_child(inst_label)
-
-	btn_to_diff = Button.new()
-	btn_to_diff.name = "BtnToDiff"
-	btn_to_diff.text = "Siguiente: Elegir Dificultad →"
-	btn_to_diff.custom_minimum_size = Vector2(0, 42)
-	btn_to_diff.add_theme_font_size_override("font_size", 12)
-	btn_to_diff.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
-	btn_to_diff.pressed.connect(func():
-		if AudioManager.has_method("play_click"):
-			AudioManager.play_click()
-		_show_difficulty_step()
-	)
-	instructions_box.add_child(btn_to_diff)
-
-	btn_inst_back = Button.new()
-	btn_inst_back.name = "BtnInstBack"
-	btn_inst_back.text = "← Volver al Salón"
-	btn_inst_back.custom_minimum_size = Vector2(0, 36)
-	btn_inst_back.add_theme_font_size_override("font_size", 11)
-	btn_inst_back.pressed.connect(_on_back_pressed)
-	instructions_box.add_child(btn_inst_back)
-
-	vbox.add_child(instructions_box)
-	vbox.move_child(instructions_box, 1)
-
-	# 2. Elementos del Paso 2: Información de dificultad y botones de navegación
-	lbl_diff_info = Label.new()
-	lbl_diff_info.name = "DiffInfoLabel"
-	lbl_diff_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl_diff_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl_diff_info.add_theme_font_size_override("font_size", 11)
-	lbl_diff_info.add_theme_color_override("font_color", Color(0.95, 0.95, 0.5, 1.0))
-	vbox.add_child(lbl_diff_info)
-	vbox.move_child(lbl_diff_info, diff_selector.get_index() + 1)
-
-	btn_iniciar.text = "▶ ¡COMENZAR!"
-	btn_iniciar.custom_minimum_size = Vector2(0, 44)
-	btn_iniciar.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
-
-	btn_to_inst = Button.new()
-	btn_to_inst.name = "BtnToInst"
-	btn_to_inst.text = "← Ver Instrucciones"
-	btn_to_inst.custom_minimum_size = Vector2(0, 36)
-	btn_to_inst.add_theme_font_size_override("font_size", 11)
-	btn_to_inst.pressed.connect(func():
-		if AudioManager.has_method("play_click"):
-			AudioManager.play_click()
-		_show_instructions_step()
-	)
-	vbox.add_child(btn_to_inst)
-	vbox.move_child(btn_to_inst, btn_iniciar.get_index() + 1)
-
-	btn_diff_back = Button.new()
-	btn_diff_back.name = "BtnDiffBack"
-	btn_diff_back.text = "← Volver al Salón"
-	btn_diff_back.custom_minimum_size = Vector2(0, 36)
-	btn_diff_back.add_theme_font_size_override("font_size", 11)
-	btn_diff_back.pressed.connect(_on_back_pressed)
-	vbox.add_child(btn_diff_back)
-	vbox.move_child(btn_diff_back, btn_to_inst.get_index() + 1)
-
-## PASO 1 (Pantalla de Instrucciones): Lo primero que ve el alumno
-func _show_instructions_step() -> void:
-	if instructions_box:
-		instructions_box.visible = true
-	diff_label.visible = false
-	diff_selector.visible = false
-	if lbl_diff_info:
-		lbl_diff_info.visible = false
-	btn_iniciar.visible = false
-	if btn_to_inst:
-		btn_to_inst.visible = false
-	if btn_diff_back:
-		btn_diff_back.visible = false
-
-## PASO 2 (Pantalla de Selección de Dificultad)
-func _show_difficulty_step() -> void:
-	if instructions_box:
-		instructions_box.visible = false
-	diff_label.visible = true
-	diff_selector.visible = true
-	if lbl_diff_info:
-		lbl_diff_info.visible = true
-		_update_diff_info_label()
-	btn_iniciar.text = "▶ ¡COMENZAR!"
-	btn_iniciar.visible = true
-	if btn_to_inst:
-		btn_to_inst.visible = true
-	if btn_diff_back:
-		btn_diff_back.visible = true
-
-func _update_diff_info_label() -> void:
-	if not is_instance_valid(lbl_diff_info):
+func _on_pause_pressed() -> void:
+	if is_running:
 		return
-	match selected_diff:
-		"FACIL":
-			lbl_diff_info.text = "Fácil: 3 vidas, máx. 15 pasos, 245 pts\nTablero 5x5 • Ruta guiada"
-		"NORMAL":
-			lbl_diff_info.text = "Normal: 3 vidas, máx. 25 pasos, 490 pts\nTablero 6x6 • Ruta en 'S'"
-		"INGENIERO":
-			lbl_diff_info.text = "Ingeniero: 1 vida, máx. 45 pasos, 735 pts\nTablero 7x7 • Ruta serpiente estricta"
+	is_game_paused = true
+	flow_template.show_pause()
 
 func _show_screen(screen: Control) -> void:
 	screen_start.visible = false
@@ -237,16 +272,11 @@ func _show_screen(screen: Control) -> void:
 	screen_victory.visible = false
 	screen_game_over.visible = false
 	screen_pause.visible = false
+	if screen == screen_start:
+		flow_template.show_instructions()
+	else:
+		flow_template.hide_all()
 	screen.visible = true
-
-func select_difficulty_ui(diff: String) -> void:
-	selected_diff = diff
-	btn_diff_facil.modulate = Color(1,1,1) if diff != "FACIL" else Color(0.3, 0.9, 0.3)
-	btn_diff_normal.modulate = Color(1,1,1) if diff != "NORMAL" else Color(0.3, 0.9, 0.3)
-	btn_diff_ing.modulate = Color(1,1,1) if diff != "INGENIERO" else Color(0.3, 0.9, 0.3)
-	if AudioManager.has_method("play_click"):
-		AudioManager.play_click()
-	_update_diff_info_label()
 
 func _on_iniciar_pressed() -> void:
 	if AudioManager.has_method("play_click"):
@@ -269,8 +299,8 @@ func setup_level(diff: String) -> void:
 			max_instructions = 15
 			max_lives = 3
 			current_lives = 3
-			start_pos = Vector2i(0, 0)
-			goal_pos = Vector2i(4, 4)
+			start_pos = Vector2i(4, 4)
+			goal_pos = Vector2i(0, 0)
 			obstacles = [Vector2i(1, 1), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(3, 3)]
 		"NORMAL":
 			grid_cols = 6
@@ -278,12 +308,13 @@ func setup_level(diff: String) -> void:
 			max_instructions = 25
 			max_lives = 3
 			current_lives = 3
-			start_pos = Vector2i(0, 0)
-			goal_pos = Vector2i(5, 5)
-			# Ruta en 'S' garantizada: (0,0)->(0,5)->(2,5)->(2,2)->(5,2)->(5,5)
+			start_pos = Vector2i(5, 5)
+			goal_pos = Vector2i(0, 0)
+			# Ruta en 'S' garantizada sin atajo por esquina superior derecha (5,0)
 			obstacles = [
 				Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(1, 4),
-				Vector2i(3, 3), Vector2i(3, 4), Vector2i(3, 5), Vector2i(4, 1)
+				Vector2i(3, 3), Vector2i(3, 4), Vector2i(3, 5), Vector2i(4, 1),
+				Vector2i(5, 0)
 			]
 		"INGENIERO":
 			grid_cols = 7
@@ -291,8 +322,8 @@ func setup_level(diff: String) -> void:
 			max_instructions = 45
 			max_lives = 1
 			current_lives = 1
-			start_pos = Vector2i(0, 0)
-			goal_pos = Vector2i(6, 6)
+			start_pos = Vector2i(6, 6)
+			goal_pos = Vector2i(0, 0)
 			# Ruta serpiente estricta
 			obstacles = [
 				Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1),
@@ -318,71 +349,192 @@ func setup_level(diff: String) -> void:
 	set_status("Dificultad %s iniciada. Diseña el flujo." % current_difficulty)
 
 func update_lives_display() -> void:
-	if lives_label:
-		lives_label.text = "Vidas: %d" % current_lives
+	if is_instance_valid(hud_mode_label):
+		hud_mode_label.text = "NIVEL: %s" % current_difficulty
+	update_aula101_hearts_bar(hearts_bar, current_lives, max_lives, lives_label, 14.0)
 
 func reset_robot() -> void:
 	current_pos = start_pos
-	current_dir = "S"
+	current_dir = "N"
 
 func build_board_ui() -> void:
 	for child in board_grid.get_children():
 		child.queue_free()
 
 	board_grid.columns = grid_cols
+	var cell_size: float = 38.0 if grid_cols <= 5 else (32.0 if grid_cols == 6 else 28.0)
 
 	for y in range(grid_rows):
 		for x in range(grid_cols):
 			var cell := PanelContainer.new()
-			cell.custom_minimum_size = Vector2(24, 24)
-			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			cell.custom_minimum_size = Vector2(cell_size, cell_size)
 			
+			var cell_style := StyleBoxFlat.new()
+			cell_style.bg_color = Color(0.06, 0.10, 0.18, 0.85)
+			cell_style.border_color = Color(1.0, 1.0, 1.0, 0.85) # Cuadrícula blanca nítida
+			cell_style.set_border_width_all(1)
+			cell_style.set_content_margin_all(0)
+			cell_style.set_corner_radius_all(3)
+			cell.add_theme_stylebox_override("panel", cell_style)
+
+			var center := CenterContainer.new()
+			center.set_anchors_preset(Control.PRESET_FULL_RECT)
+			cell.add_child(center)
+
+			var icon := TextureRect.new()
+			icon.name = "CellIcon"
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.custom_minimum_size = Vector2(cell_size - 6.0, cell_size - 6.0)
+			icon.visible = false
+			center.add_child(icon)
+
 			var lbl := Label.new()
+			lbl.name = "CellLabel"
+			lbl.text = "·"
 			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			lbl.name = "CellLabel"
+			lbl.add_theme_font_size_override("font_size", 14)
+			lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.45))
+			center.add_child(lbl)
+
+			var dir_overlay := Control.new()
+			dir_overlay.name = "DirOverlay"
+			dir_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			dir_overlay.z_index = 2
+			dir_overlay.visible = false
+			dir_overlay.set_meta("dir", "N")
+			dir_overlay.draw.connect(_draw_dir_overlay.bind(dir_overlay))
+			cell.add_child(dir_overlay)
 
 			var pos := Vector2i(x, y)
-			var is_acc: bool = StateManager.is_high_contrast_active() if StateManager else false
-			if pos in obstacles:
-				lbl.text = "[X]"
-				cell.modulate = Color("#D55E00") if is_acc else Color(0.8, 0.3, 0.3)
-			elif pos == goal_pos:
-				lbl.text = "META"
-				cell.modulate = Color("#0072B2") if is_acc else Color(0.3, 0.9, 0.4)
-			else:
-				lbl.text = "·"
-
-			cell.add_child(lbl)
 			cell.set_meta("grid_pos", pos)
 			board_grid.add_child(cell)
 
 	update_robot_display()
+
+func _draw_dir_overlay(overlay: Control) -> void:
+	var w: float = overlay.size.x
+	var h: float = overlay.size.y
+	if w <= 2.0 or h <= 2.0:
+		return
+	var d: String = str(overlay.get_meta("dir", "N"))
+	var pts := PackedVector2Array()
+	var tip_half: float = 5.0
+	var tip_depth: float = 7.0
+	match d:
+		"N":
+			pts = PackedVector2Array([
+				Vector2(w * 0.5, 0.5),
+				Vector2(w * 0.5 + tip_half, tip_depth),
+				Vector2(w * 0.5 - tip_half, tip_depth)
+			])
+		"S":
+			pts = PackedVector2Array([
+				Vector2(w * 0.5, h - 0.5),
+				Vector2(w * 0.5 + tip_half, h - tip_depth),
+				Vector2(w * 0.5 - tip_half, h - tip_depth)
+			])
+		"E":
+			pts = PackedVector2Array([
+				Vector2(w - 0.5, h * 0.5),
+				Vector2(w - tip_depth, h * 0.5 - tip_half),
+				Vector2(w - tip_depth, h * 0.5 + tip_half)
+			])
+		"O":
+			pts = PackedVector2Array([
+				Vector2(0.5, h * 0.5),
+				Vector2(tip_depth, h * 0.5 - tip_half),
+				Vector2(tip_depth, h * 0.5 + tip_half)
+			])
+		_:
+			return
+	overlay.draw_colored_polygon(pts, Color(0.15, 0.98, 1.0, 1.0))
+	var closed_pts := PackedVector2Array([pts[0], pts[1], pts[2], pts[0]])
+	overlay.draw_polyline(closed_pts, Color(0.02, 0.08, 0.14, 0.95), 1.4, true)
 
 func _apply_accessibility_mode(is_active: bool) -> void:
 	super._apply_accessibility_mode(is_active)
 	update_robot_display()
 
 func update_robot_display() -> void:
-	var arrows := { "N": "^", "E": ">", "S": "v", "O": "<" }
-	var is_acc: bool = StateManager.is_high_contrast_active() if StateManager else false
+	var rot_angles := { "N": 0.0, "E": 90.0, "S": 180.0, "O": 270.0 }
+	var cell_size: float = 38.0 if grid_cols <= 5 else (32.0 if grid_cols == 6 else 28.0)
+	var icon_size: Vector2 = Vector2(cell_size - 6.0, cell_size - 6.0)
+	var pivot: Vector2 = icon_size * 0.5
+	var ahead_pos: Vector2i = current_pos + DIR_DELTAS.get(current_dir, Vector2i.ZERO)
+
+	if is_instance_valid(dir_chip):
+		dir_chip.text = DIR_LABELS.get(current_dir, "🧭 Vista: ▲ Arriba")
+
 	for cell in board_grid.get_children():
 		var pos: Vector2i = cell.get_meta("grid_pos", Vector2i(-1, -1))
-		var lbl: Label = cell.get_node_or_null("CellLabel")
-		if not lbl:
+		var icon: TextureRect = cell.find_child("CellIcon", true, false)
+		var lbl: Label = cell.find_child("CellLabel", true, false)
+		var dir_overlay: Control = cell.find_child("DirOverlay", true, false)
+		var cell_style: StyleBoxFlat = cell.get_theme_stylebox("panel") as StyleBoxFlat
+		if not icon or not lbl:
 			continue
+
+		var is_ahead: bool = (pos == ahead_pos)
+		if cell_style:
+			if pos == current_pos:
+				cell_style.bg_color = Color(0.06, 0.16, 0.28, 0.92)
+				cell_style.border_color = Color(0.0, 0.95, 1.0, 1.0)
+				cell_style.set_border_width_all(2)
+			elif is_ahead and pos in obstacles:
+				cell_style.bg_color = Color(0.32, 0.08, 0.10, 0.92)
+				cell_style.border_color = Color(1.0, 0.35, 0.30, 1.0)
+				cell_style.set_border_width_all(2)
+			elif is_ahead:
+				cell_style.bg_color = Color(0.06, 0.24, 0.32, 0.90)
+				cell_style.border_color = Color(0.25, 0.95, 1.0, 1.0)
+				cell_style.set_border_width_all(2)
+			else:
+				cell_style.bg_color = Color(0.06, 0.10, 0.18, 0.85)
+				cell_style.border_color = Color(1.0, 1.0, 1.0, 0.85)
+				cell_style.set_border_width_all(1)
+
 		if pos == current_pos:
-			lbl.text = "R" + arrows.get(current_dir, "v")
-			cell.modulate = Color("#F0E442") if is_acc else Color(0.2, 0.8, 1.0)
+			icon.visible = true
+			icon.texture = TEX_ROBOT
+			icon.custom_minimum_size = icon_size
+			icon.pivot_offset = pivot
+			icon.rotation_degrees = rot_angles.get(current_dir, 0.0)
+			lbl.visible = false
+			cell.modulate = Color.WHITE
+			if dir_overlay:
+				dir_overlay.set_meta("dir", current_dir)
+				dir_overlay.visible = true
+				dir_overlay.queue_redraw()
 		elif pos in obstacles:
-			lbl.text = "[X]"
-			cell.modulate = Color("#D55E00") if is_acc else Color(0.8, 0.3, 0.3)
+			icon.visible = true
+			icon.texture = TEX_OBSTACLE
+			icon.custom_minimum_size = icon_size
+			icon.pivot_offset = Vector2.ZERO
+			icon.rotation_degrees = 0.0
+			lbl.visible = false
+			cell.modulate = Color.WHITE
+			if dir_overlay:
+				dir_overlay.visible = false
 		elif pos == goal_pos:
-			lbl.text = "META"
-			cell.modulate = Color("#0072B2") if is_acc else Color(0.3, 0.9, 0.4)
+			icon.visible = true
+			icon.texture = TEX_FLAG
+			icon.custom_minimum_size = icon_size
+			icon.pivot_offset = Vector2.ZERO
+			icon.rotation_degrees = 0.0
+			lbl.visible = false
+			cell.modulate = Color.WHITE
+			if dir_overlay:
+				dir_overlay.visible = false
 		else:
+			icon.visible = false
+			lbl.visible = true
 			lbl.text = "·"
-			cell.modulate = Color(1, 1, 1, 0.8)
+			lbl.add_theme_color_override("font_color", Color(0.55, 0.98, 1.0, 0.95) if is_ahead else Color(1.0, 1.0, 1.0, 0.45))
+			cell.modulate = Color.WHITE if is_ahead else Color(1, 1, 1, 0.85)
+			if dir_overlay:
+				dir_overlay.visible = false
 
 func add_instruction(cmd: String) -> void:
 	if is_running or current_lives <= 0:
@@ -467,8 +619,12 @@ func handle_game_over(reason: String) -> void:
 	if EventBus.has_signal("game_over"):
 		EventBus.game_over.emit(minigame_id)
 		
-	lbl_gameover_reason.text = "Motivo: " + reason
-	_show_screen(screen_game_over)
+	finish_game(false, 0, 0, reason)
+	if flow_template:
+		flow_template.show_game_over(reason, 0)
+	else:
+		lbl_gameover_reason.text = "Motivo: " + reason
+		_show_screen(screen_game_over)
 
 func run_program() -> void:
 	if is_running:
@@ -566,48 +722,34 @@ func handle_victory() -> void:
 	if AudioManager.has_method("play_success"):
 		AudioManager.play_success()
 
+	# Puntuación y estrellas exactas según dificultad (RF-31 / CU-10 FN-06)
 	var stars: int = 1
-	var perfect_steps = 0
+	var final_score: int = 245
 	match current_difficulty:
-		"FACIL": perfect_steps = 10
-		"NORMAL": perfect_steps = 18
-		"INGENIERO": perfect_steps = 28
-		
-	if instructions.size() <= perfect_steps and current_lives == max_lives:
-		stars = 3
-	elif instructions.size() <= max_instructions:
-		stars = 2
-
-	var base_score: int = 250
-	match current_difficulty:
-		"FACIL": base_score = 100
-		"NORMAL": base_score = 250
-		"INGENIERO": base_score = 500
-
-	var lives_bonus: int = current_lives * 40
-	var final_score: int = maxi(50, base_score * stars + lives_bonus - (attempts - 1) * 20)
+		"FACIL":
+			stars = 1
+			final_score = 245
+		"NORMAL":
+			stars = 2
+			final_score = 490
+		"INGENIERO":
+			stars = 3
+			final_score = 735
 	var steps_taken: int = instructions.size()
 	
-	lbl_victory_stats.text = "Pasos Tomados: %d\nPuntos: %d\nEstrellas: %d\nVidas Restantes: %d" % [steps_taken, final_score, stars, current_lives]
-	
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = final_score > prev_high
 	finish_game(true, final_score, stars, "Flujo completado exitosamente")
-	_show_screen(screen_victory)
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else final_score
+		flow_template.show_victory(final_score, stars, total_accum, is_record, "¡ROBOT EN LA META!")
+	else:
+		lbl_victory_stats.text = "Pasos Tomados: %d\nPuntos: %d\nEstrellas: %d\nVidas Restantes: %d" % [steps_taken, final_score, stars, current_lives]
+		_show_screen(screen_victory)
 
 func set_status(msg: String) -> void:
 	if status_label:
 		status_label.text = msg
-
-func _on_pause_pressed() -> void:
-	if AudioManager.has_method("play_click"):
-		AudioManager.play_click()
-	is_game_paused = true
-	_show_screen(screen_pause)
-
-func _on_resume_pressed() -> void:
-	if AudioManager.has_method("play_click"):
-		AudioManager.play_click()
-	is_game_paused = false
-	_show_screen(screen_game)
 
 func _on_back_pressed() -> void:
 	is_running = false

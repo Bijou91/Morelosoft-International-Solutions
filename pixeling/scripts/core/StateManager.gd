@@ -112,8 +112,10 @@ func apply_settings_runtime(settings_dict: Dictionary) -> void:
 	
 	_preview_contrast_active = contrast
 	
-	AudioManager.set_sfx_volume(sfx)
-	AudioManager.set_music_volume(music)
+	var audio = get_node_or_null("/root/AudioManager")
+	if audio:
+		audio.set_sfx_volume(sfx)
+		audio.set_music_volume(music)
 	apply_blue_light_filter(blue_light)
 	apply_visual_contrast(contrast)
 
@@ -203,6 +205,9 @@ func update_minigame_progress(game_id: String, score: int, stars: int) -> void:
 
 func get_minigame_data(game_id: String) -> Dictionary:
 	return player_data.progress.minigames.get(game_id, { "completed": false, "score": 0, "stars": 0 })
+
+func get_minigame_high_score(game_id: String) -> int:
+	return int(get_minigame_data(game_id).get("score", 0))
 
 func get_points() -> int:
 	return player_data.economy.points

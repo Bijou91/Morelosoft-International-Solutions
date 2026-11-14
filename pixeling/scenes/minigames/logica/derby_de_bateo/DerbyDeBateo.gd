@@ -75,6 +75,7 @@ var total_score: int = 0
 var instructions_overlay: ColorRect
 var instr_diff_label: Label
 var instr_desc_label: Label
+var flow_template: Control
 
 # --- Rutas de JSON (aisladas en esta carpeta) ---
 const DATA_PATHS: Dictionary = {
@@ -124,11 +125,20 @@ func _ready() -> void:
 	_build_instructions_overlay()
 	_build_visuals_and_audio()
 
+	# Estabilizar recuadros de texto y HUD
+	lock_dynamic_label_box(status_label, status_label.get_parent() as Control, 38.0, 12, 7, 4.0, 2.0, true, true, 4.0)
+	lock_dynamic_label_box(question_label, question_panel, 96.0, 13, 8, 6.0, 4.0, true, true, 6.0)
+	stabilize_hud_label(lives_label, 86.0)
+	stabilize_hud_label(timer_label, 52.0)
+	stabilize_hud_label(score_label, 120.0)
+	stabilize_hud_label(streak_label, 68.0)
+
 	btn_back.pressed.connect(_on_back_pressed)
 	btn_diff_facil.pressed.connect(func(): _on_difficulty_selected("FACIL"))
 	btn_diff_normal.pressed.connect(func(): _on_difficulty_selected("NORMAL"))
 	btn_diff_ing.pressed.connect(func(): _on_difficulty_selected("INGENIERO"))
 
+	_build_flow_template()
 	_show_difficulty_selector()
 	set_status("Elige dificultad para comenzar el Derby de Bateo")
 	
@@ -262,6 +272,13 @@ func start_game(difficulty: String = "NORMAL") -> void:
 
 	if instructions_overlay:
 		instructions_overlay.visible = false
+	if pause_overlay:
+		pause_overlay.visible = false
+	if game_over_overlay:
+		game_over_overlay.visible = false
+	if flow_template:
+		flow_template.hide_all()
+	get_tree().paused = false
 	difficulty_selector.visible = false
 	question_panel.visible = true
 	options_container.visible = true
@@ -291,18 +308,63 @@ func _on_start_game_pressed() -> void:
 		instructions_overlay.visible = false
 	start_game(current_difficulty)
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Derby de Bateo",
+		"subtitle": "CU-13 · Proposiciones Lógicas",
+		"classroom_path": "res://scenes/classroom/AulaLogica.tscn",
+		"objective": "Resuelve proposiciones y silogismos lógicos antes de que se agote el tiempo.",
+		"rules": [
+			"Lee atentamente la proposición o silogismo lógico en pantalla.",
+			"Selecciona la opción correcta antes de que se agote el tiempo.",
+			"Cada fallo o tiempo agotado resta 1 vida (-1 ❤️).",
+			"¡Encadena aciertos consecutivos para ganar bonus por racha!"
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: " + DIFFICULTY_CONFIG["FACIL"]["description"]
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: " + DIFFICULTY_CONFIG["NORMAL"]["description"]
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: " + DIFFICULTY_CONFIG["INGENIERO"]["description"]
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			current_difficulty = diff
+			start_game(diff),
+		"on_back": func():
+			_on_back_pressed(),
+		"on_resume": func():
+			_on_resume_pressed(),
+		"on_restart": func():
+			start_game(current_difficulty)
+	})
+
+
 func _show_difficulty_selector() -> void:
 	if instructions_overlay:
 		instructions_overlay.visible = false
-	difficulty_selector.visible = true
+	if pause_overlay:
+		pause_overlay.visible = false
+	if game_over_overlay:
+		game_over_overlay.visible = false
+	difficulty_selector.visible = false if flow_template else true
 	question_panel.visible = false
 	options_container.visible = false
 	$VBox/BottomBar.visible = false
 	is_playing = false
-	
-	btn_back.visible = true
+
+	btn_back.visible = false if flow_template else true
 	if btn_pause: # Comprobación de seguridad por si el nodo aún no carga
 		btn_pause.visible = false
+	if flow_template:
+		flow_template.show_instructions()
 
 # ---------------------------------------------------------------------------
 # Construcción del Overlay de Instrucciones (Estilo Cinturón de Hipótesis)
@@ -463,6 +525,7 @@ func _build_options() -> void:
 		var idx := i
 		btn.pressed.connect(func(): _on_option_pressed(idx))
 		options_container.add_child(btn)
+		lock_dynamic_button_box(btn, 48.0, 11, 7, true, 280.0)
 
 # ---------------------------------------------------------------------------
 # Respuestas y vidas
@@ -543,17 +606,27 @@ func _handle_game_over(reason: String) -> void:
 		stars = 1
 
 	var final_score: int = total_score
-	
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = final_score > prev_high
+
 	# Mostrar mensaje rápido en el banner
 	set_status("GAME OVER. Revisa tus resultados.")
-	
+
 	# Llenar la pantalla de estadísticas
 	go_reason_label.text = reason
 	go_stats_label.text = "Aciertos: %d\nPuntos Totales: %d\nEstrellas: %d" % [total_correct, final_score, stars]
-	
+
 	# Llamar a finish_game para guardar el progreso internamente
 	finish_game(total_correct > 0, final_score, stars, "Derby finalizado con %d aciertos" % total_correct)
-	
+
+	if flow_template:
+		if stars > 0:
+			var total_accum: int = StateManager.get_points() if StateManager else final_score
+			flow_template.show_victory(final_score, stars, total_accum, is_record, "¡DERBY COMPLETADO!")
+		else:
+			flow_template.show_game_over(reason, final_score)
+		return
+
 	# Mostrar la pantalla superpuesta
 	game_over_overlay.visible = true
 
@@ -602,14 +675,19 @@ func _on_pause_pressed() -> void:
 	# Evitar pausar si estamos en el selector de dificultad o procesando un error
 	if not is_playing or is_answering:
 		return
-	
+
 	AudioManager.play_click()
 	get_tree().paused = true
-	pause_overlay.visible = true
+	if flow_template:
+		flow_template.show_pause()
+	else:
+		pause_overlay.visible = true
 
 func _on_resume_pressed() -> void:
 	AudioManager.play_click()
 	get_tree().paused = false
+	if flow_template:
+		flow_template.hide_pause()
 	pause_overlay.visible = false
 
 func _on_exit_pressed() -> void:

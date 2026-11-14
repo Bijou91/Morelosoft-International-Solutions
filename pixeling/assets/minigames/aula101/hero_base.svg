@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 140" width="120" height="140">
+  <!-- Silueta Base / Chasis Sintético del Héroe -->
+  <defs>
+    <linearGradient id="body_base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#37474f" />
+      <stop offset="100%" stop-color="#212121" />
+    </linearGradient>
+    <linearGradient id="joint_glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00b0ff" />
+      <stop offset="100%" stop-color="#00e5ff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Cabeza sintética base -->
+  <circle cx="60" cy="24" r="14" fill="url(#body_base)" stroke="#546e7a" stroke-width="2" />
+  <ellipse cx="60" cy="24" rx="10" ry="3.5" fill="#102027" stroke="#00e5ff" stroke-width="1" />
+
+  <!-- Cuello -->
+  <rect x="56" y="38" width="8" height="6" fill="#455a64" />
+
+  <!-- Torso sintético base -->
+  <path d="M 42 44 L 78 44 L 72 82 L 48 82 Z" fill="url(#body_base)" stroke="#546e7a" stroke-width="2" />
+  <circle cx="60" cy="60" r="5" fill="#102027" stroke="#00e5ff" stroke-width="1.5" />
+
+  <!-- Brazos articulados base -->
+  <!-- Brazo izquierdo -->
+  <circle cx="38" cy="48" r="4.5" fill="url(#joint_glow)" />
+  <rect x="30" y="52" width="8" height="26" rx="3" fill="url(#body_base)" stroke="#546e7a" stroke-width="1.5" />
+  <circle cx="34" cy="80" r="4" fill="#37474f" stroke="#546e7a" stroke-width="1" />
+
+  <!-- Brazo derecho -->
+  <circle cx="82" cy="48" r="4.5" fill="url(#joint_glow)" />
+  <rect x="82" y="52" width="8" height="26" rx="3" fill="url(#body_base)" stroke="#546e7a" stroke-width="1.5" />
+  <circle cx="86" cy="80" r="4" fill="#37474f" stroke="#546e7a" stroke-width="1" />
+
+  <!-- Caderas y Piernas base -->
+  <path d="M 48 82 L 72 82 L 68 96 L 52 96 Z" fill="#263238" stroke="#546e7a" stroke-width="1.5" />
+  <!-- Pierna izquierda -->
+  <rect x="44" y="96" width="10" height="36" rx="4" fill="url(#body_base)" stroke="#546e7a" stroke-width="1.5" />
+  <!-- Pierna derecha -->
+  <rect x="66" y="96" width="10" height="36" rx="4" fill="url(#body_base)" stroke="#546e7a" stroke-width="1.5" />
+</svg>

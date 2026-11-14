@@ -234,6 +234,7 @@ var go_reason_label: Label
 var go_score_label: Label
 var vic_score_label: Label
 var vic_stats_label: Label
+var flow_template: Control
 
 # ══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -249,7 +250,8 @@ func _ready() -> void:
 	_init_audio()
 	_init_textures()
 	_build_ui()
-	_show_overlay("DIFFICULTY_SELECT")
+	_build_flow_template()
+	_show_overlay("INSTRUCTIONS")
 
 func _init_audio() -> void:
 	sfx_player = AudioStreamPlayer.new()
@@ -366,6 +368,7 @@ func _build_ui() -> void:
 	top_hud.anchor_top = 0.0
 	top_hud.anchor_right = 1.0
 	top_hud.offset_bottom = 125.0
+	top_hud.clip_contents = true
 	var hud_sb := StyleBoxFlat.new()
 	hud_sb.bg_color = Color(0.08, 0.10, 0.16, 0.88)
 	hud_sb.border_width_bottom = 2
@@ -389,8 +392,10 @@ func _build_ui() -> void:
 	hud_vbox.add_child(top_row)
 
 	var pause_btn := Button.new()
-	pause_btn.text = "❚❚"
-	pause_btn.custom_minimum_size = Vector2(34, 30)
+	pause_btn.text = "||"
+	pause_btn.custom_minimum_size = Vector2(36, 30)
+	style_kenney_button(pause_btn, "neutral", 30.0)
+	pause_btn.add_theme_font_size_override("font_size", 11)
 	pause_btn.pressed.connect(_on_pause_button_pressed)
 	top_row.add_child(pause_btn)
 
@@ -399,6 +404,7 @@ func _build_ui() -> void:
 	hud_lives_label.add_theme_font_size_override("font_size", 15)
 	hud_lives_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.4))
 	top_row.add_child(hud_lives_label)
+	stabilize_hud_label(hud_lives_label, 52.0)
 
 	var spacer1 := Control.new()
 	spacer1.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -409,6 +415,7 @@ func _build_ui() -> void:
 	hud_timer_label.add_theme_font_size_override("font_size", 16)
 	hud_timer_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	top_row.add_child(hud_timer_label)
+	stabilize_hud_label(hud_timer_label, 72.0)
 
 	var spacer2 := Control.new()
 	spacer2.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -419,6 +426,7 @@ func _build_ui() -> void:
 	hud_score_label.add_theme_font_size_override("font_size", 15)
 	hud_score_label.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
 	top_row.add_child(hud_score_label)
+	stabilize_hud_label(hud_score_label, 58.0)
 
 	# Fila 2 del HUD: Progreso de pasos (ej: 1/3) y Badges de pasos con resplandor
 	var steps_row := HBoxContainer.new()
@@ -439,10 +447,12 @@ func _build_ui() -> void:
 	# Fila 3 del HUD: Título de la Hipótesis actual
 	hypothesis_title_label = Label.new()
 	hypothesis_title_label.text = "Cargando hipótesis..."
+	hypothesis_title_label.size_flags_horizontal = SIZE_EXPAND_FILL
 	hypothesis_title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hypothesis_title_label.add_theme_font_size_override("font_size", 11)
 	hypothesis_title_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
 	hud_vbox.add_child(hypothesis_title_label)
+	lock_dynamic_label_box(hypothesis_title_label, null, 38.0, 11, 7, 2.0, 0.0, true, false)
 
 	# Panel de Controles Virtuales Móviles (inferior)
 	_build_mobile_controls()
@@ -720,10 +730,64 @@ func _create_overlay_vbox(parent: Control, title: String, subtitle: String) -> V
 
 	return vbox
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Cinturón de Hipótesis",
+		"subtitle": "Lógica y Algoritmos (CU-15)",
+		"classroom_path": CLASSROOM_SCENE,
+		"objective": "Comprueba hipótesis de inducción matemática navegando en el cinturón de asteroides.",
+		"rules": [
+			"Pilota tu nave esquivando asteroides (Chocar = -1 Vida).",
+			"Dispara únicamente al asteroide con el paso lógico correcto en orden secuencial (+Puntos).",
+			"Disparar a un asteroide incorrecto o fuera de turno = -1 Vida.",
+			"Completa todos los pasos antes de que acabe el tiempo."
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil (3 pasos - 60s)\n" + DIFFICULTY_CONFIG["FACIL"]["description"]
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal (4 pasos - 75s)\n" + DIFFICULTY_CONFIG["NORMAL"]["description"]
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero (5 pasos - 90s)\n" + DIFFICULTY_CONFIG["INGENIERO"]["description"]
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			current_difficulty = diff
+			super.start_game(diff)
+			_on_start_game_pressed(),
+		"on_back": func():
+			_on_return_to_classroom(),
+		"on_resume": func():
+			_on_resume_pressed(),
+		"on_restart": func():
+			_on_retry_pressed()
+	})
+
+
 func _show_overlay(state_name: String) -> void:
 	current_state = state_name
 	if star_field:
 		star_field.running = (state_name != "PAUSED")   # las estrellas se congelan solo en pausa
+	if flow_template:
+		difficulty_overlay.visible = false
+		instructions_overlay.visible = false
+		pause_overlay.visible = false
+		game_over_overlay.visible = false
+		victory_overlay.visible = false
+		match state_name:
+			"DIFFICULTY_SELECT", "INSTRUCTIONS":
+				flow_template.show_instructions()
+			"PAUSED":
+				flow_template.show_pause()
+			"PLAYING":
+				flow_template.hide_all()
+		return
 	difficulty_overlay.visible = (state_name == "DIFFICULTY_SELECT")
 	instructions_overlay.visible = (state_name == "INSTRUCTIONS")
 	pause_overlay.visible = (state_name == "PAUSED")
@@ -1061,8 +1125,13 @@ func _on_victory() -> void:
 	elif lives >= 2:
 		stars = 2
 
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = score > prev_high
 	finish_game(true, score, stars, "Hipótesis comprobada con éxito")
 	_show_overlay("VICTORY")
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else score
+		flow_template.show_victory(score, stars, total_accum, is_record, "¡HIPÓTESIS COMPROBADA!")
 
 func _on_timeout() -> void:
 	# FA-03.04: Hipótesis inconclusa por tiempo -> Penalización del 50% de puntos
@@ -1075,6 +1144,8 @@ func _on_game_over(reason: String) -> void:
 	go_score_label.text = "Puntaje final: %d pts" % score
 	finish_game(false, score, 0, reason)
 	_show_overlay("GAME_OVER")
+	if flow_template:
+		flow_template.show_game_over(reason, score)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # DIBUJADO DE LA ESCENA ESPACIAL

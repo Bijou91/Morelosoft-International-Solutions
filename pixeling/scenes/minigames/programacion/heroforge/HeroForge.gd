@@ -6,6 +6,31 @@ extends MiniGameBase
 
 const HeroForgeData = preload("res://scenes/minigames/programacion/heroforge/HeroForgeData.gd")
 
+# Estilos oficiales Kenney UI Pack (Classic UI)
+const STYLE_BTN_NEUTRAL_NORM = preload("res://scenes/ui/theme/classic/btn_neutral_normal.tres")
+const STYLE_BTN_NEUTRAL_HOV = preload("res://scenes/ui/theme/classic/btn_neutral_hover.tres")
+const STYLE_BTN_NEUTRAL_PRESS = preload("res://scenes/ui/theme/classic/btn_neutral_pressed.tres")
+
+const STYLE_BTN_BLUE_NORM = preload("res://scenes/ui/theme/classic/btn_blue_normal.tres")
+const STYLE_BTN_BLUE_HOV = preload("res://scenes/ui/theme/classic/btn_blue_hover.tres")
+const STYLE_BTN_BLUE_PRESS = preload("res://scenes/ui/theme/classic/btn_blue_pressed.tres")
+
+const STYLE_BTN_YELLOW_NORM = preload("res://scenes/ui/theme/classic/btn_yellow_normal.tres")
+const STYLE_BTN_YELLOW_HOV = preload("res://scenes/ui/theme/classic/btn_yellow_hover.tres")
+const STYLE_BTN_YELLOW_PRESS = preload("res://scenes/ui/theme/classic/btn_yellow_pressed.tres")
+
+const STYLE_BTN_GREEN_NORM = preload("res://scenes/ui/theme/classic/btn_green_normal.tres")
+const STYLE_BTN_GREEN_HOV = preload("res://scenes/ui/theme/classic/btn_green_hover.tres")
+const STYLE_BTN_GREEN_PRESS = preload("res://scenes/ui/theme/classic/btn_green_pressed.tres")
+
+const STYLE_BTN_RED_NORM = preload("res://scenes/ui/theme/classic/btn_red_normal.tres")
+const STYLE_BTN_RED_HOV = preload("res://scenes/ui/theme/classic/btn_red_hover.tres")
+const STYLE_BTN_RED_PRESS = preload("res://scenes/ui/theme/classic/btn_red_pressed.tres")
+
+const STYLE_PANEL_INNER = preload("res://scenes/ui/theme/classic/panel_inner_plate.tres")
+const STYLE_PANEL_SCREWS = preload("res://scenes/ui/theme/classic/panel_screws.tres")
+const STYLE_PANEL_GLASS = preload("res://scenes/ui/theme/classic/panel_glass.tres")
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ESTADO DEL MINIJUEGO
 # ══════════════════════════════════════════════════════════════════════════════
@@ -23,7 +48,7 @@ var required_slots: int = 2
 var assigned_attributes: Array = []
 var assigned_methods: Array = []
 
-# Banco de Componentes de la ronda (Unificado y mezclado para retar la distinción Atributo/Método)
+# Banco de Componentes de la ronda (Separado por Atributos / Métodos)
 var bank_all_components: Array[Dictionary] = []
 var selected_target_slot: Dictionary = {}
 var pending_item_to_assign: Dictionary = {}
@@ -35,6 +60,8 @@ var round_time: float = 45.0
 var time_left: float = 45.0
 var is_timer_running: bool = false
 var is_game_paused: bool = false
+var is_transitioning_hero: bool = false
+var is_victory_shown: bool = false
 var total_score: int = 0
 var points_per_char: int = 125
 var target_stars: int = 2
@@ -49,6 +76,24 @@ var screen_game: Control
 var screen_pause: Control
 var screen_victory: Control
 var screen_game_over: Control
+var flow_template: Control
+
+# Nodos y Texturas del Personaje Modular POO
+var hero_stage_panel: PanelContainer
+var hero_modular_box: Control
+var hero_crest_lbl: Label
+var mod_base: TextureRect
+var mod_armor: TextureRect
+var mod_helmet: TextureRect
+var mod_weapon: TextureRect
+var mod_aura: TextureRect
+var lbl_pairs_status: Label
+
+const TEX_HERO_BASE = preload("res://assets/minigames/aula101/hero_base.svg")
+const TEX_HERO_ARMOR = preload("res://assets/minigames/aula101/hero_armor.svg")
+const TEX_HERO_HELMET = preload("res://assets/minigames/aula101/hero_helmet.svg")
+const TEX_HERO_WEAPON = preload("res://assets/minigames/aula101/hero_weapon.svg")
+const TEX_HERO_AURA = preload("res://assets/minigames/aula101/hero_aura.svg")
 
 # Sub-vistas de ScreenStart
 var container_instructions: VBoxContainer
@@ -61,8 +106,21 @@ var hud_pause_btn: Button
 var hud_round_lbl: Label
 var hud_timer_lbl: Label
 var hud_lives_lbl: Label
+var hud_hearts_bar: HBoxContainer
 var hud_score_lbl: Label
 var timer_progress: ProgressBar
+var _compact_sb_cache: Dictionary = {}
+
+func _get_compact_btn_sb(key: String, base_sb: StyleBoxTexture) -> StyleBoxTexture:
+	if _compact_sb_cache.has(key):
+		return _compact_sb_cache[key] as StyleBoxTexture
+	var sb := base_sb.duplicate() as StyleBoxTexture
+	sb.content_margin_left = 7.0
+	sb.content_margin_right = 7.0
+	sb.content_margin_top = 4.0
+	sb.content_margin_bottom = 6.0
+	_compact_sb_cache[key] = sb
+	return sb
 
 # Nodos de Mesa de Forja (Plantilla de Clase)
 var hero_badge_lbl: Label
@@ -72,13 +130,8 @@ var meth_slots_vbox: VBoxContainer
 var attr_slot_buttons: Array[Button] = []
 var meth_slot_buttons: Array[Button] = []
 
-# Nodos del Banco de Componentes y Selector de Destino
+# Nodos del Banco de Componentes (Grid de 2 Columnas: Atributos / Métodos)
 var bank_grid: GridContainer
-var assign_dialog_panel: PanelContainer
-var lbl_assign_prompt: Label
-var btn_to_attr: Button
-var btn_to_meth: Button
-var btn_cancel_assign: Button
 
 var btn_instantiate: Button
 var status_banner_lbl: Label
@@ -103,8 +156,49 @@ func _ready() -> void:
 	subject_name = "Programación"
 	super._ready()
 	_build_ui()
+
+	flow_template = create_flow_template({
+		"title": "HeroForge",
+		"subtitle": "CU-12: Clases, Objetos y Atributos",
+		"classroom_path": "res://scenes/classroom/AulaProgramacion.tscn",
+		"sections": [
+			{
+				"title": "📘 Conceptos Clave de POO:",
+				"text": "• Clase: El molde o plano que define las características y acciones de un tipo de héroe.\n• Objeto: El personaje instanciado en memoria a partir de su clase.\n• Atributos (Lado Izquierdo): Variables que describen su estado (clave = valor).\n• Métodos (Lado Derecho): Funciones que definen sus acciones (verbo())."
+			},
+			{
+				"title": "🎯 Reglas del Taller:",
+				"text": "1. Lee la descripción de la clase solicitada.\n2. Lado Izquierdo (Azul): Asigna Atributos.\n3. Lado Derecho (Amarillo): Asigna Métodos.\n4. Toca cualquier slot ocupado para retirar la pieza sin penalización.\n5. Presiona '¡Instanciar Objeto!' para forjarlo. ¡Cuidado con los distractores!"
+			}
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Modo: Fácil (1★)\n• 3 Personajes a Forjar (1 Atributo y 1 Método c/u)\n• 5 Vidas  |  60s por Ronda  |  300 Puntos Totales"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Modo: Normal (2★)\n• 4 Personajes a Forjar (2 Atributos y 2 Métodos c/u)\n• 3 Vidas  |  45s por Ronda  |  500 Puntos Totales"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Modo: Ingeniero (3★)\n• 5 Personajes a Forjar (3 Atributos y 3 Métodos c/u)\n• 1 Vida  |  30s por Ronda  |  750 Puntos Totales"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			selected_diff = diff
+			_on_start_pressed(),
+		"on_back": func():
+			_on_back_pressed(),
+		"on_resume": func():
+			_on_resume_pressed(),
+		"on_restart": func():
+			_set_game_paused(false)
+			start_game(selected_diff)
+	})
+
 	_show_screen(screen_start)
-	_show_instructions_step()
 
 func _process(delta: float) -> void:
 	if is_timer_running and not is_game_paused:
@@ -118,9 +212,9 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
-			if screen_game.visible:
+			if screen_game and screen_game.visible:
 				_on_pause_pressed()
-			elif screen_pause.visible:
+			elif is_game_paused:
 				_on_resume_pressed()
 		elif event.keycode == KEY_F8:
 			_trigger_debug_win()
@@ -130,11 +224,8 @@ func _unhandled_input(event: InputEvent) -> void:
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _build_ui() -> void:
-	# Fondo institucional oscuro
-	bg_rect = ColorRect.new()
-	bg_rect.color = Color(0.06, 0.08, 0.12, 1.0)
-	bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(bg_rect)
+	# Fondo didáctico de hoja de libreta con 80% opacidad / 20% transparencia
+	attach_notebook_background(self, 0.80)
 
 	_build_screen_start()
 	_build_screen_game()
@@ -143,208 +234,25 @@ func _build_ui() -> void:
 	_build_screen_game_over()
 
 func _show_screen(target_screen: Control) -> void:
-	screen_start.visible = (target_screen == screen_start)
-	screen_game.visible = (target_screen == screen_game)
-	screen_pause.visible = (target_screen == screen_pause)
-	screen_victory.visible = (target_screen == screen_victory)
-	screen_game_over.visible = (target_screen == screen_game_over)
+	if screen_start: screen_start.visible = false
+	if screen_game: screen_game.visible = false
+	if screen_pause: screen_pause.visible = false
+	if screen_victory: screen_victory.visible = false
+	if screen_game_over: screen_game_over.visible = false
 
-# ── ScreenStart: Flujo didáctico de dos pasos (Instrucciones POO -> Dificultad) ──
+	if flow_template:
+		if target_screen == screen_start:
+			flow_template.show_instructions()
+		else:
+			flow_template.hide_all()
+
+	if target_screen:
+		target_screen.visible = true
+
 func _build_screen_start() -> void:
 	screen_start = Control.new()
 	screen_start.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(screen_start)
-
-	var scroll := ScrollContainer.new()
-	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	screen_start.add_child(scroll)
-
-	var scroll_margin := MarginContainer.new()
-	scroll_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll_margin.add_theme_constant_override("margin_left", 12)
-	scroll_margin.add_theme_constant_override("margin_right", 12)
-	scroll_margin.add_theme_constant_override("margin_top", 12)
-	scroll_margin.add_theme_constant_override("margin_bottom", 12)
-	scroll.add_child(scroll_margin)
-
-	var root_vbox := VBoxContainer.new()
-	root_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	root_vbox.add_theme_constant_override("separation", 10)
-	scroll_margin.add_child(root_vbox)
-
-	# Cabecera
-	var title_lbl := Label.new()
-	title_lbl.text = "🏛️ HeroForge: Taller de Clases y Objetos"
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 15)
-	title_lbl.add_theme_color_override("font_color", Color("00e5ff"))
-	root_vbox.add_child(title_lbl)
-
-	var subtitle_lbl := Label.new()
-	subtitle_lbl.text = "CU-12: Aula 101 - Programación Orientada a Objetos"
-	subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle_lbl.add_theme_font_size_override("font_size", 10)
-	subtitle_lbl.add_theme_color_override("font_color", Color("90a4ae"))
-	root_vbox.add_child(subtitle_lbl)
-
-	# ── Paso 1: Contenedor de Instrucciones de POO ──
-	container_instructions = VBoxContainer.new()
-	container_instructions.add_theme_constant_override("separation", 8)
-	root_vbox.add_child(container_instructions)
-
-	var oop_card := PanelContainer.new()
-	var oop_style := StyleBoxFlat.new()
-	oop_style.bg_color = Color("1a202c")
-	oop_style.border_color = Color("2d3748")
-	oop_style.set_border_width_all(1)
-	oop_style.set_corner_radius_all(6)
-	oop_card.add_theme_stylebox_override("panel", oop_style)
-	container_instructions.add_child(oop_card)
-
-	var oop_margin := MarginContainer.new()
-	oop_margin.add_theme_constant_override("margin_left", 10)
-	oop_margin.add_theme_constant_override("margin_right", 10)
-	oop_margin.add_theme_constant_override("margin_top", 8)
-	oop_margin.add_theme_constant_override("margin_bottom", 8)
-	oop_card.add_child(oop_margin)
-
-	var oop_vbox := VBoxContainer.new()
-	oop_vbox.add_theme_constant_override("separation", 6)
-	oop_margin.add_child(oop_vbox)
-
-	var oop_head := Label.new()
-	oop_head.text = "📘 Conceptos Clave de POO:"
-	oop_head.add_theme_font_size_override("font_size", 12)
-	oop_head.add_theme_color_override("font_color", Color("ffd54f"))
-	oop_vbox.add_child(oop_head)
-
-	var oop_body := Label.new()
-	oop_body.text = "• Clase: El molde o plano que define las características y acciones de un tipo de héroe.\n• Objeto: El personaje instanciado en memoria a partir de su clase.\n• Atributos (Lado Izquierdo): Variables que describen su estado (clave = valor).\n• Métodos (Lado Derecho): Funciones que definen sus acciones (verbo())."
-	oop_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	oop_body.add_theme_font_size_override("font_size", 10)
-	oop_body.add_theme_color_override("font_color", Color("eceff1"))
-	oop_vbox.add_child(oop_body)
-
-	# Instrucciones didácticas
-	var inst_card := PanelContainer.new()
-	var inst_style := StyleBoxFlat.new()
-	inst_style.bg_color = Color("101622")
-	inst_style.border_color = Color("1e293b")
-	inst_style.set_border_width_all(1)
-	inst_style.set_corner_radius_all(6)
-	inst_card.add_theme_stylebox_override("panel", inst_style)
-	container_instructions.add_child(inst_card)
-
-	var inst_margin := MarginContainer.new()
-	inst_margin.add_theme_constant_override("margin_left", 10)
-	inst_margin.add_theme_constant_override("margin_right", 10)
-	inst_margin.add_theme_constant_override("margin_top", 8)
-	inst_margin.add_theme_constant_override("margin_bottom", 8)
-	inst_card.add_child(inst_margin)
-
-	var inst_text := Label.new()
-	inst_text.text = "🎯 Reglas del Taller:\n\n1. Lee la descripción de la clase solicitada.\n2. Lado Izquierdo (Azul): Asigna Atributos.\n3. Lado Derecho (Amarillo): Asigna Métodos.\n4. Toca cualquier slot ocupado para retirar la pieza sin penalización.\n5. Presiona '¡Instanciar Objeto!' para forjarlo. ¡Cuidado con los distractores!"
-	inst_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	inst_text.add_theme_font_size_override("font_size", 10)
-	inst_text.add_theme_color_override("font_color", Color("cfd8dc"))
-	inst_margin.add_child(inst_text)
-
-	var btn_to_diff := Button.new()
-	btn_to_diff.text = "Siguiente: Elegir Dificultad →"
-	btn_to_diff.custom_minimum_size = Vector2(0, 42)
-	btn_to_diff.add_theme_font_size_override("font_size", 12)
-	btn_to_diff.pressed.connect(_show_difficulty_step)
-	container_instructions.add_child(btn_to_diff)
-
-	var btn_exit_inst := Button.new()
-	btn_exit_inst.text = "← Volver al Salón 101"
-	btn_exit_inst.custom_minimum_size = Vector2(0, 36)
-	btn_exit_inst.add_theme_font_size_override("font_size", 11)
-	btn_exit_inst.pressed.connect(_on_back_pressed)
-	container_instructions.add_child(btn_exit_inst)
-
-	# ── Paso 2: Contenedor de Selección de Dificultad ──
-	container_difficulty = VBoxContainer.new()
-	container_difficulty.add_theme_constant_override("separation", 10)
-	root_vbox.add_child(container_difficulty)
-
-	var diff_label := Label.new()
-	diff_label.text = "Elige la Dificultad de la Forja:"
-	diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	diff_label.add_theme_font_size_override("font_size", 13)
-	container_difficulty.add_child(diff_label)
-
-	var diff_btn_hbox := HBoxContainer.new()
-	diff_btn_hbox.add_theme_constant_override("separation", 6)
-	container_difficulty.add_child(diff_btn_hbox)
-
-	var btn_facil := Button.new()
-	btn_facil.text = "Fácil"
-	btn_facil.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_facil.custom_minimum_size = Vector2(0, 38)
-	btn_facil.pressed.connect(func(): _select_difficulty("FACIL"))
-	diff_btn_hbox.add_child(btn_facil)
-
-	var btn_normal := Button.new()
-	btn_normal.text = "Normal"
-	btn_normal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_normal.custom_minimum_size = Vector2(0, 38)
-	btn_normal.pressed.connect(func(): _select_difficulty("NORMAL"))
-	diff_btn_hbox.add_child(btn_normal)
-
-	var btn_ingeniero := Button.new()
-	btn_ingeniero.text = "Ingeniero"
-	btn_ingeniero.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_ingeniero.custom_minimum_size = Vector2(0, 38)
-	btn_ingeniero.pressed.connect(func(): _select_difficulty("INGENIERO"))
-	diff_btn_hbox.add_child(btn_ingeniero)
-
-	var summary_card := PanelContainer.new()
-	var sum_style := StyleBoxFlat.new()
-	sum_style.bg_color = Color("141822")
-	sum_style.border_color = Color("38bdf8")
-	sum_style.set_border_width_all(1)
-	sum_style.set_corner_radius_all(6)
-	summary_card.add_theme_stylebox_override("panel", sum_style)
-	container_difficulty.add_child(summary_card)
-
-	var sum_margin := MarginContainer.new()
-	sum_margin.add_theme_constant_override("margin_left", 8)
-	sum_margin.add_theme_constant_override("margin_right", 8)
-	sum_margin.add_theme_constant_override("margin_top", 8)
-	sum_margin.add_theme_constant_override("margin_bottom", 8)
-	summary_card.add_child(sum_margin)
-
-	lbl_diff_summary = Label.new()
-	lbl_diff_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl_diff_summary.add_theme_font_size_override("font_size", 10)
-	lbl_diff_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sum_margin.add_child(lbl_diff_summary)
-
-	btn_start_game = Button.new()
-	btn_start_game.text = "▶ ¡COMENZAR LA FORJA!"
-	btn_start_game.custom_minimum_size = Vector2(0, 44)
-	btn_start_game.add_theme_font_size_override("font_size", 13)
-	btn_start_game.pressed.connect(_on_start_pressed)
-	container_difficulty.add_child(btn_start_game)
-
-	var btn_back_to_inst := Button.new()
-	btn_back_to_inst.text = "← Ver Instrucciones"
-	btn_back_to_inst.custom_minimum_size = Vector2(0, 34)
-	btn_back_to_inst.add_theme_font_size_override("font_size", 11)
-	btn_back_to_inst.pressed.connect(_show_instructions_step)
-	container_difficulty.add_child(btn_back_to_inst)
-
-	_select_difficulty("NORMAL")
-
-func _show_instructions_step() -> void:
-	container_instructions.visible = true
-	container_difficulty.visible = false
-
-func _show_difficulty_step() -> void:
-	container_instructions.visible = false
-	container_difficulty.visible = true
 
 # ── ScreenGame: Mesa de Forja Interactiva (Atributos Izquierda / Métodos Derecha) ──
 func _build_screen_game() -> void:
@@ -354,113 +262,113 @@ func _build_screen_game() -> void:
 	add_child(screen_game)
 
 	var game_vbox := VBoxContainer.new()
+	game_vbox.name = "GameVBox"
 	game_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	game_vbox.add_theme_constant_override("separation", 6)
+	game_vbox.offset_left = 10.0
+	game_vbox.offset_top = 10.0
+	game_vbox.offset_right = -10.0
+	game_vbox.offset_bottom = -8.0
+	game_vbox.add_theme_constant_override("separation", 5)
 	screen_game.add_child(game_vbox)
 
-	# ── TopHUD (Barra superior) ──
+	# ── TopHUD (Barra superior unificada Aula 101) ──
 	var hud_panel := PanelContainer.new()
-	var hud_style := StyleBoxFlat.new()
-	hud_style.bg_color = Color("161b22")
-	hud_style.set_border_width_all(1)
-	hud_style.border_color = Color("30363d")
-	hud_panel.add_theme_stylebox_override("panel", hud_style)
+	hud_panel.name = "TopHUDPanel"
+	style_aula101_hud_panel(hud_panel)
 	game_vbox.add_child(hud_panel)
 
-	var hud_margin := MarginContainer.new()
-	hud_margin.add_theme_constant_override("margin_left", 8)
-	hud_margin.add_theme_constant_override("margin_right", 8)
-	hud_margin.add_theme_constant_override("margin_top", 4)
-	hud_margin.add_theme_constant_override("margin_bottom", 4)
-	hud_panel.add_child(hud_margin)
-
 	var hud_hbox := HBoxContainer.new()
-	hud_hbox.add_theme_constant_override("separation", 6)
-	hud_margin.add_child(hud_hbox)
+	hud_hbox.name = "TopHUD"
+	hud_hbox.custom_minimum_size.y = 30.0
+	hud_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hud_hbox.add_theme_constant_override("separation", 5)
+	hud_panel.add_child(hud_hbox)
 
 	hud_pause_btn = Button.new()
-	hud_pause_btn.text = "⏸️"
-	hud_pause_btn.custom_minimum_size = Vector2(32, 28)
+	style_aula101_pause_button(hud_pause_btn)
 	hud_pause_btn.pressed.connect(_on_pause_pressed)
 	hud_hbox.add_child(hud_pause_btn)
 
 	hud_round_lbl = Label.new()
 	hud_round_lbl.text = "Héroe 1/4"
+	hud_round_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hud_round_lbl.add_theme_font_size_override("font_size", 10)
 	hud_round_lbl.add_theme_color_override("font_color", Color("ffd54f"))
 	hud_hbox.add_child(hud_round_lbl)
 
+	# Barra de tiempo inline (cohesiva con DataDrop)
+	timer_progress = ProgressBar.new()
+	timer_progress.custom_minimum_size = Vector2(32, 12)
+	timer_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	timer_progress.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	timer_progress.show_percentage = false
+	timer_progress.value = 100.0
+	style_kenney_progress_bar(timer_progress, Color(0.1, 0.9, 1.0, 1.0))
+	hud_hbox.add_child(timer_progress)
+
 	hud_timer_lbl = Label.new()
-	hud_timer_lbl.text = "⏱️ 45s"
+	hud_timer_lbl.text = "45s"
+	hud_timer_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hud_timer_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hud_timer_lbl.add_theme_font_size_override("font_size", 10)
 	hud_timer_lbl.add_theme_color_override("font_color", Color("40c4ff"))
 	hud_hbox.add_child(hud_timer_lbl)
 
 	hud_lives_lbl = Label.new()
-	hud_lives_lbl.text = "❤️❤️❤️"
-	hud_lives_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hud_lives_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hud_lives_lbl.add_theme_font_size_override("font_size", 10)
+	hud_lives_lbl.visible = false
 	hud_hbox.add_child(hud_lives_lbl)
+
+	hud_hearts_bar = create_aula101_hearts_bar(current_lives, max_lives, 14.0)
+	hud_hbox.add_child(hud_hearts_bar)
 
 	hud_score_lbl = Label.new()
 	hud_score_lbl.text = "0 pts"
+	hud_score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hud_score_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hud_score_lbl.add_theme_font_size_override("font_size", 10)
 	hud_score_lbl.add_theme_color_override("font_color", Color("69f0ae"))
 	hud_hbox.add_child(hud_score_lbl)
 
-	# Barra de progreso del tiempo
-	timer_progress = ProgressBar.new()
-	timer_progress.custom_minimum_size = Vector2(0, 4)
-	timer_progress.show_percentage = false
-	timer_progress.value = 100.0
-	game_vbox.add_child(timer_progress)
-
-	# Área desplazable de juego
+	# Área desplazable compacta de mesa de forja
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	game_vbox.add_child(scroll)
 
-	var scroll_margin := MarginContainer.new()
-	scroll_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll_margin.add_theme_constant_override("margin_left", 8)
-	scroll_margin.add_theme_constant_override("margin_right", 8)
-	scroll_margin.add_theme_constant_override("margin_top", 4)
-	scroll_margin.add_theme_constant_override("margin_bottom", 6)
-	scroll.add_child(scroll_margin)
-
 	var main_vbox := VBoxContainer.new()
 	main_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	main_vbox.add_theme_constant_override("separation", 6)
-	scroll_margin.add_child(main_vbox)
+	main_vbox.add_theme_constant_override("separation", 5)
+	scroll.add_child(main_vbox)
 
-	# Ficha del Personaje (Cabecera de Clase)
+	# Ficha del Personaje (Cabecera de Clase compacta y legible)
 	var char_header_panel := PanelContainer.new()
-	var char_style := StyleBoxFlat.new()
-	char_style.bg_color = Color("1a202c")
-	char_style.border_color = Color("2d3748")
-	char_style.set_border_width_all(1)
-	char_style.set_corner_radius_all(6)
-	char_header_panel.add_theme_stylebox_override("panel", char_style)
+	var sb_char_hdr := STYLE_PANEL_INNER.duplicate() as StyleBoxTexture
+	if sb_char_hdr:
+		sb_char_hdr.content_margin_left = 8.0
+		sb_char_hdr.content_margin_right = 8.0
+		sb_char_hdr.content_margin_top = 5.0
+		sb_char_hdr.content_margin_bottom = 5.0
+		char_header_panel.add_theme_stylebox_override("panel", sb_char_hdr)
+	else:
+		char_header_panel.add_theme_stylebox_override("panel", STYLE_PANEL_INNER)
+	char_header_panel.custom_minimum_size.y = 78.0
 	main_vbox.add_child(char_header_panel)
 
-	var ch_margin := MarginContainer.new()
-	ch_margin.add_theme_constant_override("margin_left", 8)
-	ch_margin.add_theme_constant_override("margin_right", 8)
-	ch_margin.add_theme_constant_override("margin_top", 4)
-	ch_margin.add_theme_constant_override("margin_bottom", 4)
-	char_header_panel.add_child(ch_margin)
+	var ch_hbox := HBoxContainer.new()
+	ch_hbox.add_theme_constant_override("separation", 8)
+	char_header_panel.add_child(ch_hbox)
 
 	var ch_vbox := VBoxContainer.new()
+	ch_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ch_vbox.add_theme_constant_override("separation", 2)
-	ch_margin.add_child(ch_vbox)
+	ch_hbox.add_child(ch_vbox)
 
 	hero_badge_lbl = Label.new()
 	hero_badge_lbl.text = "class MagoIgneo:"
-	hero_badge_lbl.add_theme_font_size_override("font_size", 13)
+	hero_badge_lbl.add_theme_font_size_override("font_size", 12)
 	hero_badge_lbl.add_theme_color_override("font_color", Color("00e5ff"))
 	ch_vbox.add_child(hero_badge_lbl)
+	lock_dynamic_label_box(hero_badge_lbl, null, 18.0, 12, 8, 0.0, 0.0, false, true)
 
 	hero_concept_lbl = Label.new()
 	hero_concept_lbl.text = "Especialista arcano en piromancia..."
@@ -468,28 +376,72 @@ func _build_screen_game() -> void:
 	hero_concept_lbl.add_theme_font_size_override("font_size", 9)
 	hero_concept_lbl.add_theme_color_override("font_color", Color("a0aec0"))
 	ch_vbox.add_child(hero_concept_lbl)
+	lock_dynamic_label_box(hero_concept_lbl, null, 34.0, 9, 7, 0.0, 0.0, true, false)
 
-	# Plantilla de la Clase (Columnas: Lado Izquierdo = Atributos | Lado Derecho = Métodos)
+	lbl_pairs_status = Label.new()
+	lbl_pairs_status.text = "Pares POO: 0/2"
+	lbl_pairs_status.add_theme_font_size_override("font_size", 9)
+	lbl_pairs_status.add_theme_color_override("font_color", Color("ffd54f"))
+	ch_vbox.add_child(lbl_pairs_status)
+	lock_dynamic_label_box(lbl_pairs_status, null, 14.0, 9, 7, 0.0, 0.0, false, true)
+
+	# Pedestal Kenney + Caja del Personaje Modular
+	hero_stage_panel = PanelContainer.new()
+	hero_stage_panel.custom_minimum_size = Vector2(66, 70)
+	hero_stage_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var sb_stage := STYLE_PANEL_INNER.duplicate() as StyleBoxTexture
+	if sb_stage:
+		sb_stage.content_margin_left = 4.0
+		sb_stage.content_margin_right = 4.0
+		sb_stage.content_margin_top = 4.0
+		sb_stage.content_margin_bottom = 4.0
+		sb_stage.modulate_color = Color(0.18, 0.24, 0.36, 0.92)
+		hero_stage_panel.add_theme_stylebox_override("panel", sb_stage)
+	ch_hbox.add_child(hero_stage_panel)
+
+	hero_modular_box = Control.new()
+	hero_modular_box.custom_minimum_size = Vector2(58, 62)
+	hero_modular_box.pivot_offset = Vector2(29, 31)
+	hero_stage_panel.add_child(hero_modular_box)
+
+	mod_aura = _create_mod_layer(TEX_HERO_AURA, false)
+	mod_base = _create_mod_layer(TEX_HERO_BASE, true)
+	mod_armor = _create_mod_layer(TEX_HERO_ARMOR, false)
+	mod_helmet = _create_mod_layer(TEX_HERO_HELMET, false)
+	mod_weapon = _create_mod_layer(TEX_HERO_WEAPON, false)
+
+	hero_crest_lbl = Label.new()
+	hero_crest_lbl.name = "HeroCrestLabel"
+	hero_crest_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hero_crest_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	hero_crest_lbl.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	hero_crest_lbl.custom_minimum_size = Vector2(22, 22)
+	hero_crest_lbl.offset_left = -22
+	hero_crest_lbl.offset_top = 1
+	hero_crest_lbl.offset_right = -1
+	hero_crest_lbl.offset_bottom = 23
+	hero_crest_lbl.add_theme_font_size_override("font_size", 15)
+	hero_crest_lbl.z_index = 5
+	hero_crest_lbl.modulate.a = 0.55
+	hero_modular_box.add_child(hero_crest_lbl)
+
+	# Plantilla de la Clase (Atributos Izquierda | Métodos Derecha)
 	var blueprint_panel := PanelContainer.new()
-	var bp_style := StyleBoxFlat.new()
-	bp_style.bg_color = Color("141822")
-	bp_style.border_color = Color("00e5ff")
-	bp_style.set_border_width_all(1)
-	bp_style.set_corner_radius_all(6)
-	blueprint_panel.add_theme_stylebox_override("panel", bp_style)
+	var sb_bp := STYLE_PANEL_INNER.duplicate() as StyleBoxTexture
+	if sb_bp:
+		sb_bp.content_margin_left = 7.0
+		sb_bp.content_margin_right = 7.0
+		sb_bp.content_margin_top = 5.0
+		sb_bp.content_margin_bottom = 5.0
+		blueprint_panel.add_theme_stylebox_override("panel", sb_bp)
+	else:
+		blueprint_panel.add_theme_stylebox_override("panel", STYLE_PANEL_INNER)
 	main_vbox.add_child(blueprint_panel)
-
-	var bp_margin := MarginContainer.new()
-	bp_margin.add_theme_constant_override("margin_left", 8)
-	bp_margin.add_theme_constant_override("margin_right", 8)
-	bp_margin.add_theme_constant_override("margin_top", 6)
-	bp_margin.add_theme_constant_override("margin_bottom", 6)
-	blueprint_panel.add_child(bp_margin)
 
 	var bp_columns := HBoxContainer.new()
 	bp_columns.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bp_columns.add_theme_constant_override("separation", 8)
-	bp_margin.add_child(bp_columns)
+	bp_columns.add_theme_constant_override("separation", 6)
+	blueprint_panel.add_child(bp_columns)
 
 	# Columna Izquierda: Atributos
 	var attr_col := VBoxContainer.new()
@@ -498,19 +450,13 @@ func _build_screen_game() -> void:
 	bp_columns.add_child(attr_col)
 
 	var attr_title := Label.new()
-	attr_title.text = "# ATRIBUTOS:"
+	attr_title.text = "# ATRIBUTOS"
 	attr_title.add_theme_font_size_override("font_size", 10)
 	attr_title.add_theme_color_override("font_color", Color("80d8ff"))
 	attr_col.add_child(attr_title)
 
-	var attr_subtitle := Label.new()
-	attr_subtitle.text = "(Variables de Estado)"
-	attr_subtitle.add_theme_font_size_override("font_size", 8)
-	attr_subtitle.add_theme_color_override("font_color", Color("90a4ae"))
-	attr_col.add_child(attr_subtitle)
-
 	attr_slots_vbox = VBoxContainer.new()
-	attr_slots_vbox.add_theme_constant_override("separation", 4)
+	attr_slots_vbox.add_theme_constant_override("separation", 3)
 	attr_col.add_child(attr_slots_vbox)
 
 	# Columna Derecha: Métodos
@@ -520,24 +466,18 @@ func _build_screen_game() -> void:
 	bp_columns.add_child(meth_col)
 
 	var meth_title := Label.new()
-	meth_title.text = "# MÉTODOS:"
+	meth_title.text = "# MÉTODOS"
 	meth_title.add_theme_font_size_override("font_size", 10)
 	meth_title.add_theme_color_override("font_color", Color("ffe57f"))
 	meth_col.add_child(meth_title)
 
-	var meth_subtitle := Label.new()
-	meth_subtitle.text = "(Funciones / Acciones)"
-	meth_subtitle.add_theme_font_size_override("font_size", 8)
-	meth_subtitle.add_theme_color_override("font_color", Color("90a4ae"))
-	meth_col.add_child(meth_subtitle)
-
 	meth_slots_vbox = VBoxContainer.new()
-	meth_slots_vbox.add_theme_constant_override("separation", 4)
+	meth_slots_vbox.add_theme_constant_override("separation", 3)
 	meth_col.add_child(meth_slots_vbox)
 
-	# Banco de Componentes Disponibles (Mezclados en Grid de 2 columnas)
+	# Banco de Componentes Disponibles
 	var bank_header := Label.new()
-	bank_header.text = "Banco de Componentes (Toca un componente para asignarlo):"
+	bank_header.text = "Banco de Componentes:"
 	bank_header.add_theme_font_size_override("font_size", 10)
 	bank_header.add_theme_color_override("font_color", Color("e2e8f0"))
 	main_vbox.add_child(bank_header)
@@ -546,142 +486,46 @@ func _build_screen_game() -> void:
 	bank_grid.columns = 2
 	bank_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bank_grid.add_theme_constant_override("h_separation", 6)
-	bank_grid.add_theme_constant_override("v_separation", 4)
+	bank_grid.add_theme_constant_override("v_separation", 3)
 	main_vbox.add_child(bank_grid)
 
-	# Mini-diálogo de selección de destino (¿Atributo o Método?)
-	assign_dialog_panel = PanelContainer.new()
-	var as_style := StyleBoxFlat.new()
-	as_style.bg_color = Color("1a2233")
-	as_style.border_color = Color("40c4ff")
-	as_style.set_border_width_all(2)
-	as_style.set_corner_radius_all(6)
-	assign_dialog_panel.add_theme_stylebox_override("panel", as_style)
-	assign_dialog_panel.visible = false
-	main_vbox.add_child(assign_dialog_panel)
-
-	var as_margin := MarginContainer.new()
-	as_margin.add_theme_constant_override("margin_left", 8)
-	as_margin.add_theme_constant_override("margin_right", 8)
-	as_margin.add_theme_constant_override("margin_top", 6)
-	as_margin.add_theme_constant_override("margin_bottom", 6)
-	assign_dialog_panel.add_child(as_margin)
-
-	var as_vbox := VBoxContainer.new()
-	as_vbox.add_theme_constant_override("separation", 6)
-	as_margin.add_child(as_vbox)
-
-	lbl_assign_prompt = Label.new()
-	lbl_assign_prompt.text = "¿Dónde deseas asignar este componente?"
-	lbl_assign_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl_assign_prompt.add_theme_font_size_override("font_size", 9)
-	lbl_assign_prompt.add_theme_color_override("font_color", Color("eceff1"))
-	lbl_assign_prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	as_vbox.add_child(lbl_assign_prompt)
-
-	var as_hbox := HBoxContainer.new()
-	as_hbox.add_theme_constant_override("separation", 6)
-	as_vbox.add_child(as_hbox)
-
-	btn_to_attr = Button.new()
-	btn_to_attr.text = "⬅️ Como ATRIBUTO"
-	btn_to_attr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_to_attr.custom_minimum_size = Vector2(0, 32)
-	btn_to_attr.add_theme_font_size_override("font_size", 9)
-	btn_to_attr.add_theme_color_override("font_color", Color("80d8ff"))
-	btn_to_attr.pressed.connect(func(): _on_target_section_chosen("ATTR"))
-	as_hbox.add_child(btn_to_attr)
-
-	btn_to_meth = Button.new()
-	btn_to_meth.text = "Como MÉTODO ➡️"
-	btn_to_meth.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_to_meth.custom_minimum_size = Vector2(0, 32)
-	btn_to_meth.add_theme_font_size_override("font_size", 9)
-	btn_to_meth.add_theme_color_override("font_color", Color("ffe57f"))
-	btn_to_meth.pressed.connect(func(): _on_target_section_chosen("METH"))
-	as_hbox.add_child(btn_to_meth)
-
-	btn_cancel_assign = Button.new()
-	btn_cancel_assign.text = "✖"
-	btn_cancel_assign.custom_minimum_size = Vector2(30, 32)
-	btn_cancel_assign.add_theme_font_size_override("font_size", 10)
-	btn_cancel_assign.pressed.connect(func():
-		assign_dialog_panel.visible = false
-		pending_item_to_assign.clear()
-	)
-	as_hbox.add_child(btn_cancel_assign)
-
-	# Botón de Acción Principal e Instrucciones
+	# Pie fijo siempre visible (Acción principal + Barra de estado)
 	btn_instantiate = Button.new()
-	btn_instantiate.text = "🔨 ¡Instanciar Objeto! (Validar Clase)"
-	btn_instantiate.custom_minimum_size = Vector2(0, 40)
-	btn_instantiate.add_theme_font_size_override("font_size", 12)
+	btn_instantiate.name = "BtnInstantiate"
+	btn_instantiate.text = "¡Instanciar Objeto!"
+	style_kenney_button(btn_instantiate, "green", 38.0)
+	btn_instantiate.modulate.a = 0.95
 	btn_instantiate.pressed.connect(_on_instantiate_pressed)
-	main_vbox.add_child(btn_instantiate)
+	game_vbox.add_child(btn_instantiate)
+
+	var status_banner_panel := PanelContainer.new()
+	status_banner_panel.name = "StatusBanner"
+	var sb_status := STYLE_PANEL_INNER.duplicate() as StyleBoxTexture
+	if sb_status:
+		sb_status.modulate_color = Color(0.16, 0.22, 0.32, 0.88)
+		status_banner_panel.add_theme_stylebox_override("panel", sb_status)
+	else:
+		status_banner_panel.add_theme_stylebox_override("panel", STYLE_PANEL_INNER)
+	game_vbox.add_child(status_banner_panel)
 
 	status_banner_lbl = Label.new()
-	status_banner_lbl.text = "Asigna atributos a la izquierda y métodos a la derecha."
+	status_banner_lbl.text = "Toca atributos (azul) a la izquierda y métodos (amarillo) a la derecha."
 	status_banner_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status_banner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_banner_lbl.add_theme_font_size_override("font_size", 9)
 	status_banner_lbl.add_theme_color_override("font_color", Color("90a4ae"))
-	main_vbox.add_child(status_banner_lbl)
+	status_banner_panel.add_child(status_banner_lbl)
+	lock_dynamic_label_box(status_banner_lbl, status_banner_panel, 36.0, 10, 7, 2.0, 0.0, true, true, 4.0)
+	stabilize_hud_label(hud_round_lbl, 56.0)
+	stabilize_hud_label(hud_timer_lbl, 26.0)
+	stabilize_hud_label(hud_score_lbl, 44.0)
+	update_aula101_hearts_bar(hud_hearts_bar, current_lives, max_lives, hud_lives_lbl, 14.0)
 
-# ── ScreenPause: Pausa didáctica ──
+# ── ScreenPause: Pausa universal manejada por MiniGameFlowTemplate ──
 func _build_screen_pause() -> void:
 	screen_pause = Control.new()
-	screen_pause.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen_pause.visible = false
 	add_child(screen_pause)
-
-	var pause_bg := ColorRect.new()
-	pause_bg.color = Color(0.02, 0.04, 0.08, 0.90)
-	pause_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	screen_pause.add_child(pause_bg)
-
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	screen_pause.add_child(center)
-
-	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(240, 200)
-	box.add_theme_constant_override("separation", 10)
-	center.add_child(box)
-
-	var title := Label.new()
-	title.text = "⏸️ Partida en Pausa"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 18)
-	title.add_theme_color_override("font_color", Color("ffd54f"))
-	box.add_child(title)
-
-	var desc := Label.new()
-	desc.text = "La mesa de forja está detenida."
-	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc.add_theme_font_size_override("font_size", 11)
-	desc.add_theme_color_override("font_color", Color("b0bec5"))
-	box.add_child(desc)
-
-	btn_pause_resume = Button.new()
-	btn_pause_resume.text = "▶ Continuar Forja"
-	btn_pause_resume.custom_minimum_size = Vector2(0, 38)
-	btn_pause_resume.pressed.connect(_on_resume_pressed)
-	box.add_child(btn_pause_resume)
-
-	btn_pause_restart = Button.new()
-	btn_pause_restart.text = "🔄 Reiniciar Nivel"
-	btn_pause_restart.custom_minimum_size = Vector2(0, 36)
-	btn_pause_restart.pressed.connect(func():
-		_set_game_paused(false)
-		start_game(selected_diff)
-	)
-	box.add_child(btn_pause_restart)
-
-	btn_pause_back = Button.new()
-	btn_pause_back.text = "🚪 Volver al Salón 101"
-	btn_pause_back.custom_minimum_size = Vector2(0, 36)
-	btn_pause_back.pressed.connect(_on_back_pressed)
-	box.add_child(btn_pause_back)
 
 # ── ScreenVictory: Pantalla Final de Victoria (Con Botones Volver a Jugar Misma Dificultad y Volver al Aula) ──
 func _build_screen_victory() -> void:
@@ -809,19 +653,6 @@ func _build_screen_game_over() -> void:
 func _select_difficulty(diff: String) -> void:
 	selected_diff = diff
 	diff_config = HeroForgeData.get_difficulty_config(selected_diff)
-
-	var slots_text: String = "%d Atributo(s) y %d Método(s)" % [diff_config.required_slots, diff_config.required_slots]
-	var text_summary: String = "⚔️ %s:\n• %d Personajes a Forjar\n• %s por personaje\n• %d Vidas  |  %ds por Ronda\n• %d Puntos Totales (%d pts/héroe)\n• Otorga: %s" % [
-		diff_config.name,
-		diff_config.characters_count,
-		slots_text,
-		diff_config.max_lives,
-		int(diff_config.round_time),
-		diff_config.total_score,
-		diff_config.points_per_char,
-		"⭐".repeat(diff_config.stars)
-	]
-	lbl_diff_summary.text = text_summary
 	if AudioManager and AudioManager.has_method("play_click"):
 		AudioManager.play_click()
 
@@ -836,6 +667,8 @@ func _on_start_pressed() -> void:
 
 func start_game(difficulty: String = "NORMAL") -> void:
 	super.start_game(difficulty)
+	is_victory_shown = false
+	is_transitioning_hero = false
 	selected_diff = difficulty
 	diff_config = HeroForgeData.get_difficulty_config(selected_diff)
 
@@ -860,12 +693,12 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	_load_class_challenge(0)
 
 func _update_hud() -> void:
-	if hud_lives_lbl:
-		hud_lives_lbl.text = "❤️".repeat(maxi(0, current_lives))
+	update_aula101_hearts_bar(hud_hearts_bar, current_lives, max_lives, hud_lives_lbl, 14.0)
 	if hud_score_lbl:
 		hud_score_lbl.text = "%d pts" % total_score
 	if hud_timer_lbl:
-		hud_timer_lbl.text = "⏱️ %ds" % int(ceil(time_left))
+		hud_timer_lbl.text = "%ds" % int(ceil(time_left))
+		hud_timer_lbl.modulate = Color("ff3366") if time_left <= 10.0 else Color.WHITE
 	if timer_progress:
 		timer_progress.max_value = round_time
 		timer_progress.value = time_left
@@ -886,6 +719,7 @@ func _load_class_challenge(index: int) -> void:
 		_handle_victory()
 		return
 
+	is_transitioning_hero = false
 	current_hero = hero_classes_queue[index]
 	assigned_attributes.clear()
 	assigned_attributes.resize(required_slots)
@@ -904,13 +738,68 @@ func _load_class_challenge(index: int) -> void:
 	current_tier_data = bank_pack.tier_data
 	selected_target_slot.clear()
 	pending_item_to_assign.clear()
-	if assign_dialog_panel:
-		assign_dialog_panel.visible = false
 
 	# Actualizar cabecera de la clase con el concepto del tier
-	hero_badge_lbl.text = "class %s:  [%s]" % [current_hero.class_name, current_hero.avatar_symbol]
+	hero_badge_lbl.text = "class %s:" % current_hero.class_name
 	hero_badge_lbl.add_theme_color_override("font_color", current_hero.badge_color)
 	hero_concept_lbl.text = current_tier_data.concept
+
+	# Personalizar colores y apariencia del héroe actual (7 clases de HeroForgeData)
+	var hero_color: Color = current_hero.badge_color
+	mod_aura.modulate = hero_color
+	mod_armor.modulate = hero_color
+	mod_base.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+	match current_hero.id:
+		"mago_igneo":
+			mod_base.modulate = Color(1.0, 0.92, 0.88)
+			mod_armor.modulate = Color("ff5722")
+			mod_helmet.modulate = Color("ff7043")
+			mod_weapon.modulate = Color("ffab91")
+		"guerrero_tanque":
+			mod_base.modulate = Color(0.95, 0.96, 1.0)
+			mod_armor.modulate = Color("ffa000")
+			mod_helmet.modulate = Color("ffc107")
+			mod_weapon.modulate = Color("ffe082")
+		"arquero_sombra":
+			mod_base.modulate = Color(0.88, 0.98, 0.92)
+			mod_armor.modulate = Color("2e7d32")
+			mod_helmet.modulate = Color("43a047")
+			mod_weapon.modulate = Color("a5d6a7")
+		"robot_reparador":
+			mod_base.modulate = Color(0.82, 0.96, 1.0)
+			mod_armor.modulate = Color("00b8d4")
+			mod_helmet.modulate = Color("00e5ff")
+			mod_weapon.modulate = Color("80d8ff")
+		"nave_exploradora":
+			mod_base.modulate = Color(0.90, 0.88, 1.0)
+			mod_armor.modulate = Color("7c4dff")
+			mod_helmet.modulate = Color("b388ff")
+			mod_weapon.modulate = Color("e040fb")
+		"alquimista_pociones":
+			mod_base.modulate = Color(0.96, 0.90, 1.0)
+			mod_armor.modulate = Color("ab47bc")
+			mod_helmet.modulate = Color("ce93d8")
+			mod_weapon.modulate = Color("69f0ae")
+		"hacker_ciberespacio":
+			mod_base.modulate = Color(0.80, 1.0, 0.96)
+			mod_armor.modulate = Color("00acc1")
+			mod_helmet.modulate = Color("26c6da")
+			mod_weapon.modulate = Color("69f0ae")
+		_:
+			mod_helmet.modulate = hero_color
+			mod_weapon.modulate = hero_color
+
+	if is_instance_valid(hero_stage_panel):
+		var sb_stage := STYLE_PANEL_INNER.duplicate() as StyleBoxTexture
+		if sb_stage:
+			sb_stage.modulate_color = hero_color.darkened(0.62)
+			sb_stage.modulate_color.a = 0.92
+			hero_stage_panel.add_theme_stylebox_override("panel", sb_stage)
+
+	if is_instance_valid(hero_crest_lbl):
+		hero_crest_lbl.text = current_hero.avatar_symbol
+		hero_crest_lbl.modulate.a = 0.60
 
 	# Reconstruir slots según required_slots (1, 2 o 3)
 	_rebuild_slot_buttons()
@@ -918,12 +807,12 @@ func _load_class_challenge(index: int) -> void:
 	_render_component_bank()
 
 	btn_instantiate.disabled = false
-	btn_instantiate.text = "🔨 ¡Instanciar Objeto! (Validar Clase)"
+	btn_instantiate.text = "¡Instanciar Objeto!"
 	if btn_instantiate.pressed.is_connected(_handle_victory):
 		btn_instantiate.pressed.disconnect(_handle_victory)
 	if not btn_instantiate.pressed.is_connected(_on_instantiate_pressed):
 		btn_instantiate.pressed.connect(_on_instantiate_pressed)
-	_set_status("Asigna %d Atributo(s) a la izquierda y %d Método(s) a la derecha." % [required_slots, required_slots], Color("90a4ae"))
+	_set_status("Toca atributos (azul) a la izquierda y métodos (amarillo) a la derecha.", Color("90a4ae"))
 	_update_hud()
 
 func _rebuild_slot_buttons() -> void:
@@ -939,78 +828,213 @@ func _rebuild_slot_buttons() -> void:
 		var slot_idx: int = i
 		var btn_attr := Button.new()
 		btn_attr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn_attr.custom_minimum_size = Vector2(0, 36)
+		btn_attr.custom_minimum_size = Vector2(0, 30)
 		btn_attr.add_theme_font_size_override("font_size", 9)
 		btn_attr.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		btn_attr.set_meta("kenney_custom_managed", true)
 		btn_attr.pressed.connect(func(): _on_slot_button_pressed("ATTR", slot_idx))
 		attr_slots_vbox.add_child(btn_attr)
+		lock_dynamic_button_box(btn_attr, 30.0, 10, 7, true, 152.0)
 		attr_slot_buttons.append(btn_attr)
 
 		var btn_meth := Button.new()
 		btn_meth.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn_meth.custom_minimum_size = Vector2(0, 36)
+		btn_meth.custom_minimum_size = Vector2(0, 30)
 		btn_meth.add_theme_font_size_override("font_size", 9)
 		btn_meth.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		btn_meth.set_meta("kenney_custom_managed", true)
 		btn_meth.pressed.connect(func(): _on_slot_button_pressed("METH", slot_idx))
 		meth_slots_vbox.add_child(btn_meth)
+		lock_dynamic_button_box(btn_meth, 30.0, 10, 7, true, 152.0)
 		meth_slot_buttons.append(btn_meth)
 
+func _apply_accessibility_mode(is_active: bool) -> void:
+	super._apply_accessibility_mode(is_active)
+	if not is_active and is_inside_tree():
+		if is_instance_valid(attr_slots_vbox) and required_slots > 0 and assigned_attributes.size() == required_slots:
+			_update_slot_displays()
+		if is_instance_valid(bank_grid) and bank_all_components.size() > 0:
+			_render_component_bank()
+
+func _create_mod_layer(tex: Texture2D, initial_vis: bool) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.texture = tex
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tr.visible = initial_vis
+	hero_modular_box.add_child(tr)
+	return tr
+
+func _update_modular_character(completed_pairs: int) -> void:
+	if not is_instance_valid(hero_modular_box):
+		return
+
+	mod_base.visible = true
+	var crest = hero_modular_box.get_node_or_null("HeroCrestLabel")
+
+	if required_slots <= 1:
+		var is_done: bool = completed_pairs >= 1
+		mod_armor.visible = is_done
+		mod_helmet.visible = is_done
+		mod_weapon.visible = is_done
+		mod_aura.visible = is_done
+		if crest: crest.modulate.a = 0.95 if is_done else 0.35
+	elif required_slots == 2:
+		mod_armor.visible = (completed_pairs >= 1)
+		mod_helmet.visible = (completed_pairs >= 2)
+		mod_weapon.visible = (completed_pairs >= 2)
+		mod_aura.visible = (completed_pairs >= 2)
+		if crest: crest.modulate.a = 0.95 if completed_pairs >= 2 else (0.65 if completed_pairs == 1 else 0.35)
+	else:
+		mod_armor.visible = (completed_pairs >= 1)
+		mod_helmet.visible = (completed_pairs >= 2)
+		mod_weapon.visible = (completed_pairs >= 3)
+		mod_aura.visible = (completed_pairs >= 3)
+		if crest: crest.modulate.a = 0.95 if completed_pairs >= 3 else (0.45 + 0.2 * completed_pairs)
+
+	if lbl_pairs_status:
+		lbl_pairs_status.text = "Pares POO: %d/%d" % [completed_pairs, required_slots]
+		if completed_pairs >= required_slots:
+			lbl_pairs_status.modulate = Color("00e676")
+			var tw := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(hero_modular_box, "scale", Vector2(1.12, 1.12), 0.15)
+			tw.tween_property(hero_modular_box, "scale", Vector2.ONE, 0.2)
+		else:
+			lbl_pairs_status.modulate = Color("ffd54f")
+
 func _update_slot_displays() -> void:
+	var filled_attrs: int = 0
+	var filled_meths: int = 0
+
 	for i in range(required_slots):
 		if i >= attr_slot_buttons.size() or i >= meth_slot_buttons.size():
 			continue
 
 		var attr_btn := attr_slot_buttons[i]
-		attr_btn.remove_theme_stylebox_override("normal")
 		var attr_item = assigned_attributes[i]
 		if attr_item != null:
+			filled_attrs += 1
 			attr_btn.text = "✓ " + attr_item.text
-			attr_btn.add_theme_color_override("font_color", Color("80d8ff"))
-		elif not selected_target_slot.is_empty() and selected_target_slot.get("section", "") == "ATTR" and selected_target_slot.get("index", -1) == i:
-			attr_btn.text = "[ Seleccionar Atributo %d ]" % (i + 1)
-			attr_btn.add_theme_color_override("font_color", Color("ffd54f"))
+			attr_btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("blue_norm", STYLE_BTN_BLUE_NORM))
+			attr_btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("blue_hov", STYLE_BTN_BLUE_HOV))
+			attr_btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("blue_press", STYLE_BTN_BLUE_PRESS))
+			attr_btn.add_theme_color_override("font_color", Color.WHITE)
+			attr_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 		else:
-			attr_btn.text = "[ + Atributo %d ]" % (i + 1)
-			attr_btn.add_theme_color_override("font_color", Color("78909c"))
+			attr_btn.text = "+ Atributo %d" % (i + 1)
+			attr_btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("neu_norm", STYLE_BTN_NEUTRAL_NORM))
+			attr_btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("neu_hov", STYLE_BTN_NEUTRAL_HOV))
+			attr_btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("neu_press", STYLE_BTN_NEUTRAL_PRESS))
+			attr_btn.add_theme_color_override("font_color", Color(0.20, 0.45, 0.75))
+			attr_btn.add_theme_color_override("font_hover_color", Color(0.10, 0.35, 0.65))
+		fit_control_text_now(attr_btn)
 
 		var meth_btn := meth_slot_buttons[i]
-		meth_btn.remove_theme_stylebox_override("normal")
 		var meth_item = assigned_methods[i]
 		if meth_item != null:
+			filled_meths += 1
 			meth_btn.text = "✓ " + meth_item.text
-			meth_btn.add_theme_color_override("font_color", Color("ffea00"))
-		elif not selected_target_slot.is_empty() and selected_target_slot.get("section", "") == "METH" and selected_target_slot.get("index", -1) == i:
-			meth_btn.text = "[ Seleccionar Método %d ]" % (i + 1)
-			meth_btn.add_theme_color_override("font_color", Color("ffd54f"))
+			meth_btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("yel_norm", STYLE_BTN_YELLOW_NORM))
+			meth_btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("yel_hov", STYLE_BTN_YELLOW_HOV))
+			meth_btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("yel_press", STYLE_BTN_YELLOW_PRESS))
+			meth_btn.add_theme_color_override("font_color", Color(0.24, 0.18, 0.02, 1.0))
+			meth_btn.add_theme_color_override("font_hover_color", Color(0.34, 0.24, 0.02, 1.0))
 		else:
-			meth_btn.text = "[ + Método %d ]" % (i + 1)
-			meth_btn.add_theme_color_override("font_color", Color("78909c"))
+			meth_btn.text = "+ Método %d" % (i + 1)
+			meth_btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("neu_norm", STYLE_BTN_NEUTRAL_NORM))
+			meth_btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("neu_hov", STYLE_BTN_NEUTRAL_HOV))
+			meth_btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("neu_press", STYLE_BTN_NEUTRAL_PRESS))
+			meth_btn.add_theme_color_override("font_color", Color(0.70, 0.55, 0.10))
+			meth_btn.add_theme_color_override("font_hover_color", Color(0.60, 0.45, 0.05))
+		fit_control_text_now(meth_btn)
+
+	var completed_pairs: int = mini(filled_attrs, filled_meths)
+	_update_modular_character(completed_pairs)
 
 func _render_component_bank() -> void:
 	for child in bank_grid.get_children():
 		child.queue_free()
 
-	# Renderizar todos los componentes del banco de forma unificada y mezclada
-	for i in range(bank_all_components.size()):
-		var item: Dictionary = bank_all_components[i]
-		var btn := Button.new()
-		btn.text = item.text
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.custom_minimum_size = Vector2(0, 36)
-		btn.add_theme_font_size_override("font_size", 9)
-		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn.add_theme_color_override("font_color", Color("eceff1")) # Color neutral para retar distinción
-
-		var is_assigned: bool = _is_item_assigned(item.id)
-		btn.disabled = is_assigned
-		if is_assigned:
-			btn.modulate = Color(0.35, 0.35, 0.35, 0.5)
+	# Separar en atributos (izq) y métodos (der) para preservar el esquema por columnas
+	var attrs: Array[Dictionary] = []
+	var meths: Array[Dictionary] = []
+	for item in bank_all_components:
+		var is_attr: bool = (item.get("expected_section", "") == "ATTR" or item.get("type", 0) == HeroForgeData.ComponentType.ATTRIBUTE)
+		if is_attr:
+			attrs.append(item)
 		else:
-			btn.modulate = Color.WHITE
+			meths.append(item)
 
-		var captured_item: Dictionary = item
-		btn.pressed.connect(func(): _on_bank_item_clicked(captured_item))
-		bank_grid.add_child(btn)
+	var max_rows: int = maxi(attrs.size(), meths.size())
+	for r in range(max_rows):
+		# Columna 0: Atributos en Azul
+		if r < attrs.size():
+			var item: Dictionary = attrs[r]
+			var btn := Button.new()
+			btn.text = item.text
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn.custom_minimum_size = Vector2(0, 30)
+			btn.add_theme_font_size_override("font_size", 9)
+			btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			btn.set_meta("kenney_custom_managed", true)
+
+			btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("blue_norm", STYLE_BTN_BLUE_NORM))
+			btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("blue_hov", STYLE_BTN_BLUE_HOV))
+			btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("blue_press", STYLE_BTN_BLUE_PRESS))
+			btn.add_theme_color_override("font_color", Color.WHITE)
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
+
+			var is_assigned: bool = _is_item_assigned(item.id)
+			btn.disabled = is_assigned
+			if is_assigned:
+				btn.modulate = Color(0.4, 0.4, 0.4, 0.35)
+			else:
+				btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+			var cap_item: Dictionary = item
+			btn.pressed.connect(func(): _on_bank_item_clicked(cap_item))
+			bank_grid.add_child(btn)
+			lock_dynamic_button_box(btn, 30.0, 10, 7, true, 154.0)
+		else:
+			var spacer := Control.new()
+			spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			bank_grid.add_child(spacer)
+
+		# Columna 1: Métodos en Amarillo
+		if r < meths.size():
+			var item: Dictionary = meths[r]
+			var btn := Button.new()
+			btn.text = item.text
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn.custom_minimum_size = Vector2(0, 30)
+			btn.add_theme_font_size_override("font_size", 9)
+			btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			btn.set_meta("kenney_custom_managed", true)
+
+			btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("yel_norm", STYLE_BTN_YELLOW_NORM))
+			btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("yel_hov", STYLE_BTN_YELLOW_HOV))
+			btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("yel_press", STYLE_BTN_YELLOW_PRESS))
+			btn.add_theme_color_override("font_color", Color(0.24, 0.18, 0.02, 1.0))
+			btn.add_theme_color_override("font_hover_color", Color(0.34, 0.24, 0.02, 1.0))
+
+			var is_assigned: bool = _is_item_assigned(item.id)
+			btn.disabled = is_assigned
+			if is_assigned:
+				btn.modulate = Color(0.4, 0.4, 0.4, 0.35)
+			else:
+				btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+			var cap_item: Dictionary = item
+			btn.pressed.connect(func(): _on_bank_item_clicked(cap_item))
+			bank_grid.add_child(btn)
+			lock_dynamic_button_box(btn, 30.0, 10, 7, true, 154.0)
+		else:
+			var spacer := Control.new()
+			spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			bank_grid.add_child(spacer)
 
 func _is_item_assigned(item_id: String) -> bool:
 	for slot in assigned_attributes:
@@ -1039,51 +1063,17 @@ func _on_slot_button_pressed(section: String, slot_index: int) -> void:
 		is_filled = true
 
 	if is_filled:
-		# FA-02.02: Si ya estaba lleno, remover el elemento
+		# Remover el elemento y devolverlo al banco inmediatamente
 		_on_component_removed(section, slot_index)
-	else:
-		# Seleccionar slot destino para asignación rápida
-		if not selected_target_slot.is_empty() and selected_target_slot.get("section") == section and selected_target_slot.get("index") == slot_index:
-			selected_target_slot.clear()
-			_set_status("Selección cancelada. Toca un componente del banco para asignarlo.", Color("90a4ae"))
-		else:
-			selected_target_slot = { "section": section, "index": slot_index }
-			_set_status("Ranura de %s %d seleccionada. Toca un componente del banco para asignarlo aquí." % [
-				"Atributo" if section == "ATTR" else "Método",
-				slot_index + 1
-			], Color("ffd54f"))
-		if AudioManager and AudioManager.has_method("play_click"):
-			AudioManager.play_click()
-		_update_slot_displays()
 
 func _on_bank_item_clicked(item: Dictionary) -> void:
 	if is_game_paused or not is_timer_running:
 		return
 
-	# Si el alumno seleccionó previamente un slot en la plantilla, asignar directamente ahí
-	if not selected_target_slot.is_empty():
-		var sec: String = selected_target_slot.get("section", "ATTR")
-		var idx: int = selected_target_slot.get("index", 0)
-		selected_target_slot.clear()
-		_assign_item_to_slot(item, sec, idx)
-		return
+	_play_sfx_select()
 
-	# Si no seleccionó slot previo, mostrar selector de columna (¿Atributo o Método?)
-	pending_item_to_assign = item
-	lbl_assign_prompt.text = "¿Dónde deseas asignar \"%s\"?" % item.text
-	assign_dialog_panel.visible = true
-	if AudioManager and AudioManager.has_method("play_click"):
-		AudioManager.play_click()
-
-func _on_target_section_chosen(section: String) -> void:
-	assign_dialog_panel.visible = false
-	if pending_item_to_assign.is_empty():
-		return
-
-	var item: Dictionary = pending_item_to_assign
-	pending_item_to_assign = {}
-
-	if section == "ATTR":
+	var is_attr: bool = (item.get("expected_section", "") == "ATTR" or item.get("type", 0) == HeroForgeData.ComponentType.ATTRIBUTE)
+	if is_attr:
 		var free_slot: int = -1
 		for i in range(required_slots):
 			if assigned_attributes[i] == null:
@@ -1092,10 +1082,10 @@ func _on_target_section_chosen(section: String) -> void:
 		if free_slot != -1:
 			_assign_item_to_slot(item, "ATTR", free_slot)
 		else:
-			_set_status("⚠️ La columna de ATRIBUTOS está llena (%d/%d). Toca uno a la izquierda para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
-			if AudioManager and AudioManager.has_method("play_click"):
-				AudioManager.play_click()
-	elif section == "METH":
+			_set_status("⚠️ Ranuras de ATRIBUTOS llenas (%d/%d). Toca uno asignado para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
+			if AudioManager and AudioManager.has_method("play_error"):
+				AudioManager.play_error()
+	else:
 		var free_slot: int = -1
 		for i in range(required_slots):
 			if assigned_methods[i] == null:
@@ -1104,9 +1094,9 @@ func _on_target_section_chosen(section: String) -> void:
 		if free_slot != -1:
 			_assign_item_to_slot(item, "METH", free_slot)
 		else:
-			_set_status("⚠️ La columna de MÉTODOS está llena (%d/%d). Toca uno a la derecha para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
-			if AudioManager and AudioManager.has_method("play_click"):
-				AudioManager.play_click()
+			_set_status("⚠️ Ranuras de MÉTODOS llenas (%d/%d). Toca uno asignado para quitarlo." % [required_slots, required_slots], Color("ffb74d"))
+			if AudioManager and AudioManager.has_method("play_error"):
+				AudioManager.play_error()
 
 func _assign_item_to_slot(item: Dictionary, section: String, slot_idx: int) -> void:
 	if section == "ATTR" and slot_idx < assigned_attributes.size():
@@ -1144,7 +1134,7 @@ func _on_component_removed(section: String, slot_index: int) -> void:
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _on_instantiate_pressed() -> void:
-	if is_game_paused or not is_timer_running:
+	if is_game_paused or not is_timer_running or is_transitioning_hero or is_victory_shown:
 		return
 
 	# FA-03.01: Intento de instanciación con plantilla incompleta
@@ -1169,12 +1159,11 @@ func _on_instantiate_pressed() -> void:
 	_validate_class()
 
 func _apply_error_style(btn: Button) -> void:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.28, 0.08, 0.08, 0.95)
-	sb.border_color = Color("ff5252")
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(4)
-	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("normal", STYLE_BTN_RED_NORM)
+	btn.add_theme_stylebox_override("hover", STYLE_BTN_RED_HOV)
+	btn.add_theme_stylebox_override("pressed", STYLE_BTN_RED_PRESS)
+	btn.add_theme_color_override("font_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
 
 func _validate_class() -> void:
 	var error_attr_indices: Array[int] = []
@@ -1230,6 +1219,9 @@ func _validate_class() -> void:
 	_on_hero_instantiated_success()
 
 func _on_hero_instantiated_success() -> void:
+	if is_transitioning_hero or is_victory_shown:
+		return
+	is_transitioning_hero = true
 	is_timer_running = false
 
 	if AudioManager:
@@ -1262,7 +1254,9 @@ func _on_hero_instantiated_success() -> void:
 
 		# Pausa breve para celebrar y mostrar la Pantalla Final de Victoria
 		await get_tree().create_timer(0.6).timeout
-		if screen_game.visible:
+		if not is_instance_valid(self) or not is_inside_tree():
+			return
+		if not is_victory_shown and screen_game.visible:
 			_handle_victory()
 	else:
 		btn_instantiate.disabled = true
@@ -1271,6 +1265,8 @@ func _on_hero_instantiated_success() -> void:
 
 		# Transición fluida directa en la misma mesa de forja sin interrumpir con modales
 		await get_tree().create_timer(0.8).timeout
+		if not is_instance_valid(self) or not is_inside_tree() or not screen_game.visible or is_victory_shown:
+			return
 		current_hero_index += 1
 		_load_class_challenge(current_hero_index)
 
@@ -1306,7 +1302,7 @@ func _on_pause_pressed() -> void:
 	if AudioManager and AudioManager.has_method("play_click"):
 		AudioManager.play_click()
 	_set_game_paused(true)
-	_show_screen(screen_pause)
+	flow_template.show_pause()
 
 func _on_resume_pressed() -> void:
 	if AudioManager and AudioManager.has_method("play_click"):
@@ -1328,56 +1324,66 @@ func _show_game_over(reason: String) -> void:
 	if EventBus.has_signal("game_over"):
 		EventBus.emit_signal("game_over", "heroforge")
 
-	lbl_gameover_reason.text = reason
-	_show_screen(screen_game_over)
+	finish_game(false, total_score, 0, reason)
+	if flow_template:
+		flow_template.show_game_over(reason, total_score)
+	else:
+		lbl_gameover_reason.text = reason
+		_show_screen(screen_game_over)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # FN-07: PANTALLA FINAL DE VICTORIA Y PERSISTENCIA
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _handle_victory() -> void:
+	if is_victory_shown:
+		return
+	is_victory_shown = true
+	is_transitioning_hero = false
 	is_timer_running = false
 	_set_game_paused(false)
+	if is_instance_valid(btn_instantiate):
+		btn_instantiate.disabled = true
 
 	# Puntajes fijos y estrellas fijas estrictamente según dificultad (TSP / Especificación)
 	var final_score: int = diff_config.get("total_score", total_score)
 	var stars: int = diff_config.get("stars", target_stars)
 	var diff_name: String = diff_config.get("name", selected_diff)
 
-	if btn_victory_restart:
-		btn_victory_restart.text = "🔄 Volver a Jugar (%s)" % diff_name
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = final_score > prev_high
 
-	if lbl_victory_stats:
-		lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d pts\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
-			diff_name,
-			hero_classes_queue.size(),
-			hero_classes_queue.size(),
-			final_score,
-			"⭐".repeat(stars),
-			current_lives
-		]
+	if has_method("finish_game"):
+		finish_game(true, final_score, stars, "¡Mesa de Forja Superada con Éxito!")
+	elif StateManager and StateManager.has_method("record_minigame_result"):
+		StateManager.record_minigame_result("heroforge", {
+			"success": true,
+			"score": final_score,
+			"stars": stars
+		})
 
-	# Mostrar la pantalla de victoria INMEDIATAMENTE
-	_show_screen(screen_victory)
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else final_score
+		flow_template.show_victory(final_score, stars, total_accum, is_record, "¡HÉROES FORJADOS!")
+	else:
+		if btn_victory_restart:
+			btn_victory_restart.text = "🔄 Volver a Jugar (%s)" % diff_name
+		if lbl_victory_stats:
+			lbl_victory_stats.text = "⚔️ Dificultad: %s\n🎯 Héroes Forjados: %d/%d\n🏆 Puntos Obtenidos: %d pts\n⭐ Estrellas Ganadas: %s\n❤️ Vidas Restantes: %d" % [
+				diff_name,
+				hero_classes_queue.size(),
+				hero_classes_queue.size(),
+				final_score,
+				"⭐".repeat(stars),
+				current_lives
+			]
+		_show_screen(screen_victory)
 
 	if AudioManager:
 		if AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("victory")
 		elif AudioManager.has_method("play_success"):
 			AudioManager.play_success()
-
-	# Persistir progreso de forma resiliente
-	if has_method("finish_game"):
-		finish_game(true, final_score, stars, "¡Mesa de Forja Superada con Éxito!")
-	elif StateManager:
-		if StateManager.has_method("record_minigame_result"):
-			StateManager.record_minigame_result("heroforge", {
-				"success": true,
-				"score": final_score,
-				"stars": stars
-			})
-		elif StateManager.has_method("update_minigame_progress"):
-			StateManager.update_minigame_progress("heroforge", final_score, stars)
 
 	if EventBus and EventBus.has_signal("progress_saved"):
 		EventBus.emit_signal("progress_saved", final_score)

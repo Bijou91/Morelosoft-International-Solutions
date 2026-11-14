@@ -72,6 +72,7 @@ var is_timer_active: bool = false
 var is_game_paused: bool = false
 var current_match_generation: int = 0
 var total_score: int = 0
+var flow_template: Control
 
 func _ready() -> void:
 	super._ready()
@@ -81,6 +82,11 @@ func _ready() -> void:
 	subject_name = "Sistemas Operativos y Linux"
 
 	_connect_signals()
+	lock_dynamic_label_box(teacher_label, teacher_label.get_parent() as Control, 80.0, 11, 7, 4.0, 2.0, true, true, 4.0)
+	lock_dynamic_label_box(terminal_prompt_label, null, 17.0, 10, 7, 0.0, 0.0, false, true)
+	stabilize_hud_label(time_label, 42.0)
+	stabilize_hud_label(challenge_label, 68.0)
+	_build_flow_template()
 	_hide_all_modals()
 	_show_tutorial()
 
@@ -126,8 +132,49 @@ func _process(delta: float) -> void:
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Exploración de Archivos",
+		"subtitle": "CU-17 · Sistema de Archivos Linux",
+		"classroom_path": "res://scenes/classroom/SistemaOperativoLinux.tscn",
+		"objective": "Usa comandos de Linux para explorar directorios y documentos hasta localizar la FLAG oculta.",
+		"rules": [
+			"1. Lee la situación planteada por el profesor en la parte superior.",
+			"2. Utiliza los botones de comandos (ls, cd, cat, head, tail, etc.) abajo.",
+			"3. Al elegir 'cd' o 'cat', selecciona el archivo o carpeta deseada.",
+			"4. Escribe la flag exacta Flag{...} en SUBMIT FLAG y presiona ENVIAR. Error o tiempo agotado = -1 vida."
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: 3 vidas · 60s · 250 puntos (Exploración guiada)"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: 2 vidas · 30s · 500 puntos (Archivos ocultos)"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: 1 vida · 40s · 750 puntos (Rutas complejas y permisos)"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			_on_difficulty_chosen(diff),
+		"on_back": func():
+			_exit_to_classroom(),
+		"on_resume": func():
+			_resume_game(),
+		"on_restart": func():
+			_restart_match()
+	})
+
+
 func _show_tutorial() -> void:
 	_hide_all_modals()
+	if flow_template:
+		flow_template.show_instructions()
+		return
 	modal_tutorial.visible = true
 	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
 
@@ -156,6 +203,9 @@ REGLAS DE PARTIDA:
 func _show_difficulty_selection() -> void:
 	AudioManager.play_click()
 	_hide_all_modals()
+	if flow_template:
+		flow_template.show_difficulty()
+		return
 	modal_difficulty.visible = true
 	teacher_label.text = "Selecciona el nivel de dificultad para iniciar el desafío."
 	terminal_prompt_label.text = "user@is-pixelverse:~$ [SELECCIÓN DIFICULTAD]"
@@ -184,6 +234,8 @@ func _on_difficulty_chosen(diff: String) -> void:
 func _start_match() -> void:
 	AudioManager.play_click()
 	_hide_all_modals()
+	if flow_template:
+		flow_template.hide_all()
 	super.start_game(current_difficulty)
 
 	current_match_generation += 1
@@ -512,15 +564,21 @@ func _deduct_life(reason: String) -> void:
 
 func _handle_game_over(reason: String) -> void:
 	is_timer_active = false
+	_close_picker()
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 	finish_game(false, 0, 0, "Partida finalizada: " + reason)
+
+	if flow_template:
+		flow_template.show_game_over("Causa: %s\nDificultad: %s" % [reason, current_difficulty], 0)
+		return
 
 	game_over_desc.text = "Causa: %s.\nTe has quedado sin vidas en dificultad %s.\n(No se registrará puntuación según el reglamento)." % [reason, current_difficulty]
 	modal_game_over.visible = true
 
 func _handle_victory() -> void:
 	_hide_all_modals()
+	_close_picker()
 	is_timer_active = false
 	AudioManager.play_success()
 
@@ -533,7 +591,14 @@ func _handle_victory() -> void:
 	elif current_lives >= 2:
 		stars = 2
 
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = total_score > prev_high
 	finish_game(true, total_score, stars, "Exploración de sistema de archivos superada con éxito")
+
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else total_score
+		flow_template.show_victory(total_score, stars, total_accum, is_record, "¡FLAG LOCALIZADA!")
+		return
 
 	victory_summary.text = """¡Desafío de Exploración de Archivos superado con éxito!
 
@@ -573,11 +638,16 @@ func _update_lives_hud() -> void:
 func _on_pause_pressed() -> void:
 	AudioManager.play_click()
 	is_game_paused = true
-	modal_pause.visible = true
+	if flow_template:
+		flow_template.show_pause()
+	else:
+		modal_pause.visible = true
 
 func _resume_game() -> void:
 	AudioManager.play_click()
 	is_game_paused = false
+	if flow_template:
+		flow_template.hide_pause()
 	modal_pause.visible = false
 
 func _restart_match() -> void:

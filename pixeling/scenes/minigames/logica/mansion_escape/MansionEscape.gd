@@ -151,6 +151,7 @@ var symbol_font: Font = null
 var _diagram_sky: TextureRect = null   # cielo detrás de los diagramas
 var _diagram_moon: TextureRect = null  # luna detrás de los diagramas
 var _menu_bg: TextureRect = null        # imagen de la mansión en la pantalla de selección de dificultad
+var flow_template: Control
 
 # --- Referencias UI ---
 @onready var btn_back: Button = $TopHUD/BtnBack
@@ -236,6 +237,13 @@ func _ready() -> void:
 	_build_stage()
 	stage.resized.connect(_layout_stage)
 
+	# Estabilizar recuadros de texto y HUD
+	lock_dynamic_label_box(question_label, question_panel, 46.0, 16, 9, 4.0, 2.0, true, true, 4.0)
+	stabilize_hud_label(timer_label, 52.0)
+	stabilize_hud_label(progress_label, 118.0)
+	stabilize_hud_label(lives_label, 52.0)
+
+	_build_flow_template()
 	_show_difficulty_selector()
 
 	# Los overlays van por encima de todo lo del escenario (barandal z=1, avisos z=2)
@@ -790,11 +798,51 @@ func start_game(difficulty: String = "NORMAL") -> void:
 	EventBus.minigame_started.emit(minigame_id, current_difficulty)
 	_next_reto()
 
+func _build_flow_template() -> void:
+	flow_template = create_flow_template({
+		"title": "Mansión del Escape",
+		"subtitle": "CU-14 · Diagramas de Venn",
+		"classroom_path": AULA_SCENE,
+		"objective": "Identifica el diagrama de Venn correcto antes de que se agote el tiempo o te alcance el fantasma.",
+		"rules": [
+			"Observa la operación de conjuntos que aparece arriba (A ∩ B, A ∪ B, etc.).",
+			"Muévete con ◀ y ▶ hacia la puerta con el diagrama de Venn correcto y pulsa ENTRAR.",
+			"Puerta correcta: desciendes un piso, sumas puntos y ralentizas al fantasma.",
+			"Puerta incorrecta: pierdes 1 vida (-1 ❤️) y el fantasma avanza más rápido.",
+			"¡Supera los 5 pisos antes de que se acabe el tiempo o te alcance!"
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Fácil: " + CONFIG["FACIL"]["description"]
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Normal: " + CONFIG["NORMAL"]["description"]
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Ingeniero: " + CONFIG["INGENIERO"]["description"]
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			current_difficulty = diff
+			start_game(diff),
+		"on_back": func():
+			_on_back_pressed(),
+		"on_resume": func():
+			_on_resume_pressed(),
+		"on_restart": func():
+			_on_go_retry_pressed()
+	})
+
+
 func _show_difficulty_selector() -> void:
 	state = State.SELECTING
 	if _menu_bg:
-		_menu_bg.visible = true
-	difficulty_selector.visible = true
+		_menu_bg.visible = false if flow_template else true
+	difficulty_selector.visible = false if flow_template else true
 	hud_row.visible = false
 	question_panel.visible = false
 	options_area.visible = false
@@ -802,8 +850,14 @@ func _show_difficulty_selector() -> void:
 	controls.visible = false
 	if instructions_overlay:
 		instructions_overlay.visible = false
-	btn_back.visible = true
+	if pause_overlay:
+		pause_overlay.visible = false
+	if game_over_overlay:
+		game_over_overlay.visible = false
+	btn_back.visible = false if flow_template else true
 	btn_pause.visible = false
+	if flow_template:
+		flow_template.show_instructions()
 
 ## Baraja con la semilla propia (distinta en cada sesión)
 func _shuffled(arr: Array) -> Array:
@@ -1146,9 +1200,18 @@ func _handle_game_over(reason: String) -> void:
 	_show_results(reason, 0, false)
 
 func _show_results(reason: String, stars: int, success: bool) -> void:
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = total_score > prev_high
 	go_reason_label.text = reason
 	go_stats_label.text = "Retos correctos: %d/%d\nPuntos Totales: %d\nEstrellas: %d" % [total_correct, retos.size(), total_score, stars]
 	finish_game(success, total_score, stars, "Mansión del escape: %d retos correctos" % total_correct)
+	if flow_template:
+		if success:
+			var total_accum: int = StateManager.get_points() if StateManager else total_score
+			flow_template.show_victory(total_score, stars, total_accum, is_record, "¡ESCAPASTE DE LA MANSIÓN!")
+		else:
+			flow_template.show_game_over(reason, total_score)
+		return
 	game_over_overlay.visible = true
 
 
@@ -1203,11 +1266,16 @@ func _on_pause_pressed() -> void:
 	AudioManager.play_click()
 	move_dir_buttons = 0
 	get_tree().paused = true
-	pause_overlay.visible = true
+	if flow_template:
+		flow_template.show_pause()
+	else:
+		pause_overlay.visible = true
 
 func _on_resume_pressed() -> void:
 	AudioManager.play_click()
 	get_tree().paused = false
+	if flow_template:
+		flow_template.hide_pause()
 	pause_overlay.visible = false
 
 func _on_exit_pressed() -> void:

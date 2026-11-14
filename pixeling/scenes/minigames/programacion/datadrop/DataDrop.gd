@@ -25,7 +25,8 @@ func _get_cable_color(index: int) -> Color:
 
 func _update_accessibility_styles() -> void:
 	var is_accessible: bool = StateManager.is_high_contrast_active()
-	for btn in left_buttons:
+	for i in range(left_buttons.size()):
+		var btn: Button = left_buttons[i]
 		if is_instance_valid(btn):
 			_apply_button_contrast(btn, is_accessible)
 	for type_key in right_buttons:
@@ -48,12 +49,51 @@ func _apply_button_contrast(btn: Button, is_accessible: bool) -> void:
 		style.corner_radius_bottom_left = 5
 		style.corner_radius_bottom_right = 5
 		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_stylebox_override("hover", style)
+		btn.add_theme_stylebox_override("pressed", style)
 		btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.6, 1.0))
 	else:
-		btn.remove_theme_stylebox_override("normal")
-		btn.remove_theme_color_override("font_color")
+		if btn.has_meta("left_idx"):
+			_apply_left_port_style(int(btn.get_meta("left_idx")), btn)
+		elif btn.has_meta("port_type"):
+			_apply_right_port_style(str(btn.get_meta("port_type")), btn)
 
 # Estado de partida
+const TYPE_COLORS := {
+	"int": Color(0.12, 0.53, 0.90, 0.88),       # Azul neón
+	"float": Color(0.68, 0.26, 0.86, 0.88),     # Púrpura brillante
+	"string": Color(0.18, 0.76, 0.42, 0.88),    # Verde esmeralda
+	"bool": Color(0.96, 0.74, 0.12, 0.88),      # Amarillo dorado
+	"char": Color(0.98, 0.48, 0.15, 0.88),      # Naranja fuego
+	"list": Color(0.32, 0.42, 0.92, 0.88)       # Índigo cyber
+}
+
+# Estilos Kenney UI Pack (Classic UI)
+const STYLE_BTN_NEUTRAL_NORM = preload("res://scenes/ui/theme/classic/btn_neutral_normal.tres")
+const STYLE_BTN_NEUTRAL_HOV = preload("res://scenes/ui/theme/classic/btn_neutral_hover.tres")
+const STYLE_BTN_NEUTRAL_PRESS = preload("res://scenes/ui/theme/classic/btn_neutral_pressed.tres")
+
+const STYLE_BTN_BLUE_NORM = preload("res://scenes/ui/theme/classic/btn_blue_normal.tres")
+const STYLE_BTN_BLUE_HOV = preload("res://scenes/ui/theme/classic/btn_blue_hover.tres")
+const STYLE_BTN_BLUE_PRESS = preload("res://scenes/ui/theme/classic/btn_blue_pressed.tres")
+
+const STYLE_BTN_YELLOW_NORM = preload("res://scenes/ui/theme/classic/btn_yellow_normal.tres")
+const STYLE_BTN_YELLOW_HOV = preload("res://scenes/ui/theme/classic/btn_yellow_hover.tres")
+const STYLE_BTN_YELLOW_PRESS = preload("res://scenes/ui/theme/classic/btn_yellow_pressed.tres")
+
+const STYLE_BTN_GREEN_NORM = preload("res://scenes/ui/theme/classic/btn_green_normal.tres")
+const STYLE_BTN_GREEN_HOV = preload("res://scenes/ui/theme/classic/btn_green_hover.tres")
+const STYLE_BTN_GREEN_PRESS = preload("res://scenes/ui/theme/classic/btn_green_pressed.tres")
+
+const STYLE_BTN_RED_NORM = preload("res://scenes/ui/theme/classic/btn_red_normal.tres")
+const STYLE_BTN_RED_HOV = preload("res://scenes/ui/theme/classic/btn_red_hover.tres")
+const STYLE_BTN_RED_PRESS = preload("res://scenes/ui/theme/classic/btn_red_pressed.tres")
+
+const STYLE_PANEL_GLASS = preload("res://scenes/ui/theme/classic/panel_glass.tres")
+const STYLE_PANEL_INNER = preload("res://scenes/ui/theme/classic/panel_inner_plate.tres")
+const TEX_PANEL_GLASS_SCREWS = preload("res://assets/interfazUI/kenney_ui-pack-space-expansion/PNG/Extra/Double/panel_glass_screws.png")
+
 var round_pairs: Array[Dictionary] = [] # [{literal, type, desc}]
 var completed_connections: Array[Dictionary] = [] # [{left_index, target_type, color, from_node, to_node}]
 var selected_source_index: int = -1
@@ -90,6 +130,7 @@ var error_spark_to: Vector2 = Vector2.ZERO
 @onready var time_bar: ProgressBar = $ScreenGame/VBox/TopHUD/TimeBar
 @onready var time_label: Label = $ScreenGame/VBox/TopHUD/TimeLabel
 @onready var hearts_label: Label = $ScreenGame/VBox/TopHUD/HeartsLabel
+var hearts_bar: HBoxContainer
 
 # Referencias del Tablero
 @onready var board_panel: Panel = $ScreenGame/VBox/BoardSection/BoardPanel
@@ -110,9 +151,7 @@ var error_spark_to: Vector2 = Vector2.ZERO
 @onready var lbl_diff_label: Label = $ScreenStart/VBox/DiffLabel
 @onready var diff_selector: HBoxContainer = $ScreenStart/VBox/DiffSelector
 
-# Botones creados dinámicamente para el flujo de 2 pasos
-var btn_to_diff: Button
-var btn_to_inst: Button
+var flow_template: Control
 
 # Referencias Pantallas Finales y Pausa
 @onready var btn_pause_resume: Button = $ScreenPause/VBox/BtnResume
@@ -134,82 +173,119 @@ func _ready() -> void:
 	minigame_title = "DataDrop"
 	subject_name = "Introducción a la Programación"
 
-	_init_start_flow_ui()
+	screen_start.visible = false
+	screen_pause.visible = false
+
+	# Fondo didáctico de hoja de libreta con 80% opacidad / 20% transparencia
+	$Background.visible = false
+	attach_notebook_background(self, 0.80)
+
+	# Estandarización del TopHUD del Aula 101 (tarjeta Kenney, botón "||", barra y corazones pixel-art)
+	var top_hud := $ScreenGame/VBox/TopHUD as HBoxContainer
+	style_aula101_pause_button(btn_pause)
+	time_bar.custom_minimum_size = Vector2(32.0, 12.0)
+	time_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	style_kenney_progress_bar(time_bar, Color(0.1, 0.9, 1.0, 1.0))
+	if is_instance_valid(top_hud):
+		hearts_bar = create_aula101_hearts_bar(current_lives, max_lives, 14.0)
+		top_hud.add_child(hearts_bar)
+		wrap_hbox_in_aula101_hud_panel(top_hud)
+	if is_instance_valid(board_panel):
+		var sb_board := StyleBoxTexture.new()
+		sb_board.texture = TEX_PANEL_GLASS_SCREWS
+		sb_board.texture_margin_left = 20.0
+		sb_board.texture_margin_top = 20.0
+		sb_board.texture_margin_right = 20.0
+		sb_board.texture_margin_bottom = 20.0
+		sb_board.modulate_color = Color(0.16, 0.24, 0.36, 0.78)
+		board_panel.add_theme_stylebox_override("panel", sb_board)
+	var status_banner := $ScreenGame/VBox/StatusBanner as PanelContainer
+	if is_instance_valid(status_banner):
+		var sb_banner := STYLE_PANEL_INNER.duplicate() as StyleBoxTexture
+		if sb_banner:
+			sb_banner.modulate_color = Color(0.16, 0.22, 0.32, 0.88)
+			status_banner.add_theme_stylebox_override("panel", sb_banner)
+	lock_dynamic_label_box(status_banner_label, status_banner, 50.0, 12, 7, 2.0, 0.0, true, true, 6.0)
+	pairs_counter_label.add_theme_font_size_override("font_size", 10)
+	pairs_counter_label.add_theme_color_override("font_color", Color("ffd54f"))
+	time_label.add_theme_font_size_override("font_size", 10)
+	stabilize_hud_label(pairs_counter_label, 62.0)
+	stabilize_hud_label(time_label, 28.0)
+	update_aula101_hearts_bar(hearts_bar, current_lives, max_lives, hearts_label, 14.0)
+
 	_connect_ui_signals()
+	cable_canvas.clip_contents = true
 	cable_canvas.draw.connect(_on_cable_canvas_draw)
-	_show_screen(screen_start)
-	_select_difficulty("NORMAL")
-	_show_instructions_step()
+	if is_instance_valid(left_scroll) and is_instance_valid(left_scroll.get_v_scroll_bar()):
+		left_scroll.get_v_scroll_bar().value_changed.connect(func(_val): cable_canvas.queue_redraw())
 
-func _init_start_flow_ui() -> void:
-	var vbox: VBoxContainer = $ScreenStart/VBox
+	# Plantilla Universal de Flujo (Instrucciones -> Dificultad -> Pausa)
+	flow_template = create_flow_template({
+		"title": "DataDrop",
+		"subtitle": "CU-11: Clasificación de Tipos y Variables",
+		"classroom_path": "res://scenes/classroom/AulaProgramacion.tscn",
+		"objective": "Clasifica los valores sueltos conectándolos con su tipo de variable.",
+		"rules": [
+			"Toca o arrastra un valor de la columna izquierda hacia uno de los 6 tipos de datos a la derecha (int, float, string, bool, char, list).",
+			"Si aciertas, el cable queda fijo y el emisor se inhabilita.",
+			"Si conectas un tipo incorrecto, ocurrirá un cortocircuito y perderás 1 vida.",
+			"Si sueltas el cable en el centro vacío, se retrae sin penalización."
+		],
+		"difficulties": {
+			"FACIL": {
+				"name": "Fácil",
+				"info": "Modo: Fácil\n• Pares a conectar: 4\n• Vidas: 5  • Tiempo: 60s  • Puntos: 300"
+			},
+			"NORMAL": {
+				"name": "Normal",
+				"info": "Modo: Normal\n• Pares a conectar: 6\n• Vidas: 3  • Tiempo: 30s  • Puntos: 520"
+			},
+			"INGENIERO": {
+				"name": "Ingeniero",
+				"info": "Modo: Ingeniero\n• Pares a conectar: 8\n• Vidas: 1  • Tiempo: 15s  • Puntos: 765"
+			}
+		},
+		"default_difficulty": "NORMAL",
+		"on_start": func(diff: String):
+			selected_diff = diff
+			_on_btn_start_pressed(),
+		"on_back": func():
+			_on_back_to_classroom(),
+		"on_resume": func():
+			_on_resume_pressed(),
+		"on_restart": func():
+			_on_restart_pressed()
+	})
 
-	# Botón para pasar al Paso 2 desde las Instrucciones
-	btn_to_diff = Button.new()
-	btn_to_diff.name = "BtnToDiff"
-	btn_to_diff.text = "Siguiente: Elegir Dificultad →"
-	btn_to_diff.custom_minimum_size = Vector2(0, 42)
-	btn_to_diff.add_theme_font_size_override("font_size", 12)
-	btn_to_diff.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
-	btn_to_diff.pressed.connect(func():
-		AudioManager.play_click()
-		_show_difficulty_step()
-	)
-	vbox.add_child(btn_to_diff)
-	vbox.move_child(btn_to_diff, lbl_desc.get_index() + 1)
+func _connect_ui_signals() -> void:
+	btn_pause.pressed.connect(_on_pause_pressed)
+	btn_pause_resume.pressed.connect(_on_resume_pressed)
+	btn_pause_restart.pressed.connect(_on_restart_pressed)
+	btn_pause_exit.pressed.connect(_on_back_to_classroom)
 
-	# Botón para regresar al Paso 1 desde el Selector de Dificultad
-	btn_to_inst = Button.new()
-	btn_to_inst.name = "BtnToInst"
-	btn_to_inst.text = "← Ver Instrucciones"
-	btn_to_inst.custom_minimum_size = Vector2(0, 36)
-	btn_to_inst.add_theme_font_size_override("font_size", 11)
-	btn_to_inst.pressed.connect(func():
-		AudioManager.play_click()
-		_show_instructions_step()
-	)
-	vbox.add_child(btn_to_inst)
-	vbox.move_child(btn_to_inst, btn_start_play.get_index() + 1)
+	btn_victory_retry.pressed.connect(_on_restart_pressed)
+	btn_victory_exit.pressed.connect(_on_back_to_classroom)
+	btn_gameover_retry.pressed.connect(_on_restart_pressed)
+	btn_gameover_exit.pressed.connect(_on_back_to_classroom)
 
-## PASO 1 (Pantalla de Instrucciones): Lo primero que ve el alumno al entrar
-func _show_instructions_step() -> void:
-	lbl_desc.text = "🎯 Objetivo: Clasifica los valores sueltos conectándolos con su tipo de variable.\n\n• Toca o arrastra un valor de la columna izquierda hacia uno de los 6 tipos de datos a la derecha (int, float, string, bool, char, list).\n• Si aciertas, el cable queda fijo y el emisor se inhabilita.\n• Si conectas un tipo incorrecto, ocurrirá un cortocircuito y perderás 1 vida.\n• Si sueltas el cable en el centro vacío, se retrae sin penalización."
-	lbl_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl_desc.visible = true
+func _show_screen(active_screen: Control) -> void:
+	screen_start.visible = false
+	screen_game.visible = false
+	screen_pause.visible = false
+	screen_victory.visible = false
+	screen_game_over.visible = false
+	if active_screen == screen_start:
+		flow_template.show_instructions()
+	else:
+		flow_template.hide_all()
+	active_screen.visible = true
 
-	if btn_to_diff:
-		btn_to_diff.visible = true
-
-	btn_start_back.text = "← Volver al Salón"
-	btn_start_back.visible = true
-
-	lbl_diff_label.visible = false
-	diff_selector.visible = false
-	lbl_diff_info.visible = false
-	btn_start_play.visible = false
-	if btn_to_inst:
-		btn_to_inst.visible = false
-
-## PASO 2 (Pantalla de Selección de Dificultad)
-func _show_difficulty_step() -> void:
-	lbl_desc.visible = false
-	if btn_to_diff:
-		btn_to_diff.visible = false
-
-	lbl_diff_label.visible = true
-	diff_selector.visible = true
-	lbl_diff_info.visible = true
-
-	btn_start_play.text = "▶ ¡COMENZAR!"
-	btn_start_play.custom_minimum_size = Vector2(0, 44)
-	btn_start_play.add_theme_color_override("font_color", Color(0.1, 1.0, 0.4, 1.0))
-	btn_start_play.visible = true
-
-	if btn_to_inst:
-		btn_to_inst.visible = true
-
-	btn_start_back.text = "← Volver al Salón"
-	btn_start_back.visible = true
+func _on_pause_pressed() -> void:
+	if not is_timer_active:
+		return
+	AudioManager.play_click()
+	is_game_paused = true
+	flow_template.show_pause()
 
 func _apply_accessibility_mode(is_active: bool) -> void:
 	super._apply_accessibility_mode(is_active)
@@ -259,30 +335,6 @@ func _input(event: InputEvent) -> void:
 
 func _to_canvas_local(global_pos: Vector2) -> Vector2:
 	return cable_canvas.get_global_transform().affine_inverse() * global_pos
-
-func _connect_ui_signals() -> void:
-	btn_diff_facil.pressed.connect(func(): _select_difficulty("FACIL"))
-	btn_diff_normal.pressed.connect(func(): _select_difficulty("NORMAL"))
-	btn_diff_ing.pressed.connect(func(): _select_difficulty("INGENIERO"))
-	btn_start_play.pressed.connect(_on_btn_start_pressed)
-	btn_start_back.pressed.connect(_on_back_to_classroom)
-
-	btn_pause.pressed.connect(_on_pause_pressed)
-	btn_pause_resume.pressed.connect(_on_resume_pressed)
-	btn_pause_restart.pressed.connect(_on_restart_pressed)
-	btn_pause_exit.pressed.connect(_on_back_to_classroom)
-
-	btn_victory_retry.pressed.connect(_on_restart_pressed)
-	btn_victory_exit.pressed.connect(_on_back_to_classroom)
-	btn_gameover_retry.pressed.connect(_on_restart_pressed)
-	btn_gameover_exit.pressed.connect(_on_back_to_classroom)
-
-func _show_screen(active_screen: Control) -> void:
-	screen_start.visible = (active_screen == screen_start)
-	screen_game.visible = (active_screen == screen_game)
-	screen_pause.visible = (active_screen == screen_pause)
-	screen_victory.visible = (active_screen == screen_victory)
-	screen_game_over.visible = (active_screen == screen_game_over)
 
 ## Precondiciones de CU-11:
 ## Fácil: 5 vidas, 60s, 300 pts.
@@ -347,16 +399,22 @@ func _build_board_ui() -> void:
 	left_buttons.clear()
 	right_buttons.clear()
 
-	# Columna izquierda: Valores literales ("Dato")
+	# Columna izquierda: Valores literales ("Dato") con assets Kenney UI
 	for i in range(round_pairs.size()):
 		var item: Dictionary = round_pairs[i]
 		var btn := Button.new()
-		btn.text = "  %s  ●" % item.literal
+		btn.text = "%s  ●" % item.literal
 		btn.name = "LeftPort_%d" % i
-		btn.custom_minimum_size = Vector2(100, 36)
+		btn.custom_minimum_size = Vector2(104, 38)
 		btn.add_theme_font_size_override("font_size", 11)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		btn.set_meta("kenney_custom_managed", true)
+		btn.set_meta("left_idx", i)
+
+		# Botón con relieve táctil Kenney oficial
+		_apply_left_port_style(i, btn)
 
 		var idx: int = i
 		btn.button_down.connect(func(): _on_left_port_down(idx))
@@ -364,19 +422,21 @@ func _build_board_ui() -> void:
 		left_container.add_child(btn)
 		left_buttons.append(btn)
 
-	# Columna derecha: 6 Tipos de variable requeridos (int, float, string, bool, char, list)
+	# Columna derecha: 6 Tipos de variable en recuadros Kenney estilizados
 	for type_info in DataDropQuestions.ALL_TYPES:
 		var btn := Button.new()
 		btn.text = "●  %s" % type_info.label.replace("\n", " ")
 		btn.name = "RightPort_%s" % type_info.type
-		btn.custom_minimum_size = Vector2(108, 38)
+		btn.custom_minimum_size = Vector2(115, 40)
 		btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		btn.add_theme_font_size_override("font_size", 10)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		btn.set_meta("kenney_custom_managed", true)
+		btn.set_meta("port_type", type_info.type)
 
-		# Color temático sutil en el borde/texto del receptor
-		btn.modulate = Color.WHITE
+		_apply_right_port_style(type_info.type, btn)
 
 		var t_name: String = type_info.type
 		btn.pressed.connect(func(): _on_right_port_clicked(t_name))
@@ -385,6 +445,70 @@ func _build_board_ui() -> void:
 
 	left_scroll.scroll_vertical = 0
 	_update_accessibility_styles()
+
+func _apply_left_port_style(idx: int, btn: Button) -> void:
+	if not is_instance_valid(btn):
+		return
+	if _is_left_completed(idx):
+		btn.add_theme_stylebox_override("disabled", STYLE_BTN_GREEN_NORM)
+		btn.add_theme_stylebox_override("normal", STYLE_BTN_GREEN_NORM)
+		btn.add_theme_stylebox_override("hover", STYLE_BTN_GREEN_HOV)
+		btn.add_theme_stylebox_override("pressed", STYLE_BTN_GREEN_PRESS)
+		btn.add_theme_color_override("font_color", Color(0.04, 0.22, 0.08, 0.90))
+		btn.add_theme_color_override("font_disabled_color", Color(0.04, 0.22, 0.08, 0.90))
+	elif idx == selected_source_index:
+		btn.add_theme_stylebox_override("normal", STYLE_BTN_YELLOW_NORM)
+		btn.add_theme_stylebox_override("hover", STYLE_BTN_YELLOW_HOV)
+		btn.add_theme_stylebox_override("pressed", STYLE_BTN_YELLOW_PRESS)
+		btn.add_theme_color_override("font_color", Color(0.24, 0.18, 0.02, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(0.18, 0.12, 0.01, 1.0))
+	else:
+		btn.add_theme_stylebox_override("normal", STYLE_BTN_NEUTRAL_NORM)
+		btn.add_theme_stylebox_override("hover", STYLE_BTN_NEUTRAL_HOV)
+		btn.add_theme_stylebox_override("pressed", STYLE_BTN_NEUTRAL_PRESS)
+		btn.add_theme_color_override("font_color", Color(0.15, 0.18, 0.25, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(0.05, 0.08, 0.15, 1.0))
+
+func _apply_right_port_style(type_key: String, btn: Button) -> void:
+	if not is_instance_valid(btn):
+		return
+	match type_key:
+		"int":
+			btn.add_theme_stylebox_override("normal", STYLE_BTN_BLUE_NORM)
+			btn.add_theme_stylebox_override("hover", STYLE_BTN_BLUE_HOV)
+			btn.add_theme_stylebox_override("pressed", STYLE_BTN_BLUE_PRESS)
+			btn.add_theme_color_override("font_color", Color.WHITE)
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		"float":
+			btn.add_theme_stylebox_override("normal", STYLE_BTN_BLUE_NORM)
+			btn.add_theme_stylebox_override("hover", STYLE_BTN_BLUE_HOV)
+			btn.add_theme_stylebox_override("pressed", STYLE_BTN_BLUE_PRESS)
+			btn.add_theme_color_override("font_color", Color(0.82, 0.96, 1.0))
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		"string":
+			btn.add_theme_stylebox_override("normal", STYLE_BTN_GREEN_NORM)
+			btn.add_theme_stylebox_override("hover", STYLE_BTN_GREEN_HOV)
+			btn.add_theme_stylebox_override("pressed", STYLE_BTN_GREEN_PRESS)
+			btn.add_theme_color_override("font_color", Color(0.04, 0.22, 0.08, 1.0))
+			btn.add_theme_color_override("font_hover_color", Color(0.02, 0.14, 0.04, 1.0))
+		"bool":
+			btn.add_theme_stylebox_override("normal", STYLE_BTN_YELLOW_NORM)
+			btn.add_theme_stylebox_override("hover", STYLE_BTN_YELLOW_HOV)
+			btn.add_theme_stylebox_override("pressed", STYLE_BTN_YELLOW_PRESS)
+			btn.add_theme_color_override("font_color", Color(0.24, 0.18, 0.02, 1.0))
+			btn.add_theme_color_override("font_hover_color", Color(0.18, 0.12, 0.01, 1.0))
+		"char":
+			btn.add_theme_stylebox_override("normal", STYLE_BTN_RED_NORM)
+			btn.add_theme_stylebox_override("hover", STYLE_BTN_RED_HOV)
+			btn.add_theme_stylebox_override("pressed", STYLE_BTN_RED_PRESS)
+			btn.add_theme_color_override("font_color", Color.WHITE)
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		"list", _:
+			btn.add_theme_stylebox_override("normal", STYLE_BTN_NEUTRAL_NORM)
+			btn.add_theme_stylebox_override("hover", STYLE_BTN_NEUTRAL_HOV)
+			btn.add_theme_stylebox_override("pressed", STYLE_BTN_NEUTRAL_PRESS)
+			btn.add_theme_color_override("font_color", Color(0.22, 0.10, 0.36, 1.0))
+			btn.add_theme_color_override("font_hover_color", Color(0.14, 0.06, 0.24, 1.0))
 
 func _on_left_port_down(index: int) -> void:
 	if is_game_paused or not is_timer_active or _is_left_completed(index):
@@ -482,7 +606,9 @@ func _verify_connection(left_index: int, target_type: String) -> void:
 		})
 
 		left_btn.disabled = true
-		left_btn.modulate = Color(0.4, 0.4, 0.4)
+		left_btn.add_theme_stylebox_override("disabled", STYLE_BTN_GREEN_NORM)
+		left_btn.add_theme_color_override("font_disabled_color", Color(0.04, 0.22, 0.08, 0.85))
+		left_btn.modulate = Color(0.9, 1.0, 0.9, 0.9)
 
 		# Suma de puntaje según dificultad (acumulado únicamente en total_score)
 		var pair_score: int = int(float(base_score) / float(round_pairs.size()))
@@ -528,13 +654,19 @@ func _is_left_completed(idx: int) -> bool:
 	return false
 
 func _highlight_left_buttons() -> void:
+	var is_accessible: bool = StateManager.is_high_contrast_active()
 	for i in range(left_buttons.size()):
 		var btn: Button = left_buttons[i]
 		if is_instance_valid(btn) and not btn.disabled:
-			if i == selected_source_index:
-				btn.modulate = Color("ffea00")
+			if is_accessible:
+				_apply_button_contrast(btn, true)
+				if i == selected_source_index:
+					var sb_sel := btn.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
+					if sb_sel:
+						sb_sel.bg_color = Color(0.26, 0.22, 0.06, 1.0)
+						btn.add_theme_stylebox_override("normal", sb_sel)
 			else:
-				btn.modulate = Color.WHITE
+				_apply_left_port_style(i, btn)
 
 func _get_left_port_pos(index: int) -> Vector2:
 	if index >= 0 and index < left_buttons.size():
@@ -545,6 +677,26 @@ func _get_left_port_pos(index: int) -> Vector2:
 
 ## Renderizado de cables garantizado sobre CableCanvas
 func _on_cable_canvas_draw() -> void:
+	# 0. Sockets / boquillas cibernéticas en los puertos visibles
+	for i in range(left_buttons.size()):
+		var l_btn: Button = left_buttons[i]
+		if is_instance_valid(l_btn) and l_btn.size.x > 0.0:
+			var pt := _to_canvas_local(l_btn.global_position + Vector2(l_btn.size.x, l_btn.size.y * 0.5))
+			if pt.y >= 4.0 and pt.y <= cable_canvas.size.y - 4.0:
+				var ring_col := Color("ffd54f") if i == selected_source_index else (Color("69f0ae") if _is_left_completed(i) else Color(0.24, 0.30, 0.42, 1.0))
+				cable_canvas.draw_circle(pt, 7.0, Color(0.10, 0.14, 0.20, 1.0))
+				cable_canvas.draw_circle(pt, 4.5, ring_col)
+				cable_canvas.draw_circle(pt, 2.0, Color.WHITE)
+
+	for type_key in right_buttons:
+		var r_btn: Button = right_buttons[type_key]
+		if is_instance_valid(r_btn) and r_btn.size.x > 0.0:
+			var pt := _to_canvas_local(r_btn.global_position + Vector2(0.0, r_btn.size.y * 0.5))
+			var t_col: Color = TYPE_COLORS.get(type_key, Color.CYAN)
+			cable_canvas.draw_circle(pt, 7.0, Color(0.10, 0.14, 0.20, 1.0))
+			cable_canvas.draw_circle(pt, 4.5, t_col)
+			cable_canvas.draw_circle(pt, 2.0, Color.WHITE)
+
 	# 1. Dibujar todos los cables conectados y completados (FN-04)
 	for i in range(completed_connections.size()):
 		var conn: Dictionary = completed_connections[i]
@@ -579,28 +731,43 @@ func _draw_cable_with_border(from_pos: Vector2, to_pos: Vector2, color: Color, w
 	var control_p := Vector2(mid_x, maxf(from_pos.y, to_pos.y) + sag)
 
 	var points := PackedVector2Array()
-	const SEGMENTS: int = 18
+	const SEGMENTS: int = 24
 	for i in range(SEGMENTS + 1):
 		var t: float = float(i) / float(SEGMENTS)
 		var p: Vector2 = (1.0 - t) * (1.0 - t) * from_pos + 2.0 * (1.0 - t) * t * control_p + t * t * to_pos
 		points.append(p)
 
-	# Borde exterior oscuro para contraste de cable físico
-	var is_hc: bool = StateManager.is_high_contrast_active()
-	var border_w: float = width + (5.0 if is_hc else 3.0)
-	var border_col: Color = Color(0.0, 0.0, 0.0, 1.0) if is_hc else Color(0.04, 0.05, 0.07, 0.9)
-	cable_canvas.draw_polyline(points, border_col, border_w, true)
-	cable_canvas.draw_circle(from_pos, border_w * 0.5 + 1.0, border_col)
-	cable_canvas.draw_circle(to_pos, border_w * 0.5 + 1.0, border_col)
+	# 1. Cubierta exterior corrugada tipo manguera/tubo cibernético (Gris metálico/goma)
+	var hose_w: float = width + 8.0
+	var outer_casing_col := Color(0.12, 0.14, 0.18, 0.95)
+	cable_canvas.draw_polyline(points, outer_casing_col, hose_w, true)
 
-	# Línea interior de color brillante
-	cable_canvas.draw_polyline(points, color, width, true)
-	cable_canvas.draw_circle(from_pos, width * 0.5, color)
-	cable_canvas.draw_circle(to_pos, width * 0.5, color)
+	# 2. Anillos estriados de la manguera corrugada (efecto tubo flexible)
+	var ring_col := Color(0.28, 0.32, 0.40, 0.95)
+	for i in range(1, SEGMENTS):
+		if i % 2 == 0:
+			var pt := points[i]
+			var dir := (points[i + 1] - points[i - 1]).normalized()
+			var normal := Vector2(-dir.y, dir.x)
+			cable_canvas.draw_line(pt - normal * (hose_w * 0.5), pt + normal * (hose_w * 0.5), ring_col, 2.0)
+
+	# 3. Flujo interno de energía / plasma neón en el centro del tubo
+	var core_w: float = maxf(3.0, width * 0.6)
+	cable_canvas.draw_polyline(points, color, core_w, true)
+
+	# 4. Núcleo brillante ultra-luminoso central
+	var glow_w: float = maxf(1.5, core_w * 0.35)
+	cable_canvas.draw_polyline(points, Color.WHITE.lerp(color, 0.4), glow_w, true)
+
+	# 5. Boquillas / Conectores cibernéticos en los puertos de inicio y fin
+	for pt in [from_pos, to_pos]:
+		cable_canvas.draw_circle(pt, hose_w * 0.5 + 2.0, Color(0.18, 0.22, 0.30, 1.0))
+		cable_canvas.draw_circle(pt, hose_w * 0.5 - 1.0, color)
+		cable_canvas.draw_circle(pt, glow_w + 1.0, Color.WHITE)
 
 func _update_hud() -> void:
-	pairs_counter_label.text = "PARES: %d / %d" % [completed_connections.size(), round_pairs.size()]
-	hearts_label.text = "❤ ".repeat(current_lives) + "♡ ".repeat(max_lives - current_lives)
+	pairs_counter_label.text = "PARES: %d/%d" % [completed_connections.size(), round_pairs.size()]
+	update_aula101_hearts_bar(hearts_bar, current_lives, max_lives, hearts_label, 14.0)
 	_update_timer_hud()
 
 func _update_timer_hud() -> void:
@@ -618,18 +785,26 @@ func _on_time_expired() -> void:
 	is_timer_active = false
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
-
-	lbl_gameover_reason.text = "FA-04.01 Tiempo Límite Agotado (%ds).\nEl reloj alcanzó cero antes de asociar todos los pares requeridos." % int(time_limit)
-	_show_screen(screen_game_over)
+	finish_game(false, total_score, 0, "Tiempo agotado")
+	var reason := "Tiempo Límite Agotado (%ds).\nEl reloj alcanzó cero antes de asociar todos los datos." % int(time_limit)
+	if flow_template:
+		flow_template.show_game_over(reason, total_score)
+	else:
+		lbl_gameover_reason.text = reason
+		_show_screen(screen_game_over)
 
 ## FA-04.02: Agotamiento de vidas -> Despliega Game Over especificando la causa del término
 func _on_game_over_lives() -> void:
 	is_timer_active = false
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
-
-	lbl_gameover_reason.text = "FA-04.02 Vidas Agotadas.\nEl total de vidas llegó a cero debido a enlaces erróneos de cables."
-	_show_screen(screen_game_over)
+	finish_game(false, total_score, 0, "Vidas agotadas")
+	var reason := "Vidas Agotadas.\nEl total de vidas llegó a cero debido a enlaces incompatibles."
+	if flow_template:
+		flow_template.show_game_over(reason, total_score)
+	else:
+		lbl_gameover_reason.text = reason
+		_show_screen(screen_game_over)
 
 ## FN-06: Finalización exitosa con todos los pares asociados
 func _on_all_pairs_connected() -> void:
@@ -637,32 +812,28 @@ func _on_all_pairs_connected() -> void:
 	AudioManager.play_success()
 	total_score = base_score
 
-	# Cálculo de estrellas según tiempo sobrante y vidas conservadas
-	var stars: int = 1
-	var time_ratio: float = time_remaining / time_limit
-	if current_lives == max_lives and time_ratio >= 0.35:
-		stars = 3
-	elif current_lives >= 2 or time_ratio >= 0.2:
-		stars = 2
+	# Estrellas y puntos exactos según dificultad (RF-38 / CU-11 FN-06)
+	var stars: int = 2
+	match selected_diff:
+		"FACIL": stars = 1
+		"NORMAL": stars = 2
+		"INGENIERO": stars = 3
 
-	var stars_str: String = "⭐".repeat(stars) + "☆".repeat(3 - stars)
-	var time_spent: int = int(time_limit - time_remaining)
-
-	lbl_victory_stats.text = "%s\n\nPuntuación Total: %d pts\nTiempo Empleado: %d seg\nVidas Conservadas: %d / %d" % [
-		stars_str, total_score, time_spent, current_lives, max_lives
-	]
-
+	var prev_high: int = StateManager.get_minigame_high_score(minigame_id) if StateManager else 0
+	var is_record: bool = total_score > prev_high
 	finish_game(true, total_score, stars, "¡Todos los tipos clasificados correctamente!")
-	_show_screen(screen_victory)
+	if flow_template:
+		var total_accum: int = StateManager.get_points() if StateManager else total_score
+		flow_template.show_victory(total_score, stars, total_accum, is_record, "¡DATOS ENLAZADOS!")
+	else:
+		var stars_str: String = "⭐".repeat(stars) + "☆".repeat(3 - stars)
+		var time_spent: int = int(time_limit - time_remaining)
+		lbl_victory_stats.text = "%s\n\nPuntuación Total: %d pts\nTiempo Empleado: %d seg\nVidas Conservadas: %d / %d" % [
+			stars_str, total_score, time_spent, current_lives, max_lives
+		]
+		_show_screen(screen_victory)
 
 ## FA-02.03: Suspensión de la partida (Pausa)
-func _on_pause_pressed() -> void:
-	if not is_timer_active:
-		return
-	AudioManager.play_click()
-	is_game_paused = true
-	_show_screen(screen_pause)
-
 func _on_resume_pressed() -> void:
 	AudioManager.play_click()
 	is_game_paused = false
