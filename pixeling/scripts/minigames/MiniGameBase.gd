@@ -13,6 +13,7 @@ signal game_finished(result: Dictionary)
 
 var current_difficulty: String = "NORMAL" # FACIL, NORMAL, INGENIERO
 var start_time_ms: int = 0
+var _is_debug_win: bool = false
 
 const AULA101_HEART_FULL := preload("res://assets/ing_software/comun/hud/heart_full.png")
 const AULA101_HEART_EMPTY := preload("res://assets/ing_software/comun/hud/heart_empty.png")
@@ -80,17 +81,22 @@ func highlight_button(btn: Button, is_active: bool, border_color: Color = Color(
 func start_game(difficulty: String = "NORMAL") -> void:
 	current_difficulty = difficulty
 	start_time_ms = Time.get_ticks_msec()
+	_is_debug_win = false
 
 ## Finaliza el minijuego, registra el resultado y emite la señal al gestor de estado
 func finish_game(success: bool, score: int, stars: int, message: String = "") -> void:
 	var time_elapsed_sec: int = int((Time.get_ticks_msec() - start_time_ms) / 1000.0)
 	var active_id: String = minigame_id if minigame_id != "" else cu_id
+	var was_debug: bool = _is_debug_win
+	_is_debug_win = false
 	var result := {
 		"game_id": active_id,
 		"title": minigame_title,
 		"success": success,
 		"score": score,
 		"stars": stars,
+		"difficulty": current_difficulty,
+		"is_debug": was_debug,
 		"message": message,
 		"time_elapsed": time_elapsed_sec
 	}
@@ -106,6 +112,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Método de depuración para forzar la victoria con 3 estrellas en el minijuego activo
 func _trigger_debug_win() -> void:
+	_is_debug_win = true
 	# Ocultar modales de dificultad o tutorial previos si existen
 	if has_method("_hide_all_modals"):
 		call("_hide_all_modals")

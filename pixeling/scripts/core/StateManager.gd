@@ -36,17 +36,18 @@ var player_data: Dictionary = {
 	"progress": {
 		"current_classroom": "classroom_programming",
 		"minigames": {
-			"roboflow": { "completed": false, "score": 0, "stars": 0 },
-			"lluvia_requerimientos": { "completed": false, "score": 0, "stars": 0 },
-			"terminal_linux": { "completed": false, "score": 0, "stars": 0 },
-			"exploracion_archivos": { "completed": false, "score": 0, "stars": 0 },
-			"permisos_procesos": { "completed": false, "score": 0, "stars": 0 },
-			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0 },
-			"mansion_escape": { "completed": false, "score": 0, "stars": 0 },
-			"include_extend": { "completed": false, "score": 0, "stars": 0 },
-			"planning_poker": { "completed": false, "score": 0, "stars": 0 },
-			"datadrop": { "completed": false, "score": 0, "stars": 0 },
-			"heroforge": { "completed": false, "score": 0, "stars": 0 }
+			"roboflow": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"lluvia_requerimientos": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"terminal_linux": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"exploracion_archivos": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"permisos_procesos": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"derby_de_bateo": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"mansion_escape": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"cinturon_hipotesis": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"include_extend": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"planning_poker": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"datadrop": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" },
+			"heroforge": { "completed": false, "score": 0, "stars": 0, "last_score": 0, "last_stars": 0, "last_difficulty": "" }
 		}
 	}
 }
@@ -170,41 +171,104 @@ func load_data() -> void:
 						player_data.settings[k] = DEFAULT_SETTINGS[k]
 			else:
 				player_data.settings = DEFAULT_SETTINGS.duplicate(true)
+	if _normalize_loaded_progress():
+		save_data()
+
+func _default_minigame_entry() -> Dictionary:
+	return {
+		"completed": false,
+		"score": 0,
+		"stars": 0,
+		"last_score": 0,
+		"last_stars": 0,
+		"last_difficulty": ""
+	}
+
+func _normalize_loaded_progress() -> bool:
+	var dirty: bool = false
+	if not player_data.has("progress") or not (player_data.progress is Dictionary):
+		player_data["progress"] = { "current_classroom": "classroom_programming", "minigames": {} }
+		dirty = true
+	if not player_data.progress.has("minigames") or not (player_data.progress.minigames is Dictionary):
+		player_data.progress["minigames"] = {}
+		dirty = true
+	var minigames: Dictionary = player_data.progress.minigames
+	var default_ids := [
+		"roboflow", "lluvia_requerimientos", "terminal_linux", "exploracion_archivos",
+		"permisos_procesos", "derby_de_bateo", "mansion_escape", "cinturon_hipotesis",
+		"include_extend", "planning_poker", "datadrop", "heroforge"
+	]
+	for gid in default_ids:
+		if not minigames.has(gid) or not (minigames[gid] is Dictionary):
+			minigames[gid] = _default_minigame_entry()
+			dirty = true
+	for gid in minigames.keys():
+		var entry = minigames[gid]
+		if not (entry is Dictionary):
+			minigames[gid] = _default_minigame_entry()
+			dirty = true
+			continue
+		# Migrar/limpiar registros viejos sin last_difficulty para evitar récords falsos (870/1000/775)
+		if not entry.has("last_difficulty"):
+			minigames[gid] = _default_minigame_entry()
+			dirty = true
+		else:
+			if not entry.has("last_score"):
+				entry["last_score"] = 0
+				dirty = true
+			if not entry.has("last_stars"):
+				entry["last_stars"] = 0
+				dirty = true
+	return dirty
 
 func record_minigame_result(game_id: String, result: Dictionary) -> void:
 	var minigames: Dictionary = player_data.progress.minigames
-	if not minigames.has(game_id):
-		minigames[game_id] = { "completed": false, "score": 0, "stars": 0 }
+	if not minigames.has(game_id) or not (minigames[game_id] is Dictionary):
+		minigames[game_id] = _default_minigame_entry()
+
+	# Las victorias instantáneas QA (F8) muestran el modal pero no inflan el guardado real
+	if bool(result.get("is_debug", false)):
+		EventBus.minigame_completed.emit(game_id, result)
+		return
 
 	var current: Dictionary = minigames[game_id]
-	var score: int = result.get("score", 0)
-	var stars: int = result.get("stars", 0)
-	var success: bool = result.get("success", false)
+	var score: int = maxi(0, int(result.get("score", 0)))
+	var stars: int = clampi(int(result.get("stars", 0)), 0, 3)
+	var success: bool = bool(result.get("success", false))
+	var diff: String = str(result.get("difficulty", "")).strip_edges()
+
+	if diff != "":
+		current["last_difficulty"] = diff
+	current["last_stars"] = stars if success else 0
+	current["last_score"] = score if success else 0
 
 	if success:
-		current.completed = true
-		if score > current.score:
-			current.score = score
-		if stars > current.stars:
-			current.stars = stars
+		current["completed"] = true
+		if score > int(current.get("score", 0)):
+			current["score"] = score
+		if stars > int(current.get("stars", 0)):
+			current["stars"] = stars
 
 		# Sumar puntos ganados a la economía y persistir (RF-65)
 		player_data.economy.points += score
 		save_data()
 		EventBus.points_updated.emit(player_data.economy.points, score)
+	else:
+		save_data()
 
 	EventBus.minigame_completed.emit(game_id, result)
 
 ## Actualiza y persiste el progreso de un minijuego de forma atómica
-func update_minigame_progress(game_id: String, score: int, stars: int) -> void:
+func update_minigame_progress(game_id: String, score: int, stars: int, difficulty: String = "NORMAL") -> void:
 	record_minigame_result(game_id, {
 		"success": true,
 		"score": score,
-		"stars": stars
+		"stars": stars,
+		"difficulty": difficulty
 	})
 
 func get_minigame_data(game_id: String) -> Dictionary:
-	return player_data.progress.minigames.get(game_id, { "completed": false, "score": 0, "stars": 0 })
+	return player_data.progress.minigames.get(game_id, _default_minigame_entry())
 
 func get_minigame_high_score(game_id: String) -> int:
 	return int(get_minigame_data(game_id).get("score", 0))
@@ -243,6 +307,7 @@ func debug_unlock_all_minigames() -> void:
 		"heroforge",
 		"derby_de_bateo",
 		"mansion_escape",
+		"cinturon_hipotesis",
 		"terminal_linux",
 		"exploracion_archivos",
 		"permisos_procesos"
@@ -251,25 +316,22 @@ func debug_unlock_all_minigames() -> void:
 	for g in all_games:
 		minigames[g] = {
 			"completed": true,
-			"score": 1000,
-			"stars": 3
+			"score": 0,
+			"stars": 3,
+			"last_score": 0,
+			"last_stars": 3,
+			"last_difficulty": "INGENIERO"
 		}
-	player_data.economy.points = 8000
 	save_data()
-	EventBus.points_updated.emit(player_data.economy.points, 8000)
 	for g in all_games:
 		EventBus.minigame_completed.emit(g, minigames[g])
-	print("[DEBUG QA] ¡Todos los minijuegos desbloqueados con 3 estrellas (★★★) y 8,000 puntos!")
+	print("[DEBUG QA] Todos los minijuegos desbloqueados con 3 estrellas (sin inflar puntajes).")
 
 ## Atajo de depuración: Resetea el progreso a 0
 func debug_reset_progress() -> void:
 	var minigames: Dictionary = player_data.progress.minigames
 	for g in minigames:
-		minigames[g] = {
-			"completed": false,
-			"score": 0,
-			"stars": 0
-		}
+		minigames[g] = _default_minigame_entry()
 	player_data.economy.points = 0
 	save_data()
 	EventBus.points_updated.emit(0, 0)

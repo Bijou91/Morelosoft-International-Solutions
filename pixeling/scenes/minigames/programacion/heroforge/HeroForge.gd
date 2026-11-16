@@ -210,14 +210,13 @@ func _process(delta: float) -> void:
 
 # Atajos de depuración para agilizar auditoría TSP / QA
 func _unhandled_input(event: InputEvent) -> void:
+	super._unhandled_input(event)
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
 			if screen_game and screen_game.visible:
 				_on_pause_pressed()
 			elif is_game_paused:
 				_on_resume_pressed()
-		elif event.keycode == KEY_F8:
-			_trigger_debug_win()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CONSTRUCCIÓN DE LA INTERFAZ DE USUARIO (VIEWPORT 360x640)
@@ -1114,20 +1113,22 @@ func _on_component_removed(section: String, slot_index: int) -> void:
 	if is_game_paused or not is_timer_running:
 		return
 
+	var removed: bool = false
 	if section == "ATTR" and slot_index < assigned_attributes.size():
 		if assigned_attributes[slot_index] != null:
 			assigned_attributes[slot_index] = null
-			if AudioManager and AudioManager.has_method("play_click"):
-				AudioManager.play_click()
-			_update_slot_displays()
-			_render_component_bank()
+			removed = true
 	elif section == "METH" and slot_index < assigned_methods.size():
 		if assigned_methods[slot_index] != null:
 			assigned_methods[slot_index] = null
-			if AudioManager and AudioManager.has_method("play_click"):
-				AudioManager.play_click()
-			_update_slot_displays()
-			_render_component_bank()
+			removed = true
+
+	if removed:
+		if AudioManager and AudioManager.has_method("play_click"):
+			AudioManager.play_click()
+		_update_slot_displays()
+		_render_component_bank()
+		_set_status("Componente devuelto al banco sin penalización.", Color("90a4ae"))
 
 # ══════════════════════════════════════════════════════════════════════════════
 # FN-03 & FN-04: INSTANCIACIÓN, VALIDACIÓN Y TRANSICIÓN FLUIDA
@@ -1159,11 +1160,12 @@ func _on_instantiate_pressed() -> void:
 	_validate_class()
 
 func _apply_error_style(btn: Button) -> void:
-	btn.add_theme_stylebox_override("normal", STYLE_BTN_RED_NORM)
-	btn.add_theme_stylebox_override("hover", STYLE_BTN_RED_HOV)
-	btn.add_theme_stylebox_override("pressed", STYLE_BTN_RED_PRESS)
+	btn.add_theme_stylebox_override("normal", _get_compact_btn_sb("red_norm", STYLE_BTN_RED_NORM))
+	btn.add_theme_stylebox_override("hover", _get_compact_btn_sb("red_hov", STYLE_BTN_RED_HOV))
+	btn.add_theme_stylebox_override("pressed", _get_compact_btn_sb("red_press", STYLE_BTN_RED_PRESS))
 	btn.add_theme_color_override("font_color", Color.WHITE)
 	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	fit_control_text_now(btn)
 
 func _validate_class() -> void:
 	var error_attr_indices: Array[int] = []
@@ -1195,17 +1197,15 @@ func _validate_class() -> void:
 		if AudioManager and AudioManager.has_method("play_error"):
 			AudioManager.play_error()
 
-		# Resaltar en ROJO los elementos incorrectos en la plantilla
+		# Resaltar en ROJO los elementos incorrectos en la plantilla con contraste blanco legible
 		for idx in error_attr_indices:
 			var btn: Button = attr_slot_buttons[idx]
 			btn.text = "✗ " + assigned_attributes[idx].text
-			btn.add_theme_color_override("font_color", Color("ff5252"))
 			_apply_error_style(btn)
 
 		for idx in error_meth_indices:
 			var btn: Button = meth_slot_buttons[idx]
 			btn.text = "✗ " + assigned_methods[idx].text
-			btn.add_theme_color_override("font_color", Color("ff5252"))
 			_apply_error_style(btn)
 
 		_lose_life()
@@ -1245,7 +1245,7 @@ func _on_hero_instantiated_success() -> void:
 
 	if is_last_hero:
 		btn_instantiate.disabled = false
-		btn_instantiate.text = "🎉 ¡Mesa de Forja Superada! (Toca para ver resultados)"
+		btn_instantiate.text = "¡Mesa Superada! Ver Resultados"
 		if btn_instantiate.pressed.is_connected(_on_instantiate_pressed):
 			btn_instantiate.pressed.disconnect(_on_instantiate_pressed)
 		if not btn_instantiate.pressed.is_connected(_handle_victory):
@@ -1283,6 +1283,7 @@ func _on_round_timer_timeout() -> void:
 
 	_lose_life()
 	if current_lives > 0:
+		_update_slot_displays()
 		_set_status("⏳ ¡Tiempo agotado! Pierdes 1 vida.", Color("ff9800"))
 		time_left = round_time
 	else:
@@ -1324,12 +1325,17 @@ func _show_game_over(reason: String) -> void:
 	if EventBus.has_signal("game_over"):
 		EventBus.emit_signal("game_over", "heroforge")
 
-	finish_game(false, total_score, 0, reason)
+	finish_game(false, 0, 0, reason)
 	if flow_template:
-		flow_template.show_game_over(reason, total_score)
+		flow_template.show_game_over(reason, 0)
 	else:
 		lbl_gameover_reason.text = reason
 		_show_screen(screen_game_over)
+
+func _hide_all_modals() -> void:
+	if flow_template:
+		flow_template.hide_all()
+	_show_screen(screen_game)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # FN-07: PANTALLA FINAL DE VICTORIA Y PERSISTENCIA
@@ -1338,6 +1344,10 @@ func _show_game_over(reason: String) -> void:
 func _handle_victory() -> void:
 	if is_victory_shown:
 		return
+	if diff_config.is_empty():
+		diff_config = HeroForgeData.get_difficulty_config(selected_diff)
+		target_stars = diff_config.stars
+		hero_classes_queue = diff_config.classes.duplicate()
 	is_victory_shown = true
 	is_transitioning_hero = false
 	is_timer_running = false
@@ -1359,7 +1369,8 @@ func _handle_victory() -> void:
 		StateManager.record_minigame_result("heroforge", {
 			"success": true,
 			"score": final_score,
-			"stars": stars
+			"stars": stars,
+			"difficulty": selected_diff
 		})
 
 	if flow_template:
@@ -1396,8 +1407,10 @@ func _on_back_pressed() -> void:
 	_set_game_paused(false)
 	get_tree().change_scene_to_file("res://scenes/classroom/AulaProgramacion.tscn")
 
-# Atajo de pruebas QA (F8)
+# Atajo de pruebas QA (F8 / Ctrl+W)
 func _trigger_debug_win() -> void:
+	_is_debug_win = true
+	_hide_all_modals()
 	current_hero_index = hero_classes_queue.size()
 	current_lives = max_lives
 	total_score = diff_config.get("total_score", 500)

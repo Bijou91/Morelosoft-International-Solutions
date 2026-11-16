@@ -140,14 +140,92 @@ func _populate_minigames() -> void:
 		if is_inside_tree() and get_tree() and get_tree().root:
 			sm = get_tree().root.get_node_or_null("StateManager")
 		var saved_data: Dictionary = sm.get_minigame_data(cu_id) if sm else {}
-		var stars_count: int = saved_data.get("stars", 0)
-		var stars_str: String = "★".repeat(stars_count) + "☆".repeat(3 - stars_count)
-		btn.text = "%s\n%s (%d/3)  •  Récord: %d pts" % [title, stars_str, stars_count, saved_data.get("score", 0)]
-		btn.custom_minimum_size = Vector2(0, 54)
-		btn.add_theme_font_size_override("font_size", 12)
+		var last_stars: int = clampi(int(saved_data.get("last_stars", 0)), 0, 3)
+		var last_score: int = maxi(0, int(saved_data.get("last_score", 0)))
+		var last_diff: String = str(saved_data.get("last_difficulty", "")).strip_edges()
+
+		btn.text = ""
+		btn.custom_minimum_size = Vector2(0, 58)
+		btn.tooltip_text = title
 		_style_translucent_button(btn)
+
+		var card_vbox := VBoxContainer.new()
+		card_vbox.name = "CardVBox"
+		card_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+		card_vbox.offset_left = 10.0
+		card_vbox.offset_right = -10.0
+		card_vbox.offset_top = 4.0
+		card_vbox.offset_bottom = -6.0
+		card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		card_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card_vbox.add_theme_constant_override("separation", 2)
+		btn.add_child(card_vbox)
+
+		var title_lbl := Label.new()
+		title_lbl.name = "TitleLabel"
+		title_lbl.text = title
+		title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		title_lbl.add_theme_font_size_override("font_size", 12)
+		title_lbl.add_theme_color_override("font_color", Color(0.12, 0.15, 0.22, 1.0))
+		title_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		title_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		card_vbox.add_child(title_lbl)
+
+		var stats_row := HBoxContainer.new()
+		stats_row.name = "StatsRow"
+		stats_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		stats_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		stats_row.add_theme_constant_override("separation", 6)
+		card_vbox.add_child(stats_row)
+
+		var stars_box := HBoxContainer.new()
+		stars_box.name = "StarsBox"
+		stars_box.alignment = BoxContainer.ALIGNMENT_CENTER
+		stars_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		stars_box.add_theme_constant_override("separation", 1)
+		stats_row.add_child(stars_box)
+
+		for i in range(3):
+			var star_lbl := Label.new()
+			star_lbl.name = "Star_%d" % i
+			star_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			star_lbl.add_theme_font_size_override("font_size", 13)
+			if i < last_stars:
+				star_lbl.text = "★"
+				star_lbl.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0, 1.0))
+				star_lbl.add_theme_color_override("font_outline_color", Color(0.18, 0.12, 0.02, 1.0))
+				star_lbl.add_theme_constant_override("outline_size", 3)
+			else:
+				star_lbl.text = "☆"
+				star_lbl.add_theme_color_override("font_color", Color(0.38, 0.42, 0.50, 0.90))
+			stars_box.add_child(star_lbl)
+
+		var info_lbl := Label.new()
+		info_lbl.name = "InfoLabel"
+		info_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		info_lbl.add_theme_font_size_override("font_size", 11)
+		info_lbl.add_theme_color_override("font_color", Color(0.18, 0.22, 0.30, 1.0))
+		info_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if last_diff == "":
+			info_lbl.text = "Sin jugar  •  0 pts"
+		else:
+			info_lbl.text = "%s  •  Último: %d pts" % [_format_difficulty_label(last_diff), last_score]
+		stats_row.add_child(info_lbl)
+
 		btn.pressed.connect(func(): _launch_minigame(scene_path))
 		minigames_container.add_child(btn)
+
+func _format_difficulty_label(diff_code: String) -> String:
+	match diff_code.to_upper():
+		"FACIL":
+			return "Fácil"
+		"NORMAL":
+			return "Normal"
+		"INGENIERO":
+			return "Ingeniero"
+		_:
+			return diff_code.capitalize() if diff_code != "" else "Sin jugar"
 
 func _launch_minigame(scene_path: String) -> void:
 	var am: Node = null

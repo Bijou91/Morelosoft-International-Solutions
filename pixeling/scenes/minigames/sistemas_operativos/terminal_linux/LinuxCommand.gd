@@ -750,6 +750,7 @@ func _handle_game_over(reason: String) -> void:
 	is_waiting_next = false
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
+	finish_game(false, 0, 0, reason)
 
 	if flow_template:
 		flow_template.show_game_over("Causa: %s\nTe has quedado sin vidas en dificultad %s." % [reason, current_difficulty], 0)
