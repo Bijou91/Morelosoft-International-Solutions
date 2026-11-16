@@ -36,6 +36,11 @@ func _ready() -> void:
 		eb.minigame_completed.connect(func(_id, _res): _populate_minigames())
 		eb.points_updated.connect(func(_tot, _delta): _populate_minigames())
 
+	# Asegurar música de fondo del campus si regresa de un minijuego
+	var am = get_node_or_null("/root/AudioManager")
+	if am and am.has_method("play_music"):
+		am.play_music("res://assets/lobby/musica/Geometry_of_Thought.mp3", true)
+
 	_populate_minigames()
 
 func _load_background() -> void:

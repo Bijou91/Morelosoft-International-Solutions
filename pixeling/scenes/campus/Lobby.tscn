@@ -75,6 +75,48 @@ expand_mode = 1
 stretch_mode = 6
 mouse_filter = 2
 
+[node name="NPCContainer" type="Control" parent="."]
+y_sort_enabled = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NPCsCenter" type="Control" parent="NPCContainer"]
+y_sort_enabled = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NPCsLeft" type="Control" parent="NPCContainer"]
+visible = false
+y_sort_enabled = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NPCsRight" type="Control" parent="NPCContainer"]
+visible = false
+y_sort_enabled = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -86,6 +128,7 @@ offset_right = -12.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/separation = 12
 
 [node name="TopHUD" type="HBoxContainer" parent="VBox"]
@@ -442,4 +485,6 @@ stretch_mode = 5
 
 [node name="SettingsModal" parent="." instance=ExtResource("2_settings")]
 visible = false
+z_index = 1000
+z_as_relative = false
 layout_mode = 1

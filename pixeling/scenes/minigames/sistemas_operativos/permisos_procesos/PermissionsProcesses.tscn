@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://permisoprocesocu18uaz"]
 
 [ext_resource type="Script" path="res://scenes/minigames/sistemas_operativos/permisos_procesos/PermissionsProcesses.gd" id="1_proc01"]
-[ext_resource type="Texture2D" path="res://assets/terminal_linux/teacher_linux.png" id="2_teach"]
-[ext_resource type="Texture2D" path="res://assets/terminal_linux/crt_bezel.png" id="3_bezel"]
-[ext_resource type="Texture2D" path="res://assets/terminal_linux/student_hands_keyboard.png" id="4_hands"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/ProfesorNormal.png" id="2_teach"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/Monitor2.jpg" id="3_bezel"]
+[ext_resource type="Texture2D" path="res://assets/terminal_linux/TecladoManos2.jpg" id="4_hands"]
 
 [node name="PermissionsProcesses" type="Control"]
 layout_mode = 3
@@ -92,7 +92,7 @@ autowrap_mode = 2
 vertical_alignment = 1
 
 [node name="TeacherTexture" type="TextureRect" parent="TeacherSection"]
-custom_minimum_size = Vector2(58, 58)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 size_flags_vertical = 4
 texture = ExtResource("2_teach")
@@ -109,11 +109,25 @@ offset_right = -8.0
 offset_bottom = 438.0
 grow_horizontal = 2
 
+[node name="BezelTexture" type="TextureRect" parent="CRTContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bezel")
+expand_mode = 1
+
 [node name="ScreenBackground" type="ColorRect" parent="CRTContainer"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 18.0
+offset_right = -6.0
+offset_bottom = -30.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.015, 0.02, 0.035, 1)
@@ -123,10 +137,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = -4.0
+offset_left = 8.0
+offset_top = 20.0
+offset_right = -8.0
+offset_bottom = -32.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 4
@@ -220,12 +234,11 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 36.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("4_hands")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
 [node name="KeyboardRoot" type="VBoxContainer" parent="ControlsSection"]
 layout_mode = 1

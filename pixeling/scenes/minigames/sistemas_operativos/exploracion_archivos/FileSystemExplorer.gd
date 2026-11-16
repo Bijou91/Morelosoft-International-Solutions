@@ -4,6 +4,8 @@ extends MiniGameBase
 
 const LinuxChallenges = preload("res://scenes/minigames/sistemas_operativos/exploracion_archivos/LinuxFileSystemChallenges.gd")
 
+const MUSIC_FILE_SYSTEM = "res://assets/terminal_linux/SegundoMinijuego/musica/Before_the_Timeout.mp3"
+
 # HUD Superior
 @onready var btn_pause: Button = $TopHUD/BtnPause
 @onready var time_bar: ProgressBar = $TopHUD/TimeBar
@@ -14,6 +16,23 @@ const LinuxChallenges = preload("res://scenes/minigames/sistemas_operativos/expl
 # Sección Profesor
 @onready var teacher_label: Label = $TeacherSection/BubblePanel/TeacherLabel
 @onready var teacher_texture: TextureRect = $TeacherSection/TeacherTexture
+@onready var bubble_panel: PanelContainer = $TeacherSection/BubblePanel
+
+# Texturas para la animación de habla del docente (sprites detallados con fondo transparente)
+var teacher_tex_idle: Texture2D = preload("res://assets/terminal_linux/ProfesorNormal.png")
+var teacher_tex_talk: Texture2D = preload("res://assets/terminal_linux/ProfesorHablando.png")
+
+# Estado de animación del docente y typewriter estilo Balatro
+var is_teacher_speaking: bool = false
+var target_dialogue_text: String = ""
+var typewriter_char_index: float = 0.0
+var typewriter_chars_per_sec: float = 38.0
+var balatro_anim_time: float = 0.0
+var talk_frame_timer: float = 0.0
+var talk_current_frame: int = 0
+var typewriter_player: AudioStreamPlayer
+var typewriter_sfx_streams: Array[AudioStreamWAV] = []
+var typewriter_tween: Tween
 
 # Terminal Superior (Prompt y Consola de salida interactiva)
 @onready var terminal_prompt_label: Label = $CRTContainer/TerminalPanel/TerminalPromptLabel
@@ -81,6 +100,12 @@ func _ready() -> void:
 	minigame_title = "Exploración de Archivos y Flag"
 	subject_name = "Sistemas Operativos y Linux"
 
+	_init_typewriter_audio()
+	if bubble_panel:
+		bubble_panel.gui_input.connect(_on_bubble_panel_gui_input)
+		bubble_panel.pivot_offset = bubble_panel.size * 0.5
+	if teacher_texture:
+		teacher_texture.pivot_offset = Vector2(teacher_texture.size.x * 0.5, teacher_texture.size.y)
 	_connect_signals()
 	lock_dynamic_label_box(teacher_label, teacher_label.get_parent() as Control, 80.0, 11, 7, 4.0, 2.0, true, true, 4.0)
 	lock_dynamic_label_box(terminal_prompt_label, null, 17.0, 10, 7, 0.0, 0.0, false, true)
@@ -120,6 +145,12 @@ func _connect_signals() -> void:
 	btn_picker_cancel.pressed.connect(_close_picker)
 
 func _process(delta: float) -> void:
+	# 1. Movimiento visual orgánico estilo Balatro para el diálogo
+	_update_balatro_dialogue_motion(delta)
+
+	# 2. Generación progresiva (typewriter) y animación de habla del docente
+	_update_typewriter_and_talking(delta)
+
 	if not is_timer_active or is_game_paused:
 		return
 
@@ -129,6 +160,14 @@ func _process(delta: float) -> void:
 		_on_time_out()
 
 	_update_timer_display()
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Si el profesor está hablando, permitir adelantar/completar el texto con Enter/Espacio
+	if is_teacher_speaking:
+		if event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_SPACE)):
+			_finish_typewriter_immediately()
+			get_viewport().set_input_as_handled()
+			return
 
 # ==================== FLUJO DE SELECCIÓN Y TUTORIAL ====================
 
@@ -178,7 +217,7 @@ func _show_tutorial() -> void:
 	modal_tutorial.visible = true
 	btn_tutorial_start.text = "SELECCIONAR DIFICULTAD ➔"
 
-	teacher_label.text = "¡Bienvenido a la Práctica de Exploración de Archivos (CU-17)!\nLee las instrucciones del desafío antes de elegir tu dificultad."
+	_speak_teacher("¡Bienvenido a la Práctica de Exploración de Archivos (CU-17)!\nLee las instrucciones del desafío antes de elegir tu dificultad.", 42.0)
 	terminal_prompt_label.text = "user@is-pixelverse:~$ [MODO INSTRUCCIONES]"
 
 	var rules_text: String = """INSTRUCCIONES DEL DESAFÍO:
@@ -207,11 +246,12 @@ func _show_difficulty_selection() -> void:
 		flow_template.show_difficulty()
 		return
 	modal_difficulty.visible = true
-	teacher_label.text = "Selecciona el nivel de dificultad para iniciar el desafío."
+	_speak_teacher("Selecciona el nivel de dificultad para iniciar el desafío.", 42.0)
 	terminal_prompt_label.text = "user@is-pixelverse:~$ [SELECCIÓN DIFICULTAD]"
 
 func _on_difficulty_chosen(diff: String) -> void:
 	AudioManager.play_click()
+	AudioManager.stop_music()
 	current_difficulty = diff
 
 	match diff:
@@ -238,6 +278,10 @@ func _start_match() -> void:
 		flow_template.hide_all()
 	super.start_game(current_difficulty)
 
+	# Iniciar música temática en bucle del segundo minijuego (Before the Timeout)
+	if AudioManager and AudioManager.has_method("play_music"):
+		AudioManager.play_music(MUSIC_FILE_SYSTEM, true)
+
 	current_match_generation += 1
 	current_lives = max_lives
 	is_game_paused = false
@@ -253,7 +297,7 @@ func _start_match() -> void:
 
 	# Configurar textos
 	challenge_label.text = "DESAFÍO: %s" % current_difficulty
-	teacher_label.text = current_challenge.get("situation", "Explora el sistema para hallar la flag.")
+	_speak_teacher(current_challenge.get("situation", "Explora el sistema para hallar la flag."), 38.0)
 	
 	# Reiniciar salida de terminal limpia
 	terminal_output.clear()
@@ -540,14 +584,14 @@ func _on_submit_flag_pressed() -> void:
 func _handle_wrong_flag(entered: String) -> void:
 	AudioManager.play_error()
 	_append_terminal_line("[color=#ff3333][ FLAG INCORRECTA ] '%s' no es válida (-1 Vida).[/color]" % entered)
-	teacher_label.text = "¡Esa no es la flag correcta! Revisa cuidadosamente el contenido de los archivos."
+	_speak_teacher("¡Esa no es la flag correcta! Revisa cuidadosamente el contenido de los archivos.", 48.0)
 	flag_input.text = ""
 	_deduct_life("Flag incorrecta ingresada")
 
 func _on_time_out() -> void:
 	AudioManager.play_error()
 	_append_terminal_line("[color=#ff3333][ TIEMPO EXPIRADO ] El contador llegó a 0 (-1 Vida).[/color]")
-	teacher_label.text = "¡Se agotó el tiempo! El contador se reinicia mientras tengas vidas."
+	_speak_teacher("¡Se agotó el tiempo! El contador se reinicia mientras tengas vidas.", 45.0)
 	_deduct_life("Tiempo límite agotado")
 
 func _deduct_life(reason: String) -> void:
@@ -565,6 +609,8 @@ func _deduct_life(reason: String) -> void:
 func _handle_game_over(reason: String) -> void:
 	is_timer_active = false
 	_close_picker()
+	if AudioManager and AudioManager.has_method("stop_music"):
+		AudioManager.stop_music()
 	AudioManager.play_game_over()
 	EventBus.game_over.emit(minigame_id)
 	finish_game(false, 0, 0, "Partida finalizada: " + reason)
@@ -580,10 +626,12 @@ func _handle_victory() -> void:
 	_hide_all_modals()
 	_close_picker()
 	is_timer_active = false
+	if AudioManager and AudioManager.has_method("stop_music"):
+		AudioManager.stop_music()
 	AudioManager.play_success()
 
 	_append_terminal_line("[color=#33ff55][ FLAG CORRECTA ] ¡Felicidades! Desafío completado (+%d pts).[/color]" % total_score)
-	teacher_label.text = "¡Excelente trabajo! Has demostrado dominio en la navegación del sistema de archivos Linux."
+	_speak_teacher("¡Excelente trabajo! Has demostrado dominio en la navegación del sistema de archivos Linux.", 45.0)
 
 	var stars: int = 1
 	if current_lives == max_lives:
@@ -638,6 +686,8 @@ func _update_lives_hud() -> void:
 func _on_pause_pressed() -> void:
 	AudioManager.play_click()
 	is_game_paused = true
+	if AudioManager and AudioManager.has_method("pause_music"):
+		AudioManager.pause_music(true)
 	if flow_template:
 		flow_template.show_pause()
 	else:
@@ -646,6 +696,8 @@ func _on_pause_pressed() -> void:
 func _resume_game() -> void:
 	AudioManager.play_click()
 	is_game_paused = false
+	if AudioManager and AudioManager.has_method("pause_music"):
+		AudioManager.pause_music(false)
 	if flow_template:
 		flow_template.hide_pause()
 	modal_pause.visible = false
@@ -657,6 +709,8 @@ func _restart_match() -> void:
 
 func _exit_to_classroom() -> void:
 	AudioManager.play_click()
+	if AudioManager and AudioManager.has_method("stop_music"):
+		AudioManager.stop_music()
 	if ResourceLoader.exists("res://scenes/classroom/SistemaOperativoLinux.tscn"):
 		get_tree().change_scene_to_file("res://scenes/classroom/SistemaOperativoLinux.tscn")
 	else:
@@ -669,3 +723,190 @@ func _hide_all_modals() -> void:
 	modal_game_over.visible = false
 	modal_victory.visible = false
 	picker_modal.visible = false
+
+# ==================== ANIMACIÓN Y DIÁLOGO ESTILO BALATRO ====================
+
+func _init_typewriter_audio() -> void:
+	typewriter_player = AudioStreamPlayer.new()
+	typewriter_player.name = "TypewriterSFX"
+	typewriter_player.bus = "Master"
+	add_child(typewriter_player)
+	_sync_typewriter_volume()
+
+	var eb = get_node_or_null("/root/EventBus")
+	if eb:
+		if not eb.settings_changed.is_connected(_on_audio_settings_changed):
+			eb.settings_changed.connect(_on_audio_settings_changed)
+		if not eb.settings_updated.is_connected(_on_audio_settings_changed):
+			eb.settings_updated.connect(_on_audio_settings_changed)
+	var am = get_node_or_null("/root/AudioManager")
+	if am and am.has_signal("sfx_volume_changed"):
+		if not am.sfx_volume_changed.is_connected(_on_sfx_vol_changed):
+			am.sfx_volume_changed.connect(_on_sfx_vol_changed)
+
+	typewriter_sfx_streams.clear()
+	var base_freqs := [420.0, 480.0, 540.0, 600.0, 660.0]
+	for freq in base_freqs:
+		var stream := _generate_chatter_tone(freq, 0.038)
+		if stream:
+			typewriter_sfx_streams.append(stream)
+
+func _on_audio_settings_changed(_settings: Dictionary = {}) -> void:
+	_sync_typewriter_volume()
+
+func _on_sfx_vol_changed(_vol: float = 1.0) -> void:
+	_sync_typewriter_volume()
+
+func _sync_typewriter_volume() -> void:
+	if not typewriter_player:
+		return
+	var sfx_vol := 1.0
+	var am = get_node_or_null("/root/AudioManager")
+	if am:
+		sfx_vol = float(am.sfx_volume)
+	elif has_node("/root/StateManager"):
+		var sm = get_node("/root/StateManager")
+		if sm.has_method("get_settings"):
+			sfx_vol = float(sm.get_settings().get("sfx_volume", 1.0))
+
+	if sfx_vol <= 0.001:
+		typewriter_player.volume_db = -80.0
+	else:
+		typewriter_player.volume_db = linear_to_db(sfx_vol) - 10.0
+
+func _generate_chatter_tone(freq: float, duration: float) -> AudioStreamWAV:
+	var sample_rate := 22050
+	var sample_count := int(sample_rate * duration)
+	var byte_data := PackedByteArray()
+	byte_data.resize(sample_count)
+
+	for i in range(sample_count):
+		var t := float(i) / float(sample_rate)
+		var env := sin(PI * (float(i) / float(sample_count)))
+		var val := sin(2.0 * PI * freq * t) * env
+		var byte_val := clampi(int((val * 0.5 + 0.5) * 255.0), 0, 255)
+		byte_data[i] = byte_val
+
+	var s := AudioStreamWAV.new()
+	s.format = AudioStreamWAV.FORMAT_8_BITS
+	s.mix_rate = sample_rate
+	s.stereo = false
+	s.data = byte_data
+	return s
+
+func _speak_teacher(new_text: String, chars_per_sec: float = 38.0) -> void:
+	target_dialogue_text = new_text
+	typewriter_chars_per_sec = chars_per_sec
+	typewriter_char_index = 0.0
+	is_teacher_speaking = true
+	talk_current_frame = 1
+	talk_frame_timer = 0.0
+
+	teacher_label.text = new_text
+	teacher_label.visible_characters = 0
+
+	# Punch / bounce pop estilo Balatro al iniciar nuevo diálogo
+	if is_instance_valid(bubble_panel):
+		if bubble_panel.size != Vector2.ZERO:
+			bubble_panel.pivot_offset = bubble_panel.size * 0.5
+		if is_instance_valid(typewriter_tween) and typewriter_tween.is_running():
+			typewriter_tween.kill()
+		typewriter_tween = create_tween()
+		bubble_panel.scale = Vector2(1.08, 0.92)
+		typewriter_tween.tween_property(bubble_panel, "scale", Vector2.ONE, 0.32)\
+			.set_trans(Tween.TRANS_BACK)\
+			.set_ease(Tween.EASE_OUT)
+
+	if is_instance_valid(teacher_texture):
+		if teacher_texture.size != Vector2.ZERO:
+			teacher_texture.pivot_offset = Vector2(teacher_texture.size.x * 0.5, teacher_texture.size.y)
+		teacher_texture.texture = teacher_tex_talk
+
+func _finish_typewriter_immediately() -> void:
+	if not is_teacher_speaking:
+		return
+	is_teacher_speaking = false
+	teacher_label.visible_characters = -1
+	if is_instance_valid(teacher_texture):
+		teacher_texture.texture = teacher_tex_idle
+		teacher_texture.rotation = 0.0
+		teacher_texture.scale = Vector2.ONE
+
+func _on_bubble_panel_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if is_teacher_speaking:
+			_finish_typewriter_immediately()
+
+func _update_balatro_dialogue_motion(delta: float) -> void:
+	balatro_anim_time += delta
+	var t := balatro_anim_time
+
+	if is_instance_valid(bubble_panel):
+		if bubble_panel.pivot_offset == Vector2.ZERO and bubble_panel.size != Vector2.ZERO:
+			bubble_panel.pivot_offset = bubble_panel.size * 0.5
+
+		# Oscilación armónica senoidal estilo Balatro: sutil inclinación y respiración
+		var sway := sin(t * 2.4) * 0.016 + cos(t * 1.6) * 0.006
+		if is_teacher_speaking:
+			sway += sin(t * 26.0) * 0.004
+
+		bubble_panel.rotation = sway
+
+		if typewriter_tween == null or not typewriter_tween.is_running():
+			var breath_x := 1.0 + sin(t * 3.2) * 0.013
+			var breath_y := 1.0 - sin(t * 3.2) * 0.013
+			bubble_panel.scale = Vector2(breath_x, breath_y)
+
+func _update_typewriter_and_talking(delta: float) -> void:
+	if not is_instance_valid(teacher_texture):
+		return
+
+	if teacher_texture.pivot_offset == Vector2.ZERO and teacher_texture.size != Vector2.ZERO:
+		teacher_texture.pivot_offset = Vector2(teacher_texture.size.x * 0.5, teacher_texture.size.y)
+
+	if not is_teacher_speaking:
+		# Animación idle del docente (respiración tranquila y suave cabeceo)
+		var idle_t := balatro_anim_time
+		teacher_texture.rotation = sin(idle_t * 1.8) * 0.012
+		teacher_texture.scale = Vector2(1.0 + cos(idle_t * 2.4) * 0.01, 1.0 + sin(idle_t * 2.4) * 0.014)
+		return
+
+	# Progreso de la máquina de escribir
+	var prev_idx := int(typewriter_char_index)
+	typewriter_char_index += delta * typewriter_chars_per_sec
+	var current_visible := int(typewriter_char_index)
+	var total_chars := target_dialogue_text.length()
+
+	if current_visible < total_chars:
+		if teacher_label.visible_characters != current_visible:
+			teacher_label.visible_characters = current_visible
+
+		if current_visible > prev_idx:
+			var char_at := target_dialogue_text.substr(mini(current_visible - 1, total_chars - 1), 1)
+			if char_at != " " and char_at != "\n" and char_at != "\t":
+				if typewriter_player and not typewriter_sfx_streams.is_empty():
+					_sync_typewriter_volume()
+					var am = get_node_or_null("/root/AudioManager")
+					var cur_sfx: float = am.sfx_volume if am else 1.0
+					if cur_sfx > 0.001 and not typewriter_player.playing:
+						typewriter_player.stream = typewriter_sfx_streams.pick_random()
+						typewriter_player.pitch_scale = randf_range(0.92, 1.14)
+						typewriter_player.play()
+
+		# Movimiento corporal al hablar (cabeceo rítmico y gesticulación)
+		var speak_t := balatro_anim_time * 15.0
+		teacher_texture.rotation = sin(speak_t) * 0.035 + cos(speak_t * 0.7) * 0.015
+		teacher_texture.scale = Vector2(1.0 + sin(speak_t * 1.2) * 0.025, 1.0 - sin(speak_t * 1.2) * 0.025)
+
+		# Alternancia de bocas (animación de habla con los nuevos sprites detallados)
+		talk_frame_timer += delta
+		if talk_frame_timer >= 0.12:
+			talk_frame_timer = 0.0
+			talk_current_frame = 1 - talk_current_frame
+			teacher_texture.texture = teacher_tex_talk if talk_current_frame == 1 else teacher_tex_idle
+	else:
+		teacher_label.visible_characters = -1
+		is_teacher_speaking = false
+		teacher_texture.texture = teacher_tex_idle
+		teacher_texture.rotation = 0.0
+		teacher_texture.scale = Vector2.ONE

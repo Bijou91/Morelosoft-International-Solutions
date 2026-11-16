@@ -17,6 +17,12 @@ func _ready() -> void:
 	fade_overlay.color = Color(0, 0, 0, 0)
 	progress_bar.value = 0.0
 	
+	# Iniciar música del campus desde la pantalla de carga
+	var music_path := "res://assets/lobby/musica/Geometry_of_Thought.mp3"
+	var am = get_node_or_null("/root/AudioManager")
+	if am and am.has_method("play_music"):
+		am.play_music(music_path, true)
+	
 	# Animar barra de progreso a lo largo de los 5 segundos
 	var tween := create_tween()
 	tween.tween_property(progress_bar, "value", 100.0, LOAD_DURATION)

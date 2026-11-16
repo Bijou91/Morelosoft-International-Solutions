@@ -3,10 +3,14 @@
 ## Responsable: Carlos Manuel Aguirre Norato (Líder Técnico)
 extends Node
 
+signal sfx_volume_changed(new_volume: float)
+signal music_volume_changed(new_volume: float)
+
 var audio_player: AudioStreamPlayer
 var music_player: AudioStreamPlayer
 var sfx_volume: float = 1.0
 var music_volume: float = 1.0
+var current_music_path: String = ""
 
 func _ready() -> void:
 	audio_player = AudioStreamPlayer.new()
@@ -16,6 +20,13 @@ func _ready() -> void:
 	music_player = AudioStreamPlayer.new()
 	music_player.name = "MusicPlayer"
 	add_child(music_player)
+
+	if has_node("/root/StateManager"):
+		var sm = get_node("/root/StateManager")
+		if sm.has_method("get_settings"):
+			var settings: Dictionary = sm.get_settings()
+			sfx_volume = float(settings.get("sfx_volume", 1.0))
+			music_volume = float(settings.get("music_volume", 1.0))
 	
 	set_sfx_volume(sfx_volume)
 	set_music_volume(music_volume)
@@ -27,6 +38,7 @@ func set_sfx_volume(value: float) -> void:
 			audio_player.volume_db = -80.0
 		else:
 			audio_player.volume_db = linear_to_db(sfx_volume)
+	sfx_volume_changed.emit(sfx_volume)
 
 func set_music_volume(value: float) -> void:
 	music_volume = clampf(value, 0.0, 1.0)
@@ -35,6 +47,56 @@ func set_music_volume(value: float) -> void:
 			music_player.volume_db = -80.0
 		else:
 			music_player.volume_db = linear_to_db(music_volume)
+	music_volume_changed.emit(music_volume)
+
+## Reproduce una pista musical en bucle a través del canal MusicPlayer
+func play_music(path: String, loop: bool = true) -> void:
+	if current_music_path == path and music_player and music_player.playing:
+		return
+	
+	if not ResourceLoader.exists(path) and not FileAccess.file_exists(path):
+		print("[AudioManager] Pista de música no encontrada: ", path)
+		return
+	
+	var stream = null
+	if ResourceLoader.exists(path):
+		stream = load(path)
+	
+	if not stream and FileAccess.file_exists(path):
+		if path.ends_with(".mp3"):
+			var mp3 := AudioStreamMP3.new()
+			var f := FileAccess.open(path, FileAccess.READ)
+			if f:
+				mp3.data = f.get_buffer(f.get_length())
+				f.close()
+				stream = mp3
+	
+	if not stream:
+		return
+	
+	if stream is AudioStreamMP3:
+		stream.loop = loop
+	elif stream is AudioStreamOggVorbis:
+		stream.loop = loop
+	elif stream is AudioStreamWAV:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD if loop else AudioStreamWAV.LOOP_DISABLED
+	
+	current_music_path = path
+	if music_player:
+		music_player.stream = stream
+		music_player.play()
+		print("[AudioManager] Reproduciendo música de fondo: ", path)
+
+## Detiene la música actual
+func stop_music() -> void:
+	current_music_path = ""
+	if music_player:
+		music_player.stop()
+
+## Pausa o reanuda la música
+func pause_music(paused: bool = true) -> void:
+	if music_player:
+		music_player.stream_paused = paused
 
 ## Genera un tono de onda cuadrada (8-bit) programáticamente en memoria
 func _create_8bit_tone(freq: float, duration: float) -> AudioStreamWAV:
