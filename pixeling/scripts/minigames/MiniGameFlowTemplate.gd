@@ -388,7 +388,7 @@ func _build_result_modals() -> void:
 		if victory_modal.has_signal("play_again_requested"):
 			victory_modal.play_again_requested.connect(_on_victory_play_again)
 		if victory_modal.has_signal("exit_requested"):
-			victory_modal.exit_requested.connect(_on_back_pressed)
+			victory_modal.exit_requested.connect(_on_change_difficulty_requested)
 
 	var go_scene = load("res://scenes/ui/modals/GameOverModal.tscn")
 	if go_scene:
@@ -398,7 +398,7 @@ func _build_result_modals() -> void:
 		if game_over_modal.has_signal("retry_requested"):
 			game_over_modal.retry_requested.connect(_on_game_over_retry)
 		if game_over_modal.has_signal("exit_requested"):
-			game_over_modal.exit_requested.connect(_on_back_pressed)
+			game_over_modal.exit_requested.connect(_on_change_difficulty_requested)
 
 ## Selección de Dificultad con modulación limpia
 func select_difficulty(diff: String) -> void:
@@ -566,6 +566,15 @@ func _on_game_over_retry() -> void:
 		config["on_restart"].call()
 	elif config.has("on_start") and config["on_start"] is Callable:
 		show_difficulty()
+
+func _on_change_difficulty_requested() -> void:
+	_play_click()
+	_unpause_tree()
+	if victory_modal and victory_modal.has_method("close"):
+		victory_modal.close()
+	if game_over_modal and game_over_modal.has_method("close"):
+		game_over_modal.close()
+	show_difficulty()
 
 func _play_click() -> void:
 	if AudioManager and AudioManager.has_method("play_click"):

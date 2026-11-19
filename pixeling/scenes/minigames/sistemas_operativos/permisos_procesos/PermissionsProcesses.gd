@@ -96,6 +96,7 @@ var time_remaining: float = 90.0
 var total_score: int = 300
 var is_timer_active: bool = false
 var is_game_paused: bool = false
+var is_victory_shown: bool = false
 
 # Buffer de texto de la terminal (estilo terminal real)
 var terminal_history: String = ""
@@ -309,6 +310,7 @@ func _start_match() -> void:
 
 	current_lives = max_lives
 	is_game_paused = false
+	is_victory_shown = false
 	current_input_text = ""
 	history_index = -1
 	cursor_visible = true
@@ -629,7 +631,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			current_input_text = ""
 			history_index = -1
 			get_viewport().set_input_as_handled()
-		elif event.unicode >= 32 and event.unicode != 127:
+		elif not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed and event.unicode >= 32 and event.unicode != 127:
 			_append_input_char(char(event.unicode))
 			get_viewport().set_input_as_handled()
 
@@ -681,8 +683,12 @@ func _handle_game_over(reason: String) -> void:
 	modal_game_over.visible = true
 
 func _handle_victory() -> void:
+	if is_victory_shown:
+		return
+	is_victory_shown = true
 	_hide_all_modals()
 	is_timer_active = false
+	is_teacher_speaking = false
 	if AudioManager and AudioManager.has_method("stop_music"):
 		AudioManager.stop_music()
 	AudioManager.play_success()
@@ -718,6 +724,16 @@ func _handle_victory() -> void:
 • Objetivos Completados: 100%%""" % [current_difficulty, total_score, current_lives, max_lives, stars]
 
 	modal_victory.visible = true
+
+func _trigger_debug_win() -> void:
+	if is_victory_shown:
+		return
+	_is_debug_win = true
+	_hide_all_modals()
+	current_lives = max_lives
+	if total_score <= 0:
+		total_score = 600
+	_handle_victory()
 
 # ==================== HUD Y MODALES ====================
 

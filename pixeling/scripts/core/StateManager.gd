@@ -286,15 +286,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			var current = get_tree().current_scene
 			if current and current.has_method("_trigger_debug_win"):
 				current._trigger_debug_win()
-		# F9 o Ctrl+Shift+W: Desbloquear y completar todos los minijuegos con 3 estrellas
+				get_viewport().set_input_as_handled()
+		# F9 o Ctrl+Shift+W: Desbloqueo completo de todos los minijuegos con 3 estrellas
 		elif event.keycode == KEY_F9 or (event.keycode == KEY_W and event.ctrl_pressed and event.shift_pressed):
 			debug_unlock_all_minigames()
+			get_viewport().set_input_as_handled()
 		# F12 o Ctrl+Shift+R: Resetear progreso para pruebas limpias
 		elif event.keycode == KEY_F12 or (event.keycode == KEY_R and event.ctrl_pressed and event.shift_pressed):
 			debug_reset_progress()
+			get_viewport().set_input_as_handled()
 		# F3 o Ctrl+M: Alternar HUD de Rendimiento y Memoria RAM en tiempo real
 		elif event.keycode == KEY_F3 or (event.keycode == KEY_M and event.ctrl_pressed):
 			toggle_memory_hud()
+			get_viewport().set_input_as_handled()
 
 ## Atajo de depuración: Marca todos los minijuegos como completados con 3 estrellas y otorga puntos
 func debug_unlock_all_minigames() -> void:

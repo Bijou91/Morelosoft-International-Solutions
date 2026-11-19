@@ -183,4 +183,4 @@ theme_override_styles/normal = ExtResource("9_n_norm")
 theme_override_styles/hover = ExtResource("10_n_hov")
 theme_override_styles/pressed = ExtResource("11_n_press")
 theme_override_styles/focus = ExtResource("10_n_hov")
-text = "← Volver al Aula"
+text = "Cambiar Dificultad"

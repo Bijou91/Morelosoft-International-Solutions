@@ -492,10 +492,12 @@ func _build_screen_game() -> void:
 	btn_instantiate = Button.new()
 	btn_instantiate.name = "BtnInstantiate"
 	btn_instantiate.text = "¡Instanciar Objeto!"
+	btn_instantiate.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	style_kenney_button(btn_instantiate, "green", 38.0)
 	btn_instantiate.modulate.a = 0.95
 	btn_instantiate.pressed.connect(_on_instantiate_pressed)
 	game_vbox.add_child(btn_instantiate)
+	lock_dynamic_button_box(btn_instantiate, 38.0, 12, 8, false, 336.0)
 
 	var status_banner_panel := PanelContainer.new()
 	status_banner_panel.name = "StatusBanner"
@@ -807,6 +809,7 @@ func _load_class_challenge(index: int) -> void:
 
 	btn_instantiate.disabled = false
 	btn_instantiate.text = "¡Instanciar Objeto!"
+	fit_control_text_now(btn_instantiate)
 	if btn_instantiate.pressed.is_connected(_handle_victory):
 		btn_instantiate.pressed.disconnect(_handle_victory)
 	if not btn_instantiate.pressed.is_connected(_on_instantiate_pressed):
@@ -1246,6 +1249,7 @@ func _on_hero_instantiated_success() -> void:
 	if is_last_hero:
 		btn_instantiate.disabled = false
 		btn_instantiate.text = "¡Mesa Superada! Ver Resultados"
+		fit_control_text_now(btn_instantiate)
 		if btn_instantiate.pressed.is_connected(_on_instantiate_pressed):
 			btn_instantiate.pressed.disconnect(_on_instantiate_pressed)
 		if not btn_instantiate.pressed.is_connected(_handle_victory):
@@ -1260,7 +1264,8 @@ func _on_hero_instantiated_success() -> void:
 			_handle_victory()
 	else:
 		btn_instantiate.disabled = true
-		btn_instantiate.text = "✨ ¡%s Instanciado! (+%d pts)" % [current_hero.class_name, points_per_char]
+		btn_instantiate.text = "¡%s Instanciado! (+%d pts)" % [current_hero.class_name, points_per_char]
+		fit_control_text_now(btn_instantiate)
 		_set_status("✨ ¡%s forjado con éxito! Cargando siguiente personaje..." % current_hero.class_name, Color("69f0ae"))
 
 		# Transición fluida directa en la misma mesa de forja sin interrumpir con modales
@@ -1409,6 +1414,8 @@ func _on_back_pressed() -> void:
 
 # Atajo de pruebas QA (F8 / Ctrl+W)
 func _trigger_debug_win() -> void:
+	if is_victory_shown:
+		return
 	_is_debug_win = true
 	_hide_all_modals()
 	current_hero_index = hero_classes_queue.size()

@@ -101,85 +101,43 @@ func _ready() -> void:
 	btn_logic.pressed.connect(func(): _open_classroom("Aula 103: Lógica", "res://scenes/classroom/AulaLogica.tscn"))
 	btn_linux.pressed.connect(func(): _open_classroom("Aula 104: Linux", "res://scenes/classroom/SistemaOperativoLinux.tscn"))
 
-func _load_lobby_background() -> void:
-	if not bg_lobby:
+func _load_background_texture(target: TextureRect, candidates: Array[String], label: String) -> void:
+	if not target:
 		return
-	
-	bg_lobby.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg_lobby.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	
-	var candidates: Array[String] = [
+	target.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	target.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+
+	for path in candidates:
+		if ResourceLoader.exists(path):
+			var res = load(path)
+			if res is Texture2D:
+				target.texture = res
+				print("[Lobby] %s cargado desde: %s" % [label, path])
+				return
+		if FileAccess.file_exists(path):
+			var img := Image.load_from_file(path)
+			if img and not img.is_empty():
+				target.texture = ImageTexture.create_from_image(img)
+				print("[Lobby] %s cargado como Image desde: %s" % [label, path])
+				return
+
+func _load_lobby_background() -> void:
+	_load_background_texture(bg_lobby, [
 		"res://assets/lobby/lobby_centro.jpg",
 		"res://assets/lobby/4a19f15e-dd55-473f-9006-e995718ef46b.jpg"
-	]
-	
-	for path in candidates:
-		if FileAccess.file_exists(path):
-			# Si ya fue procesado por Godot, cargarlo directamente
-			if ResourceLoader.exists(path):
-				var res = load(path)
-				if res is Texture2D:
-					bg_lobby.texture = res
-					print("[Lobby] Fondo centro cargado desde: ", path)
-					return
-			# Si es una imagen aún sin importar por el motor, cargarla como Image en memoria
-			var img := Image.load_from_file(path)
-			if img and not img.is_empty():
-				bg_lobby.texture = ImageTexture.create_from_image(img)
-				print("[Lobby] Fondo centro cargado como Image desde: ", path)
-				return
+	], "Fondo centro")
 
 func _load_left_background() -> void:
-	if not bg_left:
-		return
-	
-	bg_left.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg_left.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	
-	var candidates: Array[String] = [
+	_load_background_texture(bg_left, [
 		"res://assets/lobby/ala_izquierda.jpg",
 		"res://assets/lobby/izquierda.jpg"
-	]
-	
-	for path in candidates:
-		if FileAccess.file_exists(path):
-			if ResourceLoader.exists(path):
-				var res = load(path)
-				if res is Texture2D:
-					bg_left.texture = res
-					print("[Lobby] Fondo ala izquierda cargado desde: ", path)
-					return
-			var img := Image.load_from_file(path)
-			if img and not img.is_empty():
-				bg_left.texture = ImageTexture.create_from_image(img)
-				print("[Lobby] Fondo ala izquierda cargado como Image desde: ", path)
-				return
+	], "Fondo ala izquierda")
 
 func _load_right_background() -> void:
-	if not bg_right:
-		return
-	
-	bg_right.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg_right.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	
-	var candidates: Array[String] = [
+	_load_background_texture(bg_right, [
 		"res://assets/lobby/ala_derecha.jpg",
 		"res://assets/lobby/derecha.jpg"
-	]
-	
-	for path in candidates:
-		if FileAccess.file_exists(path):
-			if ResourceLoader.exists(path):
-				var res = load(path)
-				if res is Texture2D:
-					bg_right.texture = res
-					print("[Lobby] Fondo ala derecha cargado desde: ", path)
-					return
-			var img := Image.load_from_file(path)
-			if img and not img.is_empty():
-				bg_right.texture = ImageTexture.create_from_image(img)
-				print("[Lobby] Fondo ala derecha cargado como Image desde: ", path)
-				return
+	], "Fondo ala derecha")
 
 func _show_room(target_room: Control) -> void:
 	room_left.visible = false
