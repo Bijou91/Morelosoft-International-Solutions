@@ -4,6 +4,8 @@
 ## Responsable del módulo: Implementación aislada para Aula 103
 extends MiniGameBase
 
+const LOGIC_FONT: Font = preload("res://assets/logica/mansion_escape/DejaVuSans.ttf")
+
 # --- Configuración por dificultad ---
 const TIMER_BY_DIFF: Dictionary = {
 	"FACIL": 10.0,
@@ -124,6 +126,12 @@ func _ready() -> void:
 
 	_build_instructions_overlay()
 	_build_visuals_and_audio()
+
+	var logic_theme := Theme.new()
+	logic_theme.default_font = LOGIC_FONT
+	theme = logic_theme
+	question_label.add_theme_font_override("font", LOGIC_FONT)
+	status_label.add_theme_font_override("font", LOGIC_FONT)
 
 	# Estabilizar recuadros de texto y HUD
 	lock_dynamic_label_box(status_label, status_label.get_parent() as Control, 38.0, 12, 7, 4.0, 2.0, true, true, 4.0)
@@ -519,6 +527,7 @@ func _build_options() -> void:
 	for i in range(current_options.size()):
 		var btn := Button.new()
 		btn.text = current_options[i]
+		btn.add_theme_font_override("font", LOGIC_FONT)
 		btn.custom_minimum_size = Vector2(0, 52)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

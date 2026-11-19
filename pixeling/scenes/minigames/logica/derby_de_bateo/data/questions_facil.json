@@ -105,7 +105,7 @@
     ]
   },
   {
-    "question": "¿Qué representa el símbolo ￢ o ~ en lógica matemática?",
+    "question": "¿Qué representa el símbolo ¬ o ~ en lógica matemática?",
     "correct": "Negación",
     "incorrect": [
       "Conjunción"
@@ -147,7 +147,7 @@
     ]
   },
   {
-    "question": "¿Cuál es el resultado de la negación ￢(FALSE)?",
+    "question": "¿Cuál es el resultado de la negación ¬(FALSE)?",
     "correct": "TRUE",
     "incorrect": [
       "FALSE"
@@ -196,7 +196,7 @@
     ]
   },
   {
-    "question": "¿Qué hace la ley de la doble negación ￢(￢p)?",
+    "question": "¿Qué hace la ley de la doble negación ¬(¬p)?",
     "correct": "Equivale a la proposición original p",
     "incorrect": [
       "Equivale a la negación de p"

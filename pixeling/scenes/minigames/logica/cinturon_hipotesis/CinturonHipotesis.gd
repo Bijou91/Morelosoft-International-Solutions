@@ -890,6 +890,7 @@ func _process_player_movement(delta: float) -> void:
 	ship_pos.y = clamp(ship_pos.y, 140.0, vp.y - 140.0)
 
 func _unhandled_input(event: InputEvent) -> void:
+	super._unhandled_input(event)
 	if current_state != "PLAYING":
 		return
 	if event.is_action_pressed("ui_accept"):
@@ -1112,6 +1113,8 @@ func _trigger_warning() -> void:
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _on_victory() -> void:
+	if current_state == "VICTORY":
+		return
 	current_state = "VICTORY"
 	vic_score_label.text = "Puntaje final acumulado: %d pts" % score
 	vic_stats_label.text = "Demostración completa de %d pasos en dificultad %s.\nTiempo restante: %ds" % [
@@ -1132,6 +1135,19 @@ func _on_victory() -> void:
 	if flow_template:
 		var total_accum: int = StateManager.get_points() if StateManager else score
 		flow_template.show_victory(score, stars, total_accum, is_record, "¡HIPÓTESIS COMPROBADA!")
+
+func _trigger_debug_win() -> void:
+	if current_state == "VICTORY":
+		return
+	_is_debug_win = true
+	if star_field:
+		star_field.running = false
+	lives = max_lives
+	var cfg: Dictionary = DIFFICULTY_CONFIG.get(current_difficulty, DIFFICULTY_CONFIG["NORMAL"])
+	total_steps = int(cfg.get("steps_count", 4))
+	if score <= 0:
+		score = int(cfg.get("score_per_hit", 100)) * total_steps
+	_on_victory()
 
 func _on_timeout() -> void:
 	# FA-03.04: Hipótesis inconclusa por tiempo -> Penalización del 50% de puntos

@@ -1,9 +1,9 @@
 [
   {
-    "question": "Según las Leyes de De Morgan, ¿a qué equivale la negación de una disyunción ￢(p ∨ q)?",
-    "correct": "￢p ∧ ￢q",
+    "question": "Según las Leyes de De Morgan, ¿a qué equivale la negación de una disyunción ¬(p ∨ q)?",
+    "correct": "¬p ∧ ¬q",
     "incorrect": [
-      "￢p ∨ ￢q",
+      "¬p ∨ ¬q",
       "p ∧ q"
     ]
   },
@@ -33,18 +33,18 @@
   },
   {
     "question": "¿A qué expresión equivale lógicamente la implicación condicional (p → q)?",
-    "correct": "￢p ∨ q",
+    "correct": "¬p ∨ q",
     "incorrect": [
-      "￢p ∧ q",
-      "p ∨ ￢q"
+      "¬p ∧ q",
+      "p ∨ ¬q"
     ]
   },
   {
     "question": "¿Cuál es la proposición contrapositiva de una proposición p → q?",
-    "correct": "￢q → ￢p",
+    "correct": "¬q → ¬p",
     "incorrect": [
       "q → p",
-      "￢p → ￢q"
+      "¬p → ¬q"
     ]
   },
   {
@@ -68,7 +68,7 @@
     "correct": "p ∨ p ≡ p",
     "incorrect": [
       "p ∨ F ≡ p",
-      "p ∨ ￢p ≡ V"
+      "p ∨ ¬p ≡ V"
     ]
   },
   {
@@ -80,7 +80,7 @@
     ]
   },
   {
-    "question": "¿Qué regla de inferencia se define como: si se tiene (p ∨ q) y se afirma que (￢p), entonces se concluye (q)?",
+    "question": "¿Qué regla de inferencia se define como: si se tiene (p ∨ q) y se afirma que (¬p), entonces se concluye (q)?",
     "correct": "Modus Tollendo Ponens",
     "incorrect": [
       "Modus Ponendo Ponens",
@@ -105,10 +105,10 @@
   },
   {
     "question": "¿Cuál de las siguientes proposiciones lógicas resulta siempre en una Tautología?",
-    "correct": "p ∨ ￢p",
+    "correct": "p ∨ ¬p",
     "incorrect": [
-      "p ∧ ￢p",
-      "p → ￢p"
+      "p ∧ ¬p",
+      "p → ¬p"
     ]
   },
   {
@@ -137,10 +137,10 @@
   },
   {
     "question": "Al formalizar lógicamente la oración 'No es cierto que llueve y hace frío', ¿cuál es la estructura correcta?",
-    "correct": "￢(p ∧ q)",
+    "correct": "¬(p ∧ q)",
     "incorrect": [
-      "￢p ∧ ￢q",
-      "￢p ∨ ￢q"
+      "¬p ∧ ¬q",
+      "¬p ∨ ¬q"
     ]
   },
   {
@@ -164,7 +164,7 @@
     "correct": "p → r",
     "incorrect": [
       "r → p",
-      "￢p → ￢r"
+      "¬p → ¬r"
     ]
   },
   {
@@ -193,14 +193,14 @@
   },
   {
     "question": "La proposición 'Ningún león caza de noche' se puede formalizar lógicamente utilizando primordialmente:",
-    "correct": "El cuantificador universal negado o en forma de condicional (∀x, ... → ￢Q)",
+    "correct": "El cuantificador universal negado o en forma de condicional (∀x, ... → ¬Q)",
     "incorrect": [
       "El cuantificador existencial afirmativo (∃x, ... ∧ Q)",
       "El operador de equivalencia bicondicional (↔)"
     ]
   },
   {
-    "question": "La tabla de verdad de la expresión (p ∧ ￢p) resultará en una columna final compuesta enteramente de:",
+    "question": "La tabla de verdad de la expresión (p ∧ ¬p) resultará en una columna final compuesta enteramente de:",
     "correct": "Valores Falsos (es una contradicción)",
     "incorrect": [
       "Valores Verdaderos (es una tautología)",
@@ -211,8 +211,8 @@
     "question": "¿Cómo se conoce a la proposición recíproca (inversa de lectura) de la forma p → q?",
     "correct": "q → p",
     "incorrect": [
-      "￢p → ￢q",
-      "￢q → ￢p"
+      "¬p → ¬q",
+      "¬q → ¬p"
     ]
   },
   {
